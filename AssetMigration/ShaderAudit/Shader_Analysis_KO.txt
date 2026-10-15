@@ -1,0 +1,226 @@
+Project Run — 캐릭터·동물 셰이더 분석
+분석일: 2026-10-15
+
+결론
+
+특수 조명·환경 세팅 없이 사용할 수 있는 공통 셰이더로 옮기기 좋은 에셋이다.
+권장 기준은 URP용 Unlit 기반이다. 원래 텍스처에 그려진 명암을 살리고, 필요할 때만
+씬 광원을 읽지 않는 약한 자체 명암·윤곽광을 옵션으로 추가한다.
+원본 셰이더 전체를 이식하거나 URP Lit으로 일괄 교체할 필요는 없다.
+
+이번에는 분석과 임시 미리보기만 진행했다. 원본/OldAsset의 재질·프리팹·셰이더,
+게임 씬과 렌더 파이프라인 설정을 변경하지 않았다. 아래 공통 셰이더는 설계안이며
+아직 구현하거나 전체 에셋에 적용하지 않았다.
+
+확인 범위와 집계 기준
+
+현재 Unity: 6000.3.23f1 / URP 17.3.0.
+대상: Characters, Mounts, Pets, Monsters, Equipment의 명시적 .mat 파일 2,898개.
+캐릭터 폴더에는 NPC 소품·행사 배경도 일부 섞여 있으므로 2,898을 순수 캐릭터 몸체
+재질 수로 해석하면 안 된다. 환경 전용 에셋 전체를 분석한 것은 아니다.
+Android용 대체 재질은 별도 파일로 집계했으며 FBX 내부 재질은 이 파일 수에서 제외했다.
+
+분류             전체 재질    프로젝트 툰 셰이더    Mobile/Unlit 계열    기타
+캐릭터             1,483              690                579          214
+탈것                 127               62                 62            3
+펫                     4                2                  2            0
+몬스터               673              332                332            9
+장비                 611              304                304            3
+합계               2,898            1,390              1,279          229
+
+프로젝트 툰 셰이더: project-rs/unitychan_dswf_mobile.
+Mobile/Unlit: Unity 내장 Mobile/Unlit (Supports Lightmap).
+두 계열이 대상 파일의 92.1%다. Android 버전의 대체 재질까지 포함한 비율이다.
+플레이어 폴더만 보면 툰 202개, Mobile/Unlit 60개다. 장비 재질은 별도로 집계했다.
+
+프리팹 7,143개의 직렬화된 Renderer 재질 슬롯도 조사했다.
+그 슬롯에 연결된 외부 .mat은 2,696개이며, Mesh/SkinnedMesh 쪽 연결 재질은 2,643개다.
+전체 프리팹 상속/오버라이드와 FBX 내부 재질을 완전히 펼친 수치는 아니다.
+탈것은 별도로 Unity Editor에서 일반/Android 프리팹 124개를 실제 로드해 확인했다.
+툰 몸체 62개 + Mobile/Unlit 몸체 62개 + 반투명 부품 3개, 재질 슬롯 NULL은 0개였다.
+
+그대로 붙일 때 생기는 문제
+
+1. 렌더 파이프라인 불일치
+기존 툰 셰이더는 Built-in의 UnityChan 셰이더에서 Outline, ForwardBase,
+ShadowCaster 패스를 UsePass로 가져온다. 현재 URP의 기본 그리기 패스는
+SRPDefaultUnlit, UniversalForward, UniversalForwardOnly를 선택한다.
+기존 Mobile/Unlit도 Vertex/VertexLM 패스를 사용한다.
+셰이더가 로드되고 isSupported=true, 컴파일 메시지 0개로 보이더라도
+현재 파이프라인에서 정상 외형을 그린다는 뜻은 아니다.
+
+실제 현재 URP의 임시 미리보기에서 말과 페코페코의 기존 툰 재질은 분홍색으로
+표시됐다. 동일 모델의 임시 재질을 URP Unlit으로 만들고 텍스처를 명시적으로
+옮긴 경우 정상 표시됐다. 저장된 재질을 바꾼 결과가 아니다.
+
+2. 텍스처 슬롯 이름 불일치와 남아 있는 옛 값
+기존 툰의 실제 기본 텍스처는 _MainTex, URP Unlit은 _BaseMap을 사용한다.
+툰 1,390개 중 _BaseMap은 554개에서 비어 있고, 706개는 _MainTex와 다른 GUID다.
+일치하는 것은 130개다. 실제 쓰이지 않는 옛 저장값이 남아 있는 경우가 많다.
+예를 들어 갑옷 매 펫의 _BaseMap에는 일반 매 텍스처가 남아 있다.
+따라서 셰이더 이름만 교체하거나 기존 _BaseMap을 믿으면 흰색/잘못된 외형이 된다.
+탈것 툰 62개 중 61개는 _BaseMap이 비어 있다.
+
+3. 양면 표시와 색상 보존
+탈것 툰 62개 모두 _CullMode=0, 즉 양면 표시다.
+툰 전체 1,390개 중 1,339개가 양면이다. 무조건 URP 기본 뒷면 제거를 적용하면
+갈기·천·장식 등 일부 면이 사라질 수 있다.
+플레이어 툰 202개 중 56개는 _BaseColor가 흰색이 아니므로 색상도 옮겨야 한다.
+Mobile/Unlit에는 _BaseColor/_Color/_CullMode 프로퍼티 자체가 없다.
+그 재질 파일에 남아 있는 툰 설정값은 실제 사용 설정으로 해석하면 안 된다.
+
+특수 조명·환경에 대한 실제 의존도
+
+툰 재질 1,390개:
+- 환경광 추가 강도 _GI_Intensity: 전부 0.
+- 기본 명암용 노멀맵 활성화: 전부 0, 사용자 노멀 텍스처도 연결되지 않음.
+- 자체 광원 방향 _Is_BLD: 1,124개 켜짐, 266개 꺼짐.
+- 장면 그림자 받기 _Set_SystemShadowsToBase: 96개 켜짐.
+- 기본색/명암색 중 하나라도 장면 조명색 사용: 7개.
+- MatCap 활성화: 1개. 해당 얼굴 재질의 MatCap 텍스처는 비어 있음.
+- 발광색은 전부 검정이며 별도 발광 텍스처 연결도 없음.
+- 기본/1차/2차 명암 텍스처와 UV가 같은 재질: 1,383개.
+  나머지 7개는 별도 검토 대상이며 자동으로 같은 텍스처라고 가정하지 않는다.
+
+탈것 툰 62개:
+- 전부 동일한 한 장의 텍스처를 기본/1차/2차 명암에 사용.
+- 전부 조명색 영향 OFF, 환경광 추가 0, MatCap OFF, 노멀맵 OFF.
+- 60개는 자체 광원 방향. 여우와 포링 풍선 2개는 장면 광원 방향을 사용하도록 설정.
+- 10개는 장면 그림자 받기가 켜져 있어 변환 시 명암 차이가 날 수 있음.
+- 윤곽광 61개, 외곽선 폭 0 초과 62개, 하이라이트 강도 0 초과 55개.
+
+따라서 “복잡한 환경 세팅을 꼭 복원해야 한다”는 구조는 아니다.
+다만 조명색 영향이 꺼졌다고 기존 툰이 완전한 Unlit인 것은 아니다.
+자체 명암, 하이라이트, 윤곽광, 외곽선이 남아 있으므로 단순 Unlit과 외형이 다르다.
+_OUTLINE=0은 외곽선 OFF가 아니라 노멀 방향 확장 모드다.
+_RimLight_Power=0도 윤곽광 OFF가 아니다. 비활성 판정은 해당 토글로 해야 한다.
+
+자체 광원 방향은 원본 셰이더에서 오브젝트 로컬 방향을 월드로 변환해 사용한다.
+원본 감각을 살리는 경우 모델이 회전해도 얼굴 쪽 명암이 유지되는 이 방식을
+기본으로 검토할 수 있다. 월드에 고정하는 빛과는 결과가 다르다.
+
+권장 공통 셰이더 설계
+
+제안 이름: ProjectRun/CharacterSimple
+제안 위치: Assets/ArtBundles/Shaders/Character
+
+기본:
+- 기본 텍스처 1장 + 기본색.
+- Unlit, 장면 Light/환경광/라이트맵/반사 프로브가 없어도 표시.
+- Fog/SSAO/Decal 입력을 사용하지 않는 최소 패스.
+- 불투명 표시를 기본으로 하고, 필요한 재질만 Alpha Clip 또는 반투명 모드.
+- 원본별 Cull/UV/색상을 보존하며, 선택한 모델에 한해 양면 필요 여부를 검토.
+
+선택 옵션:
+- 약한 자체 툰 명암. 고정 로컬 방향과 명암색/강도만으로 계산하며 씬 Light 불필요.
+- 간단한 윤곽광. 화면 가독성이 실제로 좋아지는 경우에만 적용.
+- 외곽선은 추가 그리기 비용과 작은 화면의 번짐을 비교한 뒤 선택.
+- 발광·UV 이동·소멸 등은 실제 채택한 모델/연출에만 별도 추가.
+
+원본의 그림자 단계·하이라이트·윤곽광을 전부 복원하는 것보다,
+우선 원본 텍스처만으로 목표 화면 크기에서 충분한지 확인하는 편이 적합하다.
+이번 말·페코페코 미리보기에서는 조명 없이도 털·깃털·안장 등의 명암이 잘 남았다.
+이는 두 모델의 실측 외형 확인이며 모든 캐릭터의 최종 품질 보장은 아니다.
+
+기본 URP Unlit을 그대로 쓰면 해당 파이프라인의 Fog/SSAO 등은 여전히 영향을
+줄 수 있다. 완전히 독립된 캐릭터 표현을 원하면 공통 셰이더에서 해당 계산을
+제외해야 한다. 카메라 후처리는 최종 화면 전체에 적용되므로, 색보정/노출까지
+캐릭터만 독립시키려면 별도 렌더링 구성이 필요하다. 현재 단계에서는 캐릭터용
+특수 후처리나 환경 연출을 요구하지 않는 구성을 기본으로 제안한다.
+
+변환 규칙
+
+기존 툰 _MainTex              -> 공통 _BaseMap, Texture Scale/Offset도 함께 복사
+기존 툰 _BaseColor            -> 공통 _BaseColor
+기존 툰 _CullMode             -> 공통 _Cull
+기존 툰 명암색/단계            -> 자체 명암 옵션을 채택할 때만 선택적으로 옮김
+기존 Mobile/Unlit _MainTex    -> 공통 _BaseMap; 사용하지 않는 툰 잔여 값은 제외
+기존 Cutout                   -> _AlphaClip/_Cutoff 및 정확한 알파 텍스처 유지
+기존 Alpha Blended            -> 별도 반투명 설정, Blend/ZWrite/Queue 검토
+기존 파티클 재질               -> 정점색·알파를 보존하는 효과용 설정으로 구분
+
+셰이더를 공통화해도 모델별 텍스처와 재질 에셋까지 한 개로 합치는 것은 아니다.
+실제 게임에서 사용할 모델을 선택하고 변환 재질과 M_ 모델 프리팹을 별도로 생성한다.
+OldAsset은 보관 원본으로 유지한다. 프리팹에서 새 재질을 연결하고 기존 mesh,
+리그와 애니메이션 참조는 유지한다. Resources에는 실제 사용할 모델만 등록한다.
+
+개별 처리가 필요한 항목
+
+1. 탈것의 반투명 부품 3개
+- 호박 마차: pumpkincarrige_001_alpha.mat
+- 우주선: vehicle_spaceship_001_alpha.mat
+- 헤비 메탈링: vehicle_heavymetaling_001_alpha.mat
+모두 일반/Android 프리팹에 연결되어 있다. 몸체와 같이 불투명으로 변환하지 않는다.
+현재 셰이더는 Mobile/Particles/Alpha Blended이므로 mesh 정점색/알파까지 확인한다.
+
+2. 캐릭터 얼굴 기본 재질 2개
+- Characters/Players/face/fbx/Materials/face_m.mat
+- Characters/Players/face/fbx/Materials/face_w.mat
+두 재질의 _MainTex는 Unity에서 NULL로 확인됐다. 얼굴 mesh 프리팹에 연결돼 있다.
+원본에는 MeshEffectMaterial.SetMesh_Texture 및 표정별 텍스처 교체 코드가 존재한다.
+실제 캐릭터를 조립할 때 얼굴/표정 텍스처 선택 규칙을 새로 연결해야 한다.
+셰이더 교체만으로 빈 얼굴 텍스처가 해결되지는 않는다.
+
+3. 특수 효과
+석화/불타며 소멸 셰이더는 Built-in Surface Shader 방식이다.
+원본 MeshEffectMaterial이 _MixProgress와 재질 교체를 제어한다.
+기본 달리기 외형을 표시하는 데 필수는 아니다. 해당 연출을 채택할 때 별도 이식한다.
+투명화 Force Field, 일부 NPC 효과·풀·행사 배경 재질도 공통 몸체 재질과 구분한다.
+
+4. 다른 명암 텍스처/UV를 쓰는 툰 7개
+마리오네트 unused 재질 1개, hair_03_w 계열 4개, 간호사 NPC 소품 재질 2개.
+정확한 경로는 Summary.json의 toon_focus.different_shade_texture_uv에 기록했다.
+기본 UV가 변경된 얼굴 재질 6개도 있으므로 텍스처만 복사하면 안 된다.
+
+적용 순서
+
+1) 말·페코페코·늑대·알파카, 플레이어 얼굴/머리/몸/장비, 매 펫으로 대표 세트 구성.
+2) 공통 기본 Unlit 변환본과 약한 자체 명암 옵션을 실제 세로 카메라에서 비교.
+3) 정면/후면/달리기/클로즈업에서 양면, 얼굴 UV, 투명 부품 확인.
+4) 선택 모델을 변환 규칙에 따라 일괄 처리하고 예외 목록을 별도로 검토.
+5) 목표 모바일 브라우저의 WebGL 빌드에서 실제 주자 수와 함께 성능 확인.
+
+이번 검증의 한계
+
+Windows Editor에서 정적 미리보기로 말·페코페코 2종을 렌더링했다.
+모든 프리뷰 광원은 OFF, 프리뷰 ambientColor는 검정이며 새 재질은 메모리에서만 생성했다.
+새 공통 셰이더, 자체 명암 옵션, 전체 모델 변환, WebGL 빌드/실기기 성능은 미실시다.
+애니메이션/리그의 원본 경고는 셰이더 문제와 별도이며 이번 작업에서 수정하지 않았다.
+
+함께 저장한 근거
+
+Summary.json: 범주·기능·프리팹 연결 통계.
+MaterialAudit.csv: 대상 재질별 셰이더, 텍스처, 주요 설정.
+MaterialAudit.json: 전체 읽기 결과와 실제 프리팹 연결 경로.
+UnityShaderLookup.tsv: Unity에서 확인한 셰이더 이름, 패스, 지원 상태.
+MountRendererValidation.txt: 탈것 프리팹 124개 실제 로드 결과.
+*_legacy_in_urp.png: 기존 재질을 현재 URP에서 렌더링한 결과.
+*_urp_unlit_no_lights.png: 임시 URP Unlit 재질, 조명 없는 렌더링 결과.
+audit_materials.py / preview_unlit.cs.txt: 재현용 읽기/임시 프리뷰 코드.
+
+주요 소스 근거 (프로젝트 루트 C:/Project_Run/Run 기준)
+
+Assets/OldAsset/Shared/Character/shader/unitychan_dswf_Mobile.shader
+  152~154: Built-in UsePass.
+Assets/OldAsset/Shared/Dependencies/3rd Party/UnityChan/Shader/Toon_DoubleShadeWithFeather.shader
+  ForwardBase, ForwardAdd, ShadowCaster 및 UnityCG/AutoLight/Lighting include.
+Assets/OldAsset/Shared/Dependencies/3rd Party/UnityChan/Shader/UCTS_DoubleShadeWithFeather.cginc
+  218~244: 장면 광원/자체 방향/기본 명암 텍스처.
+  255~331: 하이라이트, 윤곽광, MatCap.
+  333~375: 환경광/발광.
+Assets/OldAsset/Shared/Dependencies/3rd Party/UnityChan/Shader/UCTS_Outline.cginc
+  71~90: 외곽선 폭과 모드.
+Packages/com.unity.render-pipelines.universal/Runtime/Passes/DrawObjectsPass.cs
+  91: URP에서 선택하는 기본 LightMode 목록.
+Packages/com.unity.render-pipelines.universal/Shaders/Unlit.shader
+  _BaseMap/_BaseColor/_Cull, URP 태그 및 패스.
+Packages/com.unity.render-pipelines.universal/Shaders/UnlitForwardPass.hlsl
+  131~163: SSAO 및 Fog 적용.
+
+원본 프로젝트:
+D:/svn_alldata/Branches/OBT_KOR_1_16/RS_Development/Assets/Scripts/RsGame/Character/MeshEffectMaterial.cs
+  31~55: 얼굴 텍스처/기본색·명암색 변경.
+  289~386: 석화/소멸 재질 및 진행률 제어.
+
+공식 참고: Unity 6.3 ShaderLab Pass tags in URP
+https://docs.unity.com/en-us/engine/6000.3/manual/materials-and-shaders/shaders/writing-custom-shaders-urp/use-built-in-shader-methods/urp-shaderlab-pass-tags

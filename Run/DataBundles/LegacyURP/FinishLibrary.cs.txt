@@ -1,0 +1,71 @@
+var outputRoot = ProjectRun.Editor.LegacyUrpImporter.OutputRoot;
+var reportRoot = ProjectRun.Editor.LegacyUrpImporter.ReportDirectory;
+System.Action<string> ensureFolder = null;
+ensureFolder = path => {
+    if (UnityEditor.AssetDatabase.IsValidFolder(path)) return;
+    var parent = System.IO.Path.GetDirectoryName(path).Replace('\\','/');
+    ensureFolder(parent);
+    UnityEditor.AssetDatabase.CreateFolder(parent,System.IO.Path.GetFileName(path));
+};
+ensureFolder(outputRoot + "ReadyToDrag/Mounts");
+ensureFolder(outputRoot + "ReadyToDrag/Characters/Classes");
+ensureFolder(outputRoot + "ReadyToDrag/Pets");
+var catalog = new System.Text.StringBuilder("category\tname\tprefab\tsource\n");
+int aliases = 0;
+int classes = 0;
+foreach(var line in System.IO.File.ReadAllLines(System.IO.Path.Combine(reportRoot,"ReadyToDragPlan.tsv")))
+{
+    var columns = line.Split('\t');
+    var source = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(columns[2]);
+    if (source == null) throw new System.Exception("Converted asset missing: " + columns[2]);
+    var destination = outputRoot + "ReadyToDrag/" + columns[0] + "/" + columns[1] + ".prefab";
+    var scene = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+    try
+    {
+        var instance = (UnityEngine.GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(source,scene);
+        instance.name = columns[1];
+        bool saved;
+        UnityEditor.PrefabUtility.SaveAsPrefabAsset(instance,destination,out saved);
+        if (!saved) throw new System.Exception("Could not save alias: " + destination);
+        catalog.AppendLine(columns[0]+"\t"+columns[1]+"\t"+destination+"\t"+columns[2]);
+        aliases++;
+    }
+    finally { UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene); }
+}
+foreach(var bodyPath in System.IO.Directory.GetFiles("Assets/OldAsset/Characters/Players/body","*.prefab",System.IO.SearchOption.TopDirectoryOnly))
+{
+    var normalized = bodyPath.Replace('\\','/');
+    var bodyName = System.IO.Path.GetFileNameWithoutExtension(bodyPath);
+    var sex = bodyName.EndsWith("_w_mesh") ? "w" : "m";
+    var bodyAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(ProjectRun.Editor.LegacyUrpImporter.ConvertedPrefabPath(normalized,false));
+    var body = bodyAsset.GetComponentInChildren<UnityEngine.SkinnedMeshRenderer>(true);
+    var basePath = outputRoot + "Characters/Prefabs/Players/prefabs/M_character_" + sex + "_pawn.prefab";
+    var source = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(basePath);
+    var name = "M_" + bodyName.Replace("_mesh","");
+    var destination = outputRoot + "ReadyToDrag/Characters/Classes/" + name + ".prefab";
+    var scene = UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+    try
+    {
+        var instance = (UnityEngine.GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(source,scene);
+        instance.name = name;
+        var renderers = instance.GetComponentsInChildren<UnityEngine.SkinnedMeshRenderer>(true);
+        var target = System.Linq.Enumerable.First(renderers,r=>r.name=="novice_"+sex+"_mesh");
+        if (target.bones.Length != body.sharedMesh.bindposes.Length) throw new System.Exception("Class rig differs: " + normalized);
+        target.sharedMesh = body.sharedMesh;
+        target.sharedMaterials = body.sharedMaterials;
+        target.localBounds = body.localBounds;
+        target.name = bodyName;
+        UnityEngine.Bounds bounds = target.bounds;
+        foreach(var renderer in renderers) if(renderer.enabled) bounds.Encapsulate(renderer.bounds);
+        instance.transform.GetChild(0).localPosition -= new UnityEngine.Vector3(bounds.center.x,bounds.min.y,bounds.center.z);
+        bool saved;
+        UnityEditor.PrefabUtility.SaveAsPrefabAsset(instance,destination,out saved);
+        if(!saved) throw new System.Exception("Could not save class: " + destination);
+        catalog.AppendLine("Characters/Classes\t"+name+"\t"+destination+"\t"+normalized);
+        classes++;
+    }
+    finally { UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene); }
+}
+System.IO.File.WriteAllText(System.IO.Path.Combine(reportRoot,"QuickAccessCatalog.tsv"),catalog.ToString(),new System.Text.UTF8Encoding(true));
+// Each generated prefab is already saved by SaveAsPrefabAsset; leave unrelated assets untouched.
+return "ReadyToDrag: " + aliases + " named models + " + classes + " complete character class models.";

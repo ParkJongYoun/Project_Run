@@ -1,0 +1,74 @@
+var rootPath = ProjectRun.Editor.LegacyUrpImporter.OutputRoot;
+var scenePath = "Assets/Scenes/Scene_LegacyURP_Preview.unity";
+var previousScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+bool canOpen = true;
+for(int i=0;i<UnityEngine.SceneManagement.SceneManager.sceneCount;i++)
+    if(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).isDirty) canOpen=false;
+var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,UnityEditor.SceneManagement.NewSceneMode.Additive);
+try
+{
+    UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
+    UnityEngine.RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Flat;
+    UnityEngine.RenderSettings.ambientLight=UnityEngine.Color.black;
+    UnityEngine.RenderSettings.fog=false;
+    UnityEngine.RenderSettings.skybox=null;
+    var shader=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Shader>(ProjectRun.Editor.LegacyUrpImporter.ShaderPath);
+    var materialPath=rootPath+"Shared/Materials/Mat_PreviewFloor.mat";
+    var floorMaterial=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Material>(materialPath);
+    if(floorMaterial==null)
+    {
+        floorMaterial=new UnityEngine.Material(shader);
+        floorMaterial.name="Mat_PreviewFloor";
+        floorMaterial.SetColor("_BaseColor",new UnityEngine.Color(0.11f,0.14f,0.19f,1));
+        ProjectRun.Editor.CharacterSimpleShaderGUI.Configure(floorMaterial);
+        UnityEditor.AssetDatabase.CreateAsset(floorMaterial,materialPath);
+    }
+    var floor=UnityEngine.GameObject.CreatePrimitive(UnityEngine.PrimitiveType.Plane);
+    floor.name="Preview Ground";
+    floor.transform.localScale=new UnityEngine.Vector3(2,1,2);
+    floor.GetComponent<UnityEngine.Renderer>().sharedMaterial=floorMaterial;
+    UnityEngine.Object.DestroyImmediate(floor.GetComponent<UnityEngine.Collider>());
+    var group=new UnityEngine.GameObject("Drag-ready models - no lights required");
+    var assets=new string[]{"Mounts/M_말_001","Mounts/M_페코페코_001","Mounts/M_늑대_001","Mounts/M_알파카","Characters/M_초보자_남자","Characters/M_초보자_여자","Mounts/M_호박마차","Pets/M_갑옷매"};
+    for(int i=0;i<assets.Length;i++)
+    {
+        var asset=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(rootPath+"ReadyToDrag/"+assets[i]+".prefab");
+        if(asset==null)throw new System.Exception("Preview prefab missing: "+assets[i]);
+        var instance=(UnityEngine.GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(asset,scene);
+        instance.transform.SetParent(group.transform,false);
+        var renderers=instance.GetComponentsInChildren<UnityEngine.Renderer>(true);
+        var bounds=new UnityEngine.Bounds();bool first=true;
+        foreach(var renderer in renderers)
+        {
+            if(!renderer.enabled || !(renderer is UnityEngine.MeshRenderer || renderer is UnityEngine.SkinnedMeshRenderer))continue;
+            if(first){bounds=renderer.bounds;first=false;}else bounds.Encapsulate(renderer.bounds);
+        }
+        float scale=2f/UnityEngine.Mathf.Max(0.1f,bounds.size.y);
+        instance.transform.localScale=UnityEngine.Vector3.one*scale;
+        instance.transform.position=new UnityEngine.Vector3((i%4-1.5f)*3.2f,0,(i/4==0?1.9f:-1.9f));
+        instance.transform.rotation=UnityEngine.Quaternion.Euler(0,-18,0);
+    }
+    var cameraObject=new UnityEngine.GameObject("Main Camera");
+    cameraObject.tag="MainCamera";
+    var camera=cameraObject.AddComponent<UnityEngine.Camera>();
+    camera.clearFlags=UnityEngine.CameraClearFlags.SolidColor;
+    camera.backgroundColor=new UnityEngine.Color(0.055f,0.07f,0.1f,1);
+    camera.orthographic=true;camera.orthographicSize=5.8f;
+    camera.transform.position=new UnityEngine.Vector3(5.5f,8,15);
+    camera.transform.LookAt(new UnityEngine.Vector3(0,0.8f,0));
+    camera.nearClipPlane=0.05f;camera.farClipPlane=100;
+    var cameraData=cameraObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+    cameraData.renderPostProcessing=false;
+    cameraData.renderShadows=false;
+    // Each generated prefab is already saved by SaveAsPrefabAsset; leave unrelated assets untouched.
+    if(!UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene,scenePath))throw new System.Exception("Could not save preview scene.");
+}
+finally
+{
+    UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene,true);
+    if(previousScene.IsValid())UnityEngine.SceneManagement.SceneManager.SetActiveScene(previousScene);
+}
+if(canOpen)UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenePath,UnityEditor.SceneManagement.OpenSceneMode.Single);
+UnityEditor.Selection.activeObject=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(rootPath+"ReadyToDrag");
+UnityEditor.EditorGUIUtility.PingObject(UnityEditor.Selection.activeObject);
+return "Saved "+scenePath+"; opened="+canOpen+"; 8 samples, 0 scene lights, no post-processing.";

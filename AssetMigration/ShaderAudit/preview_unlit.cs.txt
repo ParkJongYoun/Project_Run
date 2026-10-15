@@ -1,0 +1,79 @@
+var unlitShader = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Shader>("Packages/com.unity.render-pipelines.universal/Shaders/Unlit.shader");
+if (unlitShader == null) throw new System.Exception("Verified URP Unlit shader is missing");
+var paths = new string[] {
+    "Assets/OldAsset/Mounts/prefabs/horse_001_pawn.prefab",
+    "Assets/OldAsset/Mounts/prefabs/vehicle_pecopeco_001_pawn.prefab"
+};
+var output = new System.Text.StringBuilder();
+foreach (var path in paths)
+{
+    for (int mode = 0; mode < 2; mode++)
+    {
+        var preview = new UnityEditor.PreviewRenderUtility();
+        var temporaryMaterials = new System.Collections.Generic.List<UnityEngine.Material>();
+        UnityEngine.Texture2D picture = null;
+        try
+        {
+            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(path);
+            var go = preview.InstantiatePrefabInScene(asset);
+            go.SetActive(true);
+            go.transform.position = UnityEngine.Vector3.zero;
+            var renderers = go.GetComponentsInChildren<UnityEngine.Renderer>(true);
+            var bounds = new UnityEngine.Bounds();
+            bool first = true;
+            foreach (var renderer in renderers)
+            {
+                if (!(renderer is UnityEngine.MeshRenderer) && !(renderer is UnityEngine.SkinnedMeshRenderer)) continue;
+                if (first) { bounds = renderer.bounds; first = false; }
+                else bounds.Encapsulate(renderer.bounds);
+                if (mode == 1)
+                {
+                    var sourceMaterials = renderer.sharedMaterials;
+                    var mapped = new UnityEngine.Material[sourceMaterials.Length];
+                    for (int index = 0; index < sourceMaterials.Length; index++)
+                    {
+                        var source = sourceMaterials[index];
+                        var target = new UnityEngine.Material(unlitShader);
+                        target.hideFlags = UnityEngine.HideFlags.HideAndDontSave;
+                        target.SetTexture("_BaseMap", source.GetTexture("_MainTex"));
+                        target.SetTextureScale("_BaseMap", source.GetTextureScale("_MainTex"));
+                        target.SetTextureOffset("_BaseMap", source.GetTextureOffset("_MainTex"));
+                        target.SetColor("_BaseColor", source.HasProperty("_BaseColor") ? source.GetColor("_BaseColor") : UnityEngine.Color.white);
+                        target.SetFloat("_Cull", source.HasProperty("_CullMode") ? source.GetFloat("_CullMode") : 2);
+                        target.SetFloat("_Surface", 0);
+                        target.SetFloat("_ZWrite", 1);
+                        temporaryMaterials.Add(target);
+                        mapped[index] = target;
+                    }
+                    renderer.sharedMaterials = mapped;
+                }
+            }
+            foreach (var light in preview.lights) light.enabled = false;
+            preview.ambientColor = UnityEngine.Color.black;
+            var camera = preview.camera;
+            camera.clearFlags = UnityEngine.CameraClearFlags.SolidColor;
+            camera.backgroundColor = new UnityEngine.Color(0.08f, 0.10f, 0.14f, 1f);
+            camera.orthographic = true;
+            camera.orthographicSize = bounds.extents.magnitude * 0.85f;
+            var direction = new UnityEngine.Vector3(1.6f, 0.7f, 2.2f).normalized;
+            var distance = bounds.extents.magnitude * 4f;
+            camera.transform.position = bounds.center + direction * distance;
+            camera.transform.LookAt(bounds.center);
+            camera.nearClipPlane = 0.01f;
+            camera.farClipPlane = distance * 3f;
+            preview.BeginStaticPreview(new UnityEngine.Rect(0, 0, 768, 768));
+            preview.Render(true, false);
+            picture = preview.EndStaticPreview();
+            var filename = System.IO.Path.GetFileNameWithoutExtension(path) + (mode == 0 ? "_legacy_in_urp.png" : "_urp_unlit_no_lights.png");
+            System.IO.File.WriteAllBytes(@"C:\Project_Run\AssetMigration\ShaderAudit\" + filename, UnityEngine.ImageConversion.EncodeToPNG(picture));
+            output.AppendLine(filename + " bounds=" + bounds.ToString());
+        }
+        finally
+        {
+            preview.Cleanup();
+            foreach (var material in temporaryMaterials) UnityEngine.Object.DestroyImmediate(material);
+            if (picture != null) UnityEngine.Object.DestroyImmediate(picture);
+        }
+    }
+}
+return output.ToString();
