@@ -1,0 +1,26 @@
+# Normalize text in Git while keeping Unity YAML and .meta files diffable.
+* text=auto
+
+# Binary source art and media are stored in Git LFS, including uppercase names.
+*.[fF][bB][xX] filter=lfs diff=lfs merge=lfs -text
+*.[bB][lL][eE][nN][dD] filter=lfs diff=lfs merge=lfs -text
+*.[gG][lL][bB] filter=lfs diff=lfs merge=lfs -text
+*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text
+*.[tT][gG][aA] filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text
+*.[jJ][pP][eE][gG] filter=lfs diff=lfs merge=lfs -text
+*.[pP][sS][dD] filter=lfs diff=lfs merge=lfs -text
+*.[pP][sS][bB] filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF] filter=lfs diff=lfs merge=lfs -text
+*.[tT][iI][fF][fF] filter=lfs diff=lfs merge=lfs -text
+*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text
+*.[dD][dD][sS] filter=lfs diff=lfs merge=lfs -text
+*.[eE][xX][rR] filter=lfs diff=lfs merge=lfs -text
+*.[hH][dD][rR] filter=lfs diff=lfs merge=lfs -text
+*.[wW][aA][vV] filter=lfs diff=lfs merge=lfs -text
+*.[oO][gG][gG] filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]3 filter=lfs diff=lfs merge=lfs -text
+*.[mM][pP]4 filter=lfs diff=lfs merge=lfs -text
+*.[mM][oO][vV] filter=lfs diff=lfs merge=lfs -text
+*.[wW][eE][bB][mM] filter=lfs diff=lfs merge=lfs -text
+*.unitypackage filter=lfs diff=lfs merge=lfs -text

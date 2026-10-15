@@ -1,0 +1,46 @@
+var basePath = "Assets/OldAsset/";
+var paths = new string[] {
+    "Mounts/prefabs/vehicle_pecopeco_001_pawn.prefab",
+    "Mounts/prefabs/vehicle_wolf_001_pawn.prefab",
+    "Mounts/prefabs/horse_001_pawn.prefab",
+    "Mounts/prefabs/rides_alpaca01_pawn.prefab",
+    "Mounts/vehicle_pecopeco_001/animation/pecopeco_001@vehicle_pecopeco_run_01.FBX",
+    "Mounts/vehicle_wolf_001/animation/vehicle_wolf_001@vehicle_wolf_001_run.FBX",
+    "Mounts/horse_001/animation/horse_001@horse_run_01.FBX",
+    "Mounts/rides_alpaca/animation/rides_alpaca01@rides_alpaca01_run.FBX",
+    "Environment/pronterafield/sinae_dol.FBX"
+};
+var results = new System.Collections.Generic.List<object>();
+foreach (var relative in paths) {
+    var objects = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(basePath + relative);
+    var clips = new System.Collections.Generic.List<object>();
+    var meshes = new System.Collections.Generic.List<object>();
+    int renderers = 0, missingScripts = 0, nullMaterials = 0, bones = 0;
+    UnityEngine.GameObject root = null;
+    foreach (var obj in objects) {
+        var clip = obj as UnityEngine.AnimationClip;
+        if (clip != null && !clip.name.StartsWith("__preview__"))
+            clips.Add(new { name = clip.name, length = clip.length, frameRate = clip.frameRate });
+        var mesh = obj as UnityEngine.Mesh;
+        if (mesh != null) meshes.Add(new { name = mesh.name, vertices = mesh.vertexCount });
+        if (root == null && obj is UnityEngine.GameObject) root = obj as UnityEngine.GameObject;
+    }
+    if (root != null) {
+        foreach (var tr in root.GetComponentsInChildren<UnityEngine.Transform>(true))
+            missingScripts += UnityEditor.GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(tr.gameObject);
+        foreach (var renderer in root.GetComponentsInChildren<UnityEngine.Renderer>(true)) {
+            renderers++;
+            foreach (var material in renderer.sharedMaterials) if (material == null) nullMaterials++;
+            var skin = renderer as UnityEngine.SkinnedMeshRenderer;
+            if (skin != null) bones += skin.bones.Length;
+        }
+    }
+    results.Add(new { path = basePath + relative, loaded = objects.Length > 0, subAssets = objects.Length, renderers = renderers, bones = bones, missingScripts = missingScripts, nullMaterialSlots = nullMaterials, clips = clips, meshes = meshes });
+}
+var folders = new string[] { "Assets/OldAsset" };
+return new {
+    modelGuids = UnityEditor.AssetDatabase.FindAssets("t:Model", folders).Length,
+    prefabGuids = UnityEditor.AssetDatabase.FindAssets("t:Prefab", folders).Length,
+    materialGuids = UnityEditor.AssetDatabase.FindAssets("t:Material", folders).Length,
+    checks = results
+};
