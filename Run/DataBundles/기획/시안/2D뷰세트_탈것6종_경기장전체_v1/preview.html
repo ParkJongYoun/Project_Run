@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Run · 탈것 & 경기장 2D 뷰</title>
+<style>
+:root{color-scheme:dark;--bg:#101b1c;--panel:#19282a;--line:#314448;--ink:#edf5ed;--muted:#a5bcb7;--accent:#c4e48b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Malgun Gothic",system-ui,sans-serif}
+button,select,input{font:inherit}button,select{border:1px solid var(--line);border-radius:10px;background:#243638;color:var(--ink);padding:9px 13px}button{cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:#18271d;border-color:var(--accent);font-weight:700}
+a{color:var(--accent)}header{max-width:1360px;margin:auto;padding:30px 32px 18px;display:flex;justify-content:space-between;align-items:center;gap:20px}h1{font-size:25px;letter-spacing:-1px;margin:3px 0}p{margin:4px 0}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--accent);font-weight:bold}.muted{color:var(--muted);font-size:13px}.count{text-align:right;white-space:nowrap}.count strong{font-size:30px;color:var(--accent)}
+main{max-width:1360px;padding:0 32px 40px;margin:auto}.tabs{display:flex;gap:8px;margin:12px 0 20px;flex-wrap:wrap}.workspace{display:grid;grid-template-columns:275px minmax(0,1fr);gap:20px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}.controls{display:grid;gap:17px}label.field{display:grid;gap:7px}label.field>span{font-size:12px;color:var(--muted)}.view-buttons{display:flex;gap:5px}.view-buttons button{flex:1;padding:8px 5px;font-size:13px}.range-label{display:flex;justify-content:space-between;align-items:center}.range-label output{font-size:12px;color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent)}input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;vertical-align:middle;margin-right:8px}.check-row{font-size:13px}.separator{border-top:1px solid var(--line);padding-top:14px}.links{display:flex;gap:15px;flex-wrap:wrap;font-size:12px}.stage-wrap{min-height:660px;background:#0b1314;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px}.stage{position:relative;overflow:hidden;width:100%;max-width:470px;aspect-ratio:941/1672;background:#223b2b;box-shadow:0 12px 35px #0005;isolation:isolate}.stage.side{max-width:1100px;aspect-ratio:1672/941}.bg{width:100%;height:100%;display:block}.actor{position:absolute;width:54%;left:55%;top:88%;transform:translate(-50%,-100%);cursor:grab;touch-action:none;user-select:none;z-index:2;filter:drop-shadow(2px 4px 2px #24381235)}.actor:active{cursor:grabbing}.actor img{width:100%;display:block;pointer-events:none}.shadow{position:absolute;width:25%;height:2.5%;background:#233b1b55;border-radius:50%;filter:blur(5px);transform:translate(-50%,-50%);pointer-events:none}.caption{font-size:12px;color:var(--muted);text-align:center}.hidden,[hidden]{display:none!important}
+.gallery-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:25px 0 12px}.gallery-title h2{font-size:20px;margin:0}.gallery-title p{font-size:12px;color:var(--muted);margin:0}.triplet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.card{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel);color:var(--ink);text-decoration:none;display:block}.card:hover{border-color:var(--accent)}.checker{background-color:#cbd5cf;background-image:linear-gradient(45deg,#b7c5bd 25%,transparent 25%),linear-gradient(-45deg,#b7c5bd 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#b7c5bd 75%),linear-gradient(-45deg,transparent 75%,#b7c5bd 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}.card img{width:100%;height:auto;display:block}.card .art{aspect-ratio:1;object-fit:contain;padding:10px}.card .bg-thumb{height:330px;object-fit:contain;background:#0b1314}.card footer{padding:10px 14px;display:flex;justify-content:space-between;font-size:12px}.card footer small{color:var(--muted)}
+.bottom-note{font-size:12px;color:var(--muted);margin-top:24px}.status{color:#ffce89;font-size:12px}
+@media(max-width:850px){header{padding:23px 18px 12px}main{padding:0 18px 30px}.workspace{grid-template-columns:1fr}.controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.controls .wide{grid-column:1/-1}.stage-wrap{min-height:0;padding:12px}.count{display:none}.stage{max-width:430px}h1{font-size:22px}.triplet{gap:8px}.card .bg-thumb{height:220px}.card footer{padding:8px;display:block}.card footer small{display:block}}
+@media(max-width:500px){.triplet{grid-template-columns:1fr}.card .art{max-height:420px}.card .bg-thumb{height:auto;max-height:520px}.gallery-title{align-items:flex-start;flex-direction:column;gap:2px}.controls{padding:15px}.view-buttons button{font-size:12px}.tabs button{flex:1;font-size:12px;padding:8px}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">PROJECT RUN · 2D VIEW STUDY</div><h1>탈것과 경기장, 세 가지 시점</h1><p class="muted">탈것 6종 · 경기장 4구간 · 사이드 / 후방 / 상공 탑뷰</p></div><div class="count"><strong>30</strong><br><span class="muted">개별 PNG 이미지</span></div></header>
+<main>
+<nav class="tabs" aria-label="미리보기 종류"><button class="active" data-tab="preview">배치 미리보기</button><button data-tab="characters">탈것 18장</button><button data-tab="backgrounds">경기장 12장</button></nav>
+<section id="preview" class="tab-content">
+<div class="workspace">
+<aside class="panel controls">
+<label class="field"><span>탈것 · 탑승자 포함</span><select id="mount"><option value="poring">포링</option><option value="fox">여우</option><option value="ghost">유령</option><option value="wolf">검은늑대</option><option value="boar">멧돼지</option><option value="tiger">호랑이 · 기존 원본</option></select></label>
+<label class="field"><span>경기장 구간</span><select id="segment"><option value="01_home_straight">01 관중석 앞 직선</option><option value="02_first_corner" selected>02 첫 번째 코너</option><option value="03_back_straight">03 맞은편 직선</option><option value="04_final_corner">04 마지막 코너</option></select></label>
+<div class="wide"><p class="muted" style="margin-bottom:7px">카메라 시점</p><div class="view-buttons"><button data-view="side">사이드</button><button data-view="rear" class="active">후방</button><button data-view="top">탑뷰</button></div></div>
+<label class="field wide"><span class="range-label">탈것 크기 <output id="scaleValue">54%</output></span><input id="scale" type="range" min="15" max="100" value="54" aria-label="탈것 크기"></label>
+<label class="field"><span class="range-label">가로 위치 <output id="xValue">55%</output></span><input id="posX" type="range" min="5" max="95" value="55" aria-label="가로 위치"></label>
+<label class="field"><span class="range-label">접지 위치 <output id="yValue">88%</output></span><input id="posY" type="range" min="20" max="98" value="88" aria-label="접지 위치"></label>
+<div class="wide check-row"><label><input id="showActor" type="checkbox" checked>탈것 표시</label></div>
+<button id="reset" class="wide">크기 · 위치 초기화</button>
+<div class="separator wide"><p class="muted">탈것을 드래그해 위치를 바꿀 수 있습니다.</p><p class="muted">구간과 시점을 바꾸며 화면 구도를 확인하세요.</p></div>
+<div class="links wide"><a id="characterLink" target="_blank" rel="noopener">탈것 PNG 열기 ↗</a><a id="backgroundLink" target="_blank" rel="noopener">배경 PNG 열기 ↗</a></div>
+<p id="error" class="status wide" role="status" hidden>이미지를 불러오지 못했습니다. preview.html과 characters, backgrounds 폴더를 함께 두세요.</p>
+</aside>
+<div class="stage-wrap">
+<div id="stage" class="stage" aria-label="배경 위 탈것 배치 미리보기"><img id="bg" class="bg" alt="경기장 배경" draggable="false"><div id="shadow" class="shadow"></div><div id="actor" class="actor"><img id="character" alt="탑승자를 포함한 탈것" draggable="false"></div></div>
+<div id="caption" class="caption"></div>
+</div>
+</div>
+<p class="bottom-note">각 이미지는 개별 PNG로 저장되어 있습니다. 탑뷰는 상공에서 대각선으로 내려다보는 구도이며, 배경은 직선 2곳과 양쪽 코너를 나눈 구간별 시안입니다. 반복 스크롤 경계가 정확하게 이어지는 타일링은 별도 조정이 필요합니다.</p>
+</section>
+<section id="characters" class="tab-content" hidden></section>
+<section id="backgrounds" class="tab-content" hidden></section>
+<p class="bottom-note"><a href="generation_prompts.json" target="_blank" rel="noopener">생성 프롬프트 기록</a> · <a href="asset_manifest.json" target="_blank" rel="noopener">파일 목록과 검증 기록</a> · 2026.10.16</p>
+</main>
+<script>
+'use strict';
+const mounts=[['poring','포링','금발 · 노란 케이프'],['fox','여우','청록색 머리 · 녹색 복장'],['ghost','유령','라벤더 머리 · 보라색 마녀'],['wolf','검은늑대','짙은 파란 머리 · 녹색 재킷'],['boar','멧돼지','구릿빛 땋은 머리 · 고글'],['tiger','호랑이','기존 원본']];
+const segments=[['01_home_straight','관중석 앞 직선'],['02_first_corner','첫 번째 코너'],['03_back_straight','맞은편 직선'],['04_final_corner','마지막 코너']];
+const views=[['side','01_side','사이드'],['rear','02_rear','후방'],['top','03_top','탑뷰']];
+const defaults={side:{size:34,x:54,y:82},rear:{size:54,x:55,y:88},top:{size:41,x:67,y:72}};
+const bottomMargins={"tiger":{"side":0.07097288676236045,"rear":0.05980861244019139,"top":0.027910685805422646},"poring":{"side":0.09250398724082935,"rear":0.0733652312599681,"top":0.03987240829346093},"fox":{"side":0.09728867623604466,"rear":0.0685805422647528,"top":0.045454545454545456},"ghost":{"side":0.02711323763955343,"rear":0.03349282296650718,"top":0.019936204146730464},"wolf":{"side":0.11164274322169059,"rear":0.029505582137161084,"top":0.029505582137161084},"boar":{"side":0.04146730462519936,"rear":0.03269537480063796,"top":0.05741626794258373}};
+const byId=id=>document.getElementById(id);
+const el={mount:byId('mount'),segment:byId('segment'),scale:byId('scale'),x:byId('posX'),y:byId('posY'),bg:byId('bg'),character:byId('character'),actor:byId('actor'),stage:byId('stage'),shadow:byId('shadow'),show:byId('showActor')};
+let view='rear';
+function fileFor(kind,id,v){return kind+'/'+id+'/'+views.find(a=>a[0]===v)[1]+'.png';}
+function position(){
+ const size=Number(el.scale.value),x=Number(el.x.value),y=Number(el.y.value);
+ const margin=(bottomMargins[el.mount.value]||{})[view]||0;
+ const pixelWidth=el.stage.clientWidth*size/100;
+ const correction=el.stage.clientHeight?margin*pixelWidth/el.stage.clientHeight*100:0;
+ el.actor.style.width=size+'%';el.actor.style.left=x+'%';el.actor.style.top=(y+correction)+'%';
+ el.actor.hidden=!el.show.checked;el.shadow.hidden=!el.show.checked;
+ el.shadow.style.left=x+'%';el.shadow.style.top=(y-0.8)+'%';el.shadow.style.width=(size*.42)+'%';
+ byId('scaleValue').value=size+'%';byId('xValue').value=x+'%';byId('yValue').value=y+'%';
+}
+function reset(){const d=defaults[view];el.scale.value=d.size;el.x.value=d.x;el.y.value=d.y;position();}
+function update(){
+ const cp=fileFor('characters',el.mount.value,view),bp=fileFor('backgrounds',el.segment.value,view);
+ el.character.src=cp;el.bg.src=bp;byId('characterLink').href=cp;byId('backgroundLink').href=bp;
+ el.stage.classList.toggle('side',view==='side');
+ el.stage.style.aspectRatio=view==='side'?'1672 / 941':'941 / 1672';
+ document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+ byId('caption').textContent=mounts.find(m=>m[0]===el.mount.value)[1]+' · '+segments.find(s=>s[0]===el.segment.value)[1]+' · '+views.find(v=>v[0]===view)[2];
+ requestAnimationFrame(position);
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.view;update();reset();}));
+el.mount.addEventListener('change',update);el.segment.addEventListener('change',update);
+[el.scale,el.x,el.y,el.show].forEach(e=>e.addEventListener('input',position));
+byId('reset').addEventListener('click',reset);window.addEventListener('resize',position);
+for(const img of [el.bg,el.character])img.addEventListener('error',()=>byId('error').hidden=false);
+let drag=null;
+el.actor.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={clientX:e.clientX,clientY:e.clientY,x:Number(el.x.value),y:Number(el.y.value)};el.actor.setPointerCapture(e.pointerId);e.preventDefault();});
+el.actor.addEventListener('pointermove',e=>{if(!drag)return;const r=el.stage.getBoundingClientRect();el.x.value=Math.max(5,Math.min(95,drag.x+(e.clientX-drag.clientX)/r.width*100));el.y.value=Math.max(20,Math.min(98,drag.y+(e.clientY-drag.clientY)/r.height*100));position();});
+const endDrag=()=>{drag=null;};el.actor.addEventListener('pointerup',endDrag);el.actor.addEventListener('pointercancel',endDrag);
+function buildGallery(kind,items){
+ const section=byId(kind);
+ for(const item of items){
+  const heading=document.createElement('div');heading.className='gallery-title';
+  const title=document.createElement('h2');title.textContent=item[1];heading.append(title);
+  const note=document.createElement('p');note.textContent=item[2]||(kind==='backgrounds'?'같은 구간 · 3개 시점':'');heading.append(note);section.append(heading);
+  const grid=document.createElement('div');grid.className='triplet';
+  for(const v of views){
+   const file=fileFor(kind,item[0],v[0]);const card=document.createElement('a');card.className='card';card.href=file;card.target='_blank';card.rel='noopener';
+   const image=document.createElement('img');image.src=file;image.alt=item[1]+' '+v[2];image.loading='lazy';image.className=kind==='characters'?'art checker':'bg-thumb';card.append(image);
+   const footer=document.createElement('footer');const label=document.createElement('span');label.textContent=v[2];const sub=document.createElement('small');sub.textContent='원본 PNG ↗';footer.append(label,sub);card.append(footer);grid.append(card);
+  }
+  section.append(grid);
+ }
+}
+buildGallery('characters',mounts);buildGallery('backgrounds',segments);
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('[data-tab]').forEach(t=>t.classList.toggle('active',t===b));
+ document.querySelectorAll('.tab-content').forEach(s=>s.hidden=s.id!==b.dataset.tab);
+ if(b.dataset.tab==='preview')requestAnimationFrame(position);
+}));
+update();reset();
+</script>
+</body></html>
+
