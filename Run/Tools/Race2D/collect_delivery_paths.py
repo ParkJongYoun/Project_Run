@@ -22,7 +22,7 @@ for manifest in (work/'sprites').glob('*/clip.json'):
     paths.add(post/'inspection/diagnostics.json')
     # Preserve the exact key settings/history that produced the selected matte.
     paths.update(p for p in post.glob('matte_v*/*.json') if p.name not in ('manifest.draft.json','matte-inspection.json'))
-for pattern in ('Scene_*_validation.json','Scene_*_sprite_playback.json','Scene_*_animated_*.png','Scene_*_movie_paused.png','Scene_*_result.png','*camera_matrix.jpg','sprite_alpha_shader.json','unity_dependencies.json','webgl_build.json','webgl_browser*.json','webgl_browser*.png','webgl_browser*.jpg'):
+for pattern in ('Scene_*_validation.json','Scene_*_sprite_playback.json','Scene_*_animated_*.png','Scene_*_movie_paused.png','Scene_*_result.png','*camera_matrix.jpg','sprite_alpha_shader.json','unity_dependencies.json','webgl_build.json','webgl_browser*.json','webgl_browser*.png','webgl_browser*.jpg','result_replay_*.json','result_replay_*.png'):
     paths.update(qa.glob(pattern))
 paths.update((qa/'camera_matrix').glob('Scene_*.png'))
 paths.add(root/'DataBundles/기획/작업기록/2D레이스_야간_20261016.json')

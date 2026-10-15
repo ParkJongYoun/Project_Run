@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "createdAtKst": "2026-10-16T02:58:00+09:00",
+  "deadlineKst": "2026-10-16T08:30:00+09:00",
+  "optionalAnimationLatestStartKst": "2026-10-16T06:30:00+09:00",
+  "phase": "completed_with_two_static_fallbacks",
+  "dependency": {
+    "threadId": "01a13fbc-5636-7500-bc9f-ebb131352cfe",
+    "hostId": "local",
+    "title": "레이스 영상 연출 분석",
+    "lastObservedStatus": "completed 2026-10-16 04:02 KST; fox 1024x1024 12.25s connected and verified in Scene_All3D; editor released"
+  },
+  "automations": {
+    "continuation": "project-run-2d",
+    "deadline": "project-run-8-30"
+  },
+  "projectRoot": "D:/Project_Run/Run",
+  "sourceArt": "D:/Project_Run/Run/DataBundles/기획/시안/2D뷰세트_탈것6종_경기장전체_v1",
+  "requiredScenes": [
+    "Assets/Scenes/Scene_2D_3D.unity",
+    "Assets/Scenes/Scene_All2D.unity"
+  ],
+  "completed": [
+    "18 original character images and 12 stadium images imported preserving pixels and aspect ratio",
+    "Scene_2D_3D and Scene_All2D implemented with three camera views and shared UI/simulation",
+    "Fox skill video connected in both 2D scenes",
+    "All three scenes passed 14 movie/pause/skip/restart/result/camera lifecycle checks",
+    "Scene_All3D original scene SHA256 unchanged; shared script regression passed",
+    "All three scenes registered in build settings",
+    "16 of 18 reviewed run loops applied; boar side and wolf top remain original still images",
+    "Final WebGL build passed with zero errors and zero warnings",
+    "Browser video pause/resume/skip/return, camera changes, restart, results and responsive desktop/mobile-shaped viewports passed",
+    "Bounded common audio voices passed 108+ seconds unattended browser race without warnings",
+    "Common result replay hierarchy fixed; all three Editor scenes and browser actual pointer click passed"
+  ],
+  "notStarted": [],
+  "inspected": {
+    "simulation": "Sys_Race/Data_RaceSimulation: deterministic 60Hz, CoursePoint/Forward. Same results across presentations. Race.PresentationHeld from fox movie.",
+    "runner": "RaceRunnerView binds race and computes interpolated course motion. HasPose/Focus read by camera. Preserve simulation; add lightweight sprite branch or visual layer.",
+    "camera": "Sys_RaceCamera concrete type used by HUD and Sys_RaceSkillVideo. Preserve CycleCamera/BeginSkillVideo/EndSkillVideo/CancelSkillVideo and default 3D behavior. Add optional 2D director hook.",
+    "hud": "Existing common UIPanel_RaceHUD references Race/Director/Presentation. World marker projects view.RiderHead.position; provide valid sprite anchors before HUD LateUpdate(order150).",
+    "video": "Other chat adding Sys_RaceSkillVideo, UIPanel_RaceSkillVideo, RaceShowcaseBuilder.SkillVideo. Current path StreamingAssets/Video/FoxUltimate1024.mp4. Read final implementation after it completes.",
+    "course": "Length=360+2*pi*68.5; Repeat(distance+139,Length); section thresholds180,180+piR,360+piR. Map to home/firstcorner/back/finalcorner backgrounds.",
+    "visuals": "1254-square transparent cutouts, retain aspect. Hybrid side outside course so forward projects right; rear from behind; top front-right high55deg so forward projects down-right. All2D: section backgrounds plus sprite positions/depth/scale from actual distance and lane. Same UI and race results. Avoid unsupported front view of flat sprites.",
+    "animation": "Conditional six mounts x3views. SGL skills read. 800sq/24fps/H3 fl2va UNet INT8/25steps/turboOFF/duration2 yields56frames~2.33s. One source image, magenta workflow. Extract full resolution+PTS, key, review complete stride and loop. Fixed scale/anchor, no per-frame bbox normalization.",
+    "sglTools": "D:/Project_SGL/ProjectSupport/Skills/sgl-video-generation/scripts/prepare_video.py and assets/h3-i2v.json; Tools/SpriteAnimation/prepare_video_animation.py and optimize_sheets.py. Copy needed tooling into Run; do not edit SGL.",
+    "runtime": "C:/Users/ParkJongYoun/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe; node/bin/node.exe under same dependencies.",
+    "git": "main; origin https://github.com/ParkJongYoun/Project_Run.git. Many preexisting untracked completed UI/scene/runtime assets from other chats are needed dependencies. Tracked deleted SampleScene/Scene_Battle/Scene_LegacyURP_Preview predate this work. Carefully stage own changes and required finished dependencies. Do not blindly stage unrelated deletions or video work frames. Korean commits/push explicitly authorized.",
+    "unityAccess": "Three scene lifecycle suites passed 14 checks each; both 2D playback suites passed 96 checks each with 16 applied views. Four sections x three camera views inspected in both scenes. Final Brotli WebGL build running."
+  },
+  "animation": {
+    "jobsFile": "D:/Project_Run/Run/DataBundles/영상/2D탈것_달리기_20261016/jobs.json",
+    "settings": "800x800,24fps,2s request->56 frames,25steps,H3 fl2va UNet INT8,turbo OFF",
+    "firstPromptId": "20eaafd1-d44c-4569-8003-5a2de3a56f63",
+    "startedAtKst": "2026-10-16T04:35:00+09:00",
+    "appliedViews": 16,
+    "retries": [
+      {
+        "key": "tiger_03_top",
+        "status": "rejected_arm_edge_clipping",
+        "retryPromptId": "23a08eb0-7d81-4288-bdb2-1a731ad2899c"
+      },
+      {
+        "key": "poring_03_top",
+        "status": "rejected_rider_head_clipping",
+        "retryPromptId": "fcf335e6-90cb-49ba-ade1-8bb19ba71a0d"
+      },
+      {
+        "key": "ghost_01_side",
+        "status": "rejected_color_cycling_background",
+        "retryPromptId": "39369f0b-060d-4566-8bbf-bdf8ba8e0816"
+      },
+      {
+        "key": "ghost_03_top",
+        "status": "rejected_color_cycling_background",
+        "retryPromptId": "cfb18c5c-ce50-4362-b745-3a261ef56d3e"
+      },
+      {
+        "key": "wolf_01_side",
+        "status": "rejected_muzzle_clipping",
+        "retryPromptId": "0a132216-a0dc-484e-bdda-0e6434d78925"
+      },
+      {
+        "key": "wolf_02_rear",
+        "status": "rejected_changed_background_with_halo",
+        "retryPromptId": "da3a5df0-f0ec-4121-9f23-0e7a3edff4f7"
+      },
+      {
+        "key": "wolf_03_top",
+        "status": "rejected_tail_and_paw_clipping",
+        "retryPromptId": "fb7c35a6-f90c-4aac-8d30-5e245788ec5a"
+      },
+      {
+        "key": "boar_01_side",
+        "status": "rejected_hoof_tail_clipping",
+        "retryPromptId": "30b6daff-ad74-40a7-8131-573c2f27f85d"
+      }
+    ],
+    "finalStatusFile": "D:/Project_Run/Run/DataBundles/영상/2D탈것_달리기_20261016/view_status.json",
+    "generationComplete": true,
+    "retryHistoryNote": "Retry entries preserve first rejection reasons; final acceptance is recorded in view_status.json."
+  },
+  "updatedAtKst": "2026-10-16T07:25:04.0637397+09:00",
+  "incompleteViews": [
+    "boar_01_side",
+    "wolf_03_top"
+  ],
+  "commits": [
+    "85b7a83c1",
+    "1e1cf48bc",
+    "b6fe7482c",
+    "d09b7ae01",
+    "39235b17f"
+  ],
+  "push": {
+    "Status": "code_and_source_commits_verified",
+    "Remote": "https://github.com/ParkJongYoun/Project_Run.git",
+    "Branch": "main",
+    "VerifiedHead": "39235b17f5289e900769eb54afbb0aa74b8c6065",
+    "LfsObjects": 102,
+    "LfsBytesApprox": 213000000,
+    "FinalRecordCommit": "Checkpoint and QA are committed together; final hash and remote verification are recorded in the closing chat message."
+  },
+  "finalBrowserProgress": "Final build 07:21:31 succeeded, zero errors/warnings. Browser tests complete. Unity left in edit mode on Scene_All2D. Local-only preview server port8768 remains available. See final chat report for last QA commit and remote verification."
+}

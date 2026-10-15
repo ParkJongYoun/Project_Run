@@ -1,0 +1,38 @@
+{
+  "Scene": "Scene_All3D",
+  "Passed": true,
+  "Checks": [
+    "fox event starts movie and holds simulation",
+    "pause freezes simulation",
+    "pause freezes movie",
+    "movie skip releases hold and overlay",
+    "race resumes after movie skip",
+    "fox event starts movie and holds simulation",
+    "full movie ends and dissolves back to live race",
+    "fox event starts movie and holds simulation",
+    "restart during movie clears overlay and hold",
+    "restart resets race time",
+    "skip to result leaves no presentation hold",
+    "skip result order equals uninterrupted simulation",
+    "all finish times equal uninterrupted simulation",
+    "camera cycle returns to automatic mode"
+  ],
+  "Error": null,
+  "Duration": 16.135604999999487,
+  "Order": [
+    3,
+    4,
+    2,
+    5,
+    1,
+    0
+  ],
+  "FinishTimes": [
+    60.82661418219935,
+    60.654566972891317,
+    59.136192878650292,
+    58.366413426447281,
+    58.658361659040871,
+    60.633109109859809
+  ]
+}
