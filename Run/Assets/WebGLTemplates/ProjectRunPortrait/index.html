@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { display: grid; place-items: center; background: #152c32; color: #fff4d6; font: 16px system-ui, sans-serif; }
+    #game { position: relative; width: min(100vw, calc(100vh * .5625)); height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); background: #152c32; }
+    @supports (height: 100dvh) { #game { width: min(100vw, calc(100dvh * .5625)); height: 100dvh; } }
+    @media (max-width: 720px) { #game { width: 100vw; } }
+    canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+    #loading, #error { position: absolute; inset: 0; display: grid; place-content: center; gap: 18px; padding: 32px; text-align: center; background: #152c32; }
+    #loading strong { font-size: 24px; letter-spacing: .12em; }
+    progress { width: min(65vw, 260px); height: 12px; accent-color: #e7bf69; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main id="game" aria-label="Project Run 레이스">
+    <canvas id="unity-canvas" width="720" height="1280" tabindex="0" aria-label="레이스 게임"></canvas>
+    <div id="loading" role="status"><strong>PROJECT RUN</strong><span>경기장을 준비하고 있어요</span><progress id="progress" max="1" value="0" aria-label="게임 로딩"></progress></div>
+    <div id="error" role="alert" hidden>게임을 불러오지 못했습니다.<br>페이지를 새로고침해 주세요.</div>
+  </main>
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    const loading = document.getElementById('loading');
+    const progress = document.getElementById('progress');
+    function reportError(message) {
+      console.error(message);
+      loading.hidden = true;
+      document.getElementById('error').hidden = false;
+    }
+    createUnityInstance(document.getElementById('unity-canvas'), {
+      arguments: [],
+      dataUrl: 'Build/{{{ DATA_FILENAME }}}',
+      frameworkUrl: 'Build/{{{ FRAMEWORK_FILENAME }}}',
+#if USE_THREADS
+      workerUrl: 'Build/{{{ WORKER_FILENAME }}}',
+#endif
+#if USE_WASM
+      codeUrl: 'Build/{{{ CODE_FILENAME }}}',
+#endif
+#if SYMBOLS_FILENAME
+      symbolsUrl: 'Build/{{{ SYMBOLS_FILENAME }}}',
+#endif
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+      productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+      productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      showBanner: (message, type) => type === 'error' ? reportError(message) : console.warn(message)
+    }, value => { progress.value = value; }).then(() => { loading.hidden = true; }).catch(reportError);
+  </script>
+</body>
+</html>

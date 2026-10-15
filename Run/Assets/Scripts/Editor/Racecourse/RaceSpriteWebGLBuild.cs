@@ -38,7 +38,7 @@ namespace ProjectRun.Editor
                     scenes = new[] { "Assets/Scenes/Scene_All2D.unity", "Assets/Scenes/Scene_2D_3D.unity", "Assets/Scenes/Scene_All3D.unity" },
                     locationPathName = "Builds/WebGL_2DReview",
                     target = BuildTarget.WebGL,
-                    options = BuildOptions.Development | BuildOptions.DetailedBuildReport
+                    options = BuildOptions.DetailedBuildReport
                 });
                 File.WriteAllText(output, JsonConvert.SerializeObject(new
                 {
