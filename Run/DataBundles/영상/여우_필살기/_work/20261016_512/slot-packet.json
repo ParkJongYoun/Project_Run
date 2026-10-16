@@ -1,0 +1,90 @@
+{
+  "workflow_path": "D:\\Project_Run\\Run\\DataBundles\\영상\\여우_필살기\\_work\\20261016_512\\workflow.json",
+  "stdout": false,
+  "overrides": [
+    {
+      "address": "114.image",
+      "value": "여우_필살기_입력이미지_512.png"
+    },
+    {
+      "address": "92.filename_prefix",
+      "value": "video/project_run_fox_ultimate_20261016/fox_ultimate_512_int8_25steps"
+    },
+    {
+      "address": "115.aspect_ratio",
+      "value": "1:1 (Square)"
+    },
+    {
+      "address": "115.megapixels",
+      "value": 0.25
+    },
+    {
+      "address": "115.multiple",
+      "value": 32
+    },
+    {
+      "address": "105.prompt",
+      "value": "For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.\n\nintegrated_multimodal_description: [Shot 1] A spectacular fantasy racing ultimate-skill cinematic, with the ivory fox MOUNT as the unmistakable hero. Preserve the reference's stylized 3D game appearance: the fox's long pointed ears, sharp muzzle, red eye markings, brown lower legs, fluffy fanned tails, red-and-white sacred braided ropes, gold bells and small black ceremonial headpiece. Its small red-haired rider remains seated naturally on its back throughout, responding to the fox's movement. The camera and magical power belong to the fox, not the rider.\n\nOpening, 0-1.2 seconds: from the reference three-quarter composition, the camera swiftly pushes down and toward the fox's eyes. The fox lowers its head with a fierce, focused expression. Cyan foxfire ignites beside its cheeks; warm gold rim light traces its fur and bells. A subtle dark magical raceway appears underneath its paws against the deep navy background.\n\nCharge, 1.2-2.8 seconds: the camera arcs low around the fox's front quarter and pulls wide enough to reveal its paws and tails. The fox bends its legs, coils its powerful body, and fans its existing tails. Luminous cyan ribbons spiral around the tails and along the sacred ropes. A thin golden magic circle expands beneath the front paws; floating blue sparks pull inward as if inhaled. The rider bends forward with the motion and holds on securely.\n\nRelease, 2.8-4.2 seconds: the fox stamps a front paw, then launches into a forceful forward leap. A bright blue-and-gold shockwave blooms behind it, with a brief impact flash, radial streaks and glowing fragments. Show clear anticipation followed by explosive acceleration. The camera snaps into a very low front-quarter tracking shot, keeping the fox's face sharp while the ground streaks backward.\n\nFinish, 4.2-6.6 seconds: the fox lands and drives through two powerful galloping strides. Translucent fox-shaped light echoes peel off behind it and immediately dissolve; these are magical trails, not additional solid animals or riders. Its tails stream in an elegant arc, the bells and rider's hair react to the speed. Finish on a confident front-quarter hero composition of the racing fox with the rider still seated, cyan embers dispersing into the dark background.\n\nFluid body mechanics, readable silhouettes, strong depth, dramatic camera parallax, speed ramp from a brief charge into a fast launch, high-contrast cyan and gold lighting. Keep the original fox anatomy, tail arrangement, ornaments and rider identity consistent. No transformation into a human or wolf, no extra limbs or detached rider. Effects surround the fox without obscuring its face for long. Clean cinematic image without text, logos, subtitles, interface, rank badges or borders.\n"
+    },
+    {
+      "address": "105.value_1",
+      "value": 6.0
+    },
+    {
+      "address": "105.noise_seed",
+      "value": 2026101601
+    },
+    {
+      "address": "105.unet_name",
+      "value": "minimax_h3_fl2va_pruned_int8_convrot.safetensors"
+    },
+    {
+      "address": "105.value",
+      "value": false
+    },
+    {
+      "address": "105/124.value",
+      "value": 25
+    }
+  ],
+  "record": {
+    "source": "D:\\Project_Run\\Run\\DataBundles\\영상\\여우_필살기\\여우_필살기_입력이미지_512.png",
+    "sha256": "f6afa2c0cb8e2d6dede0a8369bfb9e1dde15ce0fa48a20d7d00e151484679a5f",
+    "input_size": [
+      512,
+      512
+    ],
+    "alpha_range": [
+      255,
+      255
+    ],
+    "motion": null,
+    "duration_setting": 6.0,
+    "expected_frames": 158,
+    "expected_seconds": 6.583333333333333,
+    "fps": 24,
+    "output_size": [
+      512,
+      512
+    ],
+    "seed": 2026101601,
+    "exact_reference_prompt": false,
+    "transparent_background_compositing": "native nodes, original canvas size",
+    "background": "opaque navy Unity snapshot; cinematic cyan/gold effects, no chroma-key requirement",
+    "resolution_reason": "User explicitly requested lightweight 512 generation.",
+    "source_scene": "Assets/Scenes/Scene_All3D.unity",
+    "source_runner": "P_Runner_03 / RunnerId 2 / fox_001",
+    "subject_priority": "Fox mount primary, seated rider secondary; user correction applied.",
+    "source_workflow": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-video-generation\\assets\\h3-i2v.json",
+    "unet": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_int8_convrot.safetensors",
+    "audio_vae": "minimax_h3_audio_vae_fp32.safetensors",
+    "turbo": false,
+    "steps": 25,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "prompt_file": "D:\\Project_Run\\Run\\DataBundles\\영상\\여우_필살기\\_work\\20261016_512\\prompt_en.txt",
+    "requested_count": 1
+  }
+}

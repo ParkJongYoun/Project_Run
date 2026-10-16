@@ -1,0 +1,69 @@
+여우 탈것 필살기 영상 · 512 테스트
+
+목적
+현재 Scene_All3D의 여우 탈것을 주체로 한 필살기 컷씬 테스트 1개.
+사용자 정정 반영: 탑승 인물이 주인공인 연출이 아니라 여우 탈것이 힘을 모으고 돌진한다. 탑승자는 함께 보이며 가속에 반응한다.
+
+참고 영상 분석
+- 183f67ba88bba854.mp4 / 9.32초: 인물 클로즈업 → 공간을 보여주는 원경 → 손·발 디테일 → 금빛 발동 폭발.
+- 183f67baaf2ba854.mp4 / 11.08초: 어두운 화면과 청색 불꽃 대비, 에너지 집중, 강한 섬광과 여운.
+- 183f67bacacba854.mp4 / 7.76초: 얼굴 예고, 낮은 시점의 고속 이동, 붉은 광선과 속도감, 발동 후 주인공 강조.
+참고 자료의 캐릭터·문구·UI를 복제하지 않고, 예고-응축-폭발-질주라는 연출 흐름을 가져왔다.
+
+입력 이미지
+파일: 여우_필살기_입력이미지_512.png
+Unity 씬: Assets/Scenes/Scene_All3D.unity
+대상: P_Runner_03 / RunnerId 2 / fox_001 및 현재 탑승 캐릭터
+512×512 RGB, 불투명 남색 배경. 원본 모델·현재 탑승 포즈·머티리얼을 사용한 Edit mode 렌더.
+임시 카메라와 복제한 정적 메시로 촬영 후 정리. 경기 실행·게임 테스트·씬 저장 없음.
+스냅샷 재현 코드: _work/20261016_512/capture_snapshot.cs.txt
+입력 SHA-256: f6afa2c0cb8e2d6dede0a8369bfb9e1dde15ce0fa48a20d7d00e151484679a5f
+
+기획한 연출
+0–1.2초: 여우 눈으로 카메라 접근, 청색 여우불과 금색 윤곽광.
+1.2–2.8초: 낮은 시점으로 선회, 다리와 몸을 굽혀 힘을 모으고 꼬리 주변으로 에너지 응축.
+2.8–4.2초: 앞발을 딛고 도약, 청색·금색 충격파와 짧은 섬광, 폭발적 가속.
+4.2–6.6초: 낮은 전방 사선 추적, 두 번의 힘찬 질주, 빛 잔상과 잔불로 마무리.
+위 시간은 프롬프트의 연출 지시이며 생성 결과의 정확한 컷 타이밍을 보장하는 값은 아니다.
+
+설정 출처
+D:/Project_SGL/ProjectSupport/Skills/sgl-video-generation/SKILL.md
+D:/Project_SGL/ProjectSupport/Skills/sgl-video-generation/assets/h3-i2v.json
+기존 워크플로 복사본을 슬롯 도구로 변경. 원본 SGL 파일은 수정하지 않음.
+
+모델 / 생성 설정
+로컬 ComfyUI 0.38.2 / http://127.0.0.1:8188
+GPU: NVIDIA GeForce RTX 5070 Ti 16 GB
+UNet: minimax_h3_fl2va_pruned_int8_convrot.safetensors
+Text encoder: qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors
+Video VAE: minimax_h3_video_vae_int8_convrot.safetensors
+Audio VAE: minimax_h3_audio_vae_fp32.safetensors
+Turbo: OFF / Steps: 25 / Sampler: res_multistep / Scheduler: simple
+Seed: 2026101601
+출력: 512×512 / 24fps / 설정 시간 6초
+모델 프레임 격자: 17k+5 → 예상 158프레임, 약 6.583초
+기본 800에서 512로 변경한 이유: 사용자가 명시적으로 512 테스트 요청.
+기본 애니메이션용 고정 카메라·마젠타 배경 대신, 사용자 요청의 필살기 컷씬에 맞춰 카메라 이동과 남색 배경·청금색 효과를 지시.
+단일 첫 이미지 I2V, 끝 이미지·가이드 이미지 없음. 대사·음악 프롬프트 없음.
+유료 API 없음 / 추가 모델 다운로드 없음.
+
+생성 작업
+Prompt ID: 839217ff-62be-4f22-916b-073c12ad95e6
+요청 수량: 1
+워크플로 검증: valid=true, 변환 노드 28개, 오류·경고 0개, partner node 없음.
+워크플로: _work/20261016_512/workflow.json
+전체 영어 프롬프트: _work/20261016_512/prompt_en.txt
+슬롯·입력·파라미터 기록: _work/20261016_512/slot-packet.json
+Comfy 출력 prefix: video/project_run_fox_ultimate_20261016/fox_ultimate_512_int8_25steps
+상태: 생성 완료. 원본 MP4를 복사해 납품.
+
+
+완료 기록
+영상: 여우_필살기_여우불질주_512_테스트.mp4
+실제 규격: 512×512, 24fps, 158프레임, 6.583초
+서버 실행시간: 369.65초
+대기·완료 폴링·가져오기를 포함한 관측 경과시간: 442.96초
+원본: D:\Comfy-Desktop\ComfyUI-Shared\output\video\project_run_fox_ultimate_20261016\fox_ultimate_512_int8_25steps_00001_.mp4
+SHA-256: c892078846d76009d41b16cc4af587cf6ea0a763b20254295eb8bcabf76b15a7
+원본과 납품본 해시 일치. 재인코딩·트리밍·배경 제거 없음.
+생성 수량 1개. 추가 시드·프롬프트 시험 없음. 영상 메타데이터 및 끝까지 디코딩 확인. 컷 타이밍·외형 보존 수준은 재생 검토 대상.
