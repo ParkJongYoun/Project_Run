@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Run · 레이스 HUD A/B</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101823;color:#eef3f9;font-family:"Malgun Gothic","Segoe UI",sans-serif}.toolbar{display:flex;gap:8px;justify-content:center;padding:18px;background:#192431}.toolbar button{font:700 14px inherit;color:#e9f1f8;background:#29394a;border:1px solid #44546a;border-radius:8px;padding:10px 22px;cursor:pointer}.toolbar button.active{color:#10252a;background:#a9eee3}.board{width:1280px;margin:auto;padding:38px 40px 26px}.eyebrow{font-size:12px;letter-spacing:3px;color:#93a7bb;margin-bottom:10px}h1{font-size:32px;letter-spacing:-1.2px;margin:0 0 12px}.intro{color:#a9bacb;font-size:15px;margin:0 0 28px}.columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.label{display:flex;gap:12px;align-items:center;margin-bottom:8px}.badge{width:31px;height:31px;display:grid;place-items:center;border-radius:8px;background:#d9ba76;color:#30281e;font-weight:800}.modern .badge{background:#78e4d2;color:#123b3b}h2{font-size:21px;margin:0}.direction{font-size:14px;color:#b8c6d4;margin:0 0 16px}.screen{display:block;width:100%;height:auto;border-radius:10px;box-shadow:0 0 0 1px #344152}.detail{display:none}.crop{position:relative;overflow:hidden;border-radius:9px;background:#202e3d;box-shadow:0 0 0 1px #344152}.crop img{position:absolute;width:100%;height:auto;left:0}.crop.top{height:260px}.crop.top img{top:0}.crop.bottom{height:304px}.crop.bottom img{bottom:0}.crop-label{font-size:14px;color:#9daec0;margin:24px 0 10px}.note{margin-top:16px;font-size:14px;line-height:1.7;color:#c4d0dc}.footer{display:flex;justify-content:space-between;gap:20px;margin-top:22px;padding-top:17px;border-top:1px solid #324050;color:#8ea2b7;font-size:12px}.details-mode .overview{display:none}.details-mode .detail{display:block}.export .toolbar{display:none}@media(max-width:900px){body:not(.export) .board{width:100%;padding:24px 18px}body:not(.export) .columns{grid-template-columns:1fr}body:not(.export) .crop.top{height:30vw}body:not(.export) .crop.bottom{height:40vw}body:not(.export) .footer{display:block}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<nav class="toolbar"><button data-view="overview" class="active">전체 화면</button><button data-view="details">UI 확대 비교</button></nav>
+<main class="board">
+<div class="eyebrow">PROJECT RUN / RACE HUD / ART DIRECTION</div>
+<h1>같은 경기, 두 가지 UI 방향</h1>
+<p class="intro">경기 정보와 배치를 맞추고 프레임·재질·색상·아이콘을 비교한 시안</p>
+<div class="columns">
+<section class="fantasy">
+<div class="label"><span class="badge">A</span><h2>라그나로크 판타지</h2></div>
+<p class="direction">아이보리 · 골드 · 길드 문장 · 깃털 장식</p>
+<div class="overview"><a href="A_Ragnarok_Fantasy.png"><img class="screen" src="A_Ragnarok_Fantasy.png" alt="A 라그나로크 판타지 UI 전체 시안"></a></div>
+<div class="detail"><p class="crop-label">상단 / 코스 · 남은 거리 · 대열 · 스킬 알림</p><div class="crop top"><img src="A_Ragnarok_Fantasy.png" alt="A 상단 HUD 확대"></div><p class="crop-label">하단 / 내 주자 · 현재 순위 · 중계 · 조작</p><div class="crop bottom"><img src="A_Ragnarok_Fantasy.png" alt="A 하단 HUD 확대"></div><p class="note">문장과 금속 테두리로 판타지 세계관을 강조.<br>장식은 프레임 가장자리에 두고 숫자는 짙은 남색으로 구분.</p></div>
+</section>
+<section class="modern">
+<div class="label"><span class="badge">B</span><h2>프레시 레이싱</h2></div>
+<p class="direction">화이트 · 민트 · 사선 패널 · 선명한 순위 강조</p>
+<div class="overview"><a href="B_Fresh_Racing.png"><img class="screen" src="B_Fresh_Racing.png" alt="B 프레시 레이싱 UI 전체 시안"></a></div>
+<div class="detail"><p class="crop-label">상단 / 코스 · 남은 거리 · 대열 · 스킬 알림</p><div class="crop top"><img src="B_Fresh_Racing.png" alt="B 상단 HUD 확대"></div><p class="crop-label">하단 / 내 주자 · 현재 순위 · 중계 · 조작</p><div class="crop bottom"><img src="B_Fresh_Racing.png" alt="B 하단 HUD 확대"></div><p class="note">민트 사선과 흰 패널로 경쾌한 레이스 분위기를 강조.<br>금색은 내 주자와 순위에 집중하고 주요 정보의 대비를 높임.</p></div>
+</section>
+</div>
+<footer class="footer"><span>720 × 1280 세로형 기준 · 경기 수치 및 참가 인원은 시안용 예시</span><span>시각 디자인 시안 / Unity 적용 전</span></footer>
+</main>
+<script>
+const params=new URLSearchParams(location.search);if(params.has('export'))document.body.classList.add('export');
+function setView(view){document.body.classList.toggle('details-mode',view==='details');document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));}
+setView(params.get('view')||'overview');document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+</script>
+</body>
+</html>

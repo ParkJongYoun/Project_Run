@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Project Run · 레이스 HUD 재설계</title><link rel="stylesheet" href="hud.css"></head>
+<body>
+<aside class="review">
+  <div class="wordmark">PROJECT RUN <small>RACE HUD / VIDEO STUDY 02</small></div>
+  <h1>레이스가 먼저<br>보이는 UI.</h1><p class="intro">경기 영상의 정보 구조를 바탕으로<br>주행 중 HUD만 다시 설계했습니다.</p>
+  <nav aria-label="UI 상태"><button data-state="normal" class="selected"><span>01</span><div>일반 주행<small>순위와 경기 흐름을 빠르게</small></div></button><button data-state="skill"><span>02</span><div>스킬 발동<small>누가, 어떤 효과를 받았는지</small></div></button><button data-state="sprint"><span>03</span><div>마지막 직선<small>남은 거리와 역전 상황에 집중</small></div></button></nav>
+  <div class="review-options"><label><input type="checkbox" id="plain"> 배경 없이 UI 보기</label><label><input type="checkbox" id="guides"> UI 영역 표시</label><label><input type="checkbox" id="cutin"> 스킬 연출 중 UI 보기</label><label>화면 비율<select id="ratio"><option value="1280">9:16</option><option value="1600">9:20</option></select></label></div>
+  <div class="design-point" aria-live="polite"><b id="point-title">필수 정보는 고정, 중계는 한 줄</b><p id="point-copy">내 주자의 순위는 항상 같은 위치에서 확인합니다. 누적 중계는 기록 창으로 옮깁니다.</p></div>
+  <a class="notes-link" href="analysis.html">영상 관찰과 UI 설계 근거 보기 ↗</a><p class="footnote">UI 검토용 예시 데이터 · 배경은 배치 확인용<br>게임 동작 및 Unity 연결 전 시안입니다.</p>
+</aside>
+<main class="preview"><div class="device"><div id="hud" class="hud state-normal" data-state="normal">
+  <div class="bg_scene" aria-hidden="true"></div><div class="bg_readability" aria-hidden="true"></div>
+  <section class="group_progress" aria-label="경기 진행">
+    <div class="course-line"><span class="course-name">프론테라 <i>·</i> 잔디 1,600 m</span><span class="remaining"><small>남은 거리</small><b id="remaining">820</b><em>m</em></span></div>
+    <div class="race-line"><span class="start-label">START</span><div class="progress-track" role="progressbar" aria-label="내 주자 경기 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="49"><div class="bg_track"></div><div class="img_track_frame"></div><div class="img_progress_fill"></div><span class="img_current_point"></span></div><span class="goal-label">GOAL</span></div>
+    <div class="order-line"><span>현재 순위</span><div class="order-pins" id="order-pins" aria-label="출전 번호 순위"></div><button class="btn_standings" data-action="standings" aria-label="전체 순위 펼치기"><i data-icon="list"></i></button></div>
+  </section>
+  <div class="obj_phase"><span class="phase-dot"></span><strong id="phase">중반 주행</strong></div>
+  <section class="group_skill" aria-label="스킬 발동 알림" hidden>
+    <div class="skill-toast own"><div class="bg_skill"></div><div class="img_skill_frame"></div><div class="skill-type"><i data-icon="wing"></i></div><div class="skill-copy"><small>03 · 내 주자</small><strong>페코페코의 질주</strong></div><span class="effect-label">속도 ↑</span></div>
+    <div class="skill-toast rival"><div class="bg_skill"></div><div class="img_skill_frame"></div><div class="skill-type"><i data-icon="shield"></i></div><div class="skill-copy"><small>06 · 경쟁 주자</small><strong>굳건한 발걸음</strong></div><span class="effect-label">지구력</span></div>
+  </section>
+  <div class="obj_world_focus" aria-hidden="true"><span>MY</span><b>03</b><i></i></div>
+  <div class="obj_rank_event" hidden><i data-icon="up"></i><b>선두 진입!</b><span>2위 → 1위</span></div>
+  <section class="group_bottom" aria-label="내 주자 상태와 관전 조작">
+    <div class="obj_runner_status piece"><div class="bg_surface"></div><div class="img_frame"></div>
+      <div class="obj_avatar"><div class="portrait"></div><span>03</span></div>
+      <div class="obj_runner_text"><span class="mine-label">내 주자</span><strong>기사 <i>·</i> 페코페코</strong><span class="runner-status-text" id="status-text">선두권 경쟁</span></div>
+      <div class="obj_rank"><b id="rank">3</b><div><strong>위</strong><span>/ 8</span></div></div>
+      <button class="btn_runner_detail" data-action="runner" aria-label="내 주자 자세히 보기"><i data-icon="chevron"></i></button>
+      <div class="obj_runner_footer"><span id="gap">선두와 <b>3.4 m</b></span><span class="trend" id="trend"><i data-icon="dash"></i> 순위 유지</span></div>
+    </div>
+    <button class="obj_commentary" data-action="log" aria-label="중계 기록 열기"><span class="live-dot"></span><span class="comment-label">중계</span><strong id="commentary">선두권을 따라 페이스를 유지합니다.</strong><i data-icon="chevron"></i></button>
+    <div class="group_controls">
+      <button class="control piece" data-action="camera"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="camera"></i><span id="camera-label">자동 카메라</span></button>
+      <button class="control piece" data-action="speed"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="fast"></i><span id="speed-label">×1</span></button>
+      <button class="control piece" data-action="skip"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="skip"></i><span>건너뛰기</span></button>
+      <button class="control menu-control piece" data-action="menu"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="menu"></i><span>메뉴</span></button>
+    </div>
+  </section>
+  <section class="group_cutin" hidden aria-label="스킬 연출 UI"><div class="cutin-ribbon"><span>03 · 기사 &amp; 페코페코</span><h2>페코페코의 질주</h2><small>SPECIAL SKILL</small></div><div class="cutin-controls"><button class="cutin-skip piece" data-action="skip-cutin"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="skip"></i><span>연출 생략</span></button><button class="cutin-menu piece" data-action="menu" aria-label="메뉴"><div class="bg_surface"></div><div class="img_frame"></div><i data-icon="menu"></i></button></div></section>
+  <div class="layout-guide guide-top">진행 · 전체 순위</div><div class="layout-guide guide-center">중앙 경기 영역</div><div class="layout-guide guide-bottom">내 주자 · 중계 · 관전 조작</div>
+  <div id="popup_layer" class="popup_layer" hidden><section class="popup piece" role="dialog" aria-modal="true" aria-labelledby="popup_title"><div class="bg_surface"></div><div class="img_frame"></div><header><h2 id="popup_title"></h2><button class="btn_close" data-action="close" aria-label="닫기"><i data-icon="close"></i></button></header><div id="popup_content"></div><div id="popup_actions"></div></section></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+</div></div><div class="preview-label"><span id="state-caption">01 / 일반 주행</span><span>720 × 1280</span></div></main>
+<script src="hud.js"></script></body></html>

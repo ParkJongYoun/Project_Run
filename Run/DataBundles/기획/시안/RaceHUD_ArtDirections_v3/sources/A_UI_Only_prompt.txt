@@ -1,0 +1,22 @@
+Mode: built-in image_gen edit, transparent_background=true
+Input: ../A_Ragnarok_Fantasy.png
+Output: ../A_Ragnarok_Fantasy_UI_Only.png
+
+Use case: background-extraction.
+Asset type: transparent game HUD overlay.
+Input image 1 is the EDIT TARGET: the approved A Ragnarok Fantasy portrait race HUD.
+Primary request: remove the entire racing scene and extract ONLY the existing UI onto a genuinely transparent alpha background. This is extraction, not a redesign.
+Preserve the full portrait canvas, original aspect ratio, and the exact relative positions, sizes, colors, frame shapes, ornaments, icons, Korean typography and visible text of every UI component. Keep all empty space between UI components; do not rearrange into an atlas or crop the canvas.
+KEEP:
+- top-left blue guild banner, ivory event title plaque and grass-distance caption;
+- top-right winged remaining-distance plaque with 420 m;
+- entire blue progress rail with flags, gold feather marker, colored number tokens 1 3 6 2 5 8 4 7 and MY badge;
+- left 최종 코너 plaque;
+- upper-right golden feather skill notice, all text and ribbon;
+- floating MY 03 label and triangle at its current location;
+- bottom ivory-and-gold runner status panel, its small circular knight PORTRAIT and decorative wing frame, 03 badge, feather, 기사 · 페코페코, 선두와 1.2 m, 2위 / 8 and green +1;
+- dark green translucent commentary strip, gold frame, speaker icon and exact Korean text;
+- four bottom ivory buttons with their icons, gems and exact captions 카메라, ×1, 건너뛰기, 메뉴.
+REMOVE to alpha=0: ALL sky, castles, trees, audience, railings, grass, shadows from the game world, and ALL full-body racing characters and mounts including the large central knight/Peco Peco, horse rider, background rider, pink Poring rider. The only retained character art is the small circular UI PORTRAIT in the bottom-left HUD. Interior panel surfaces are part of the UI and must remain; remove scene contamination from translucent surfaces.
+Center of image must be entirely empty transparent except the small MY 03 world-marker.
+Output PNG with real alpha transparency. Do not replace with white, gray, black, chroma green or a painted checkerboard. Crisp anti-aliased cutout edges, no background fringe. No new text, no watermark, no extra components, no design restyling.
