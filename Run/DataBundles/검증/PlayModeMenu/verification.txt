@@ -1,0 +1,14 @@
+2026-10-16 / Unity 6000.3.23f1
+Build scenes: Scene_Title, Scene_2D_3D, Scene_All2D, Scene_All3D
+Editor button onClick navigation:
+Title -> 2D_3D: Running, runner 0 distance 119.3279; return passed
+Title -> All2D: Running, runner 0 distance 137.6752; return passed
+Title -> All3D: Running, runner 0 distance 151.2135; return passed
+Rapid title button 0 + 1: stayed on intended first target 2D_3D.
+Final return: Scene_Title, 3 buttons, IsLoading=false.
+Runtime UI screenshot: all3d_ui.png (Unity ScreenCapture).
+MCP screenshot tool itself produced a PlayerLoop recursion error; its all3d_return.png omitted overlay UI. Native ScreenCapture was used to verify the actual UI instead.
+Compilation: no C# compilation errors observed.
+Web support: BuildPipeline.IsBuildTargetSupported(WebGL)=false.
+Actual Web build/browser gameplay not verified.
+Local HTTP smoke check: 200 OK; application/wasm; range bytes=2-5 -> 206, bytes 2-5/10, 4 bytes.
