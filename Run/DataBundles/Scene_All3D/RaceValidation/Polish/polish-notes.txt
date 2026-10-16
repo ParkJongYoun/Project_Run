@@ -1,0 +1,39 @@
+Scene_All3D — rider motion and material revision
+
+Causes confirmed in the project
+- The rider clip was sampled only between 0.23 and 0.37 seconds of a 1-second seated animation.
+- Mount playback used speed / arbitrary denominator without accounting for source clip cycles.
+  Wolf and boar clips are 0.8 seconds and contain TWO gallops; firewolf (0.6 s) and fox (0.5 s) contain ONE.
+- All 15 unique character/mount materials used ProjectRun/CharacterSimple, an Unlit pass without scene lighting,
+  reflection or ShadowCaster support. The optional local self-shading keyword was also disabled.
+- Source body and mount textures are 512x512; hair is 256x256. Mount meshes are roughly 2,400–6,000 triangles.
+  Original materials have no assigned normal maps. These are real source-detail limits, not a render-resolution bug.
+
+Changes
+- Entire seated cycle, saddle following, delayed spine/chest/head/arm/cape motion and corner lean.
+- Animation sampling uses interpolated simulation time; pause freezes the pose and 2x scales presentation time.
+- Original-speed ground-contact reference (world metres/sec, including model scale 2.2):
+  wolf 25.8; firewolf 15.0; fox 9.3; boar 12.3.
+  At a common travel speed of 13 m/s, respective clip rates are approximately 0.50, 0.87, 1.40, 1.06.
+- Race-only URP Lit material copies; original tint retained; restrained skin/fur specular and brighter armour.
+- Estimated specular/gloss maps for armour atlases, copied textures with mipmaps/trilinear filtering/aniso 4.
+  These estimated masks are provisional material separation, not authored PBR maps or new surface detail.
+- Baked 128px HDR environment reflection, camera-relative soft portrait fill, actual shadow casting/receiving.
+  The fill uses URP rendering layer bit 2, assigned only to racers, so the existing course exposure is preserved.
+  Face materials have a small painted-light contribution and omit hair-cast shadows for readable expressions.
+- Existing scene SMAA retained. No runtime reflection captures and no new post-processing stack.
+- OldAsset originals and shared CharacterSimple shader remain untouched.
+
+Validation
+- See Motion/motion-validation.txt for measurements from actual Play Mode (all four runners, pause and 2x).
+- See ../simulation-validation.txt for identical finish times at 30/60/120 fps, 1x/2x and skip-to-result.
+- Four runners, 15 supported Lit materials, baked reflection connected, no missing bones/materials.
+- Compilation and runtime error checks passed. Validation is in the Unity Editor, not target mobile WebGL hardware.
+
+Artifacts
+- before_materials.png and final_materials.png: matching editor camera before/after.
+- materials_comparison.png: labelled comparison.
+- Motion/frame_*.png: actual Game view samples, 8 samples/sec (review sampling, not game FPS).
+
+Reapply through Tools > Project Run > Race > Apply rider motion and lit materials.
+Per-runner Inspector controls: RunReferenceSpeed, GallopsPerClip, RiderMotion.
