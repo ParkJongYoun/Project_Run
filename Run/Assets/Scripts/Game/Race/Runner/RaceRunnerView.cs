@@ -9,7 +9,6 @@ namespace ProjectRun.Race
     public sealed class RaceRunnerView : MonoBehaviour
     {
         public int RunnerId;
-        public RaceRunnerSpriteView SpriteVisual;
         public Animator MountAnimator;
         public Animator RiderAnimator;
         public Transform MountRoot;
@@ -48,8 +47,10 @@ namespace ProjectRun.Race
         public int GallopsPerClip = 1;
         [Range(0, 2)] public float RiderMotion = 1;
         public Vector3 Focus => CameraTarget.position;
+        public bool HasRider => RiderAnimator != null && RiderRoot != null && RidingClip != null;
         public bool HasPose { get; private set; }
         public float CurrentAnimationRate { get; private set; }
+        public float GaitPhase => RunClip == null ? 0 : Mathf.Repeat((float)(gaitClock / RunClip.length * GallopsPerClip), 1);
         private Sys_Race race;
         private PlayableGraph mountGraph;
         private PlayableGraph riderGraph;
@@ -81,19 +82,11 @@ namespace ProjectRun.Race
         public void Bind(Sys_Race value, int index)
         {
             race = value; RunnerId = index;
-            if (SpriteVisual != null)
-            {
-                SpriteVisual.Race = value;
-                SpriteVisual.Director = FindFirstObjectByType<Sys_RaceSpritePresentation>();
-            }
         }
         private void Start()
         {
-            if (SpriteVisual != null) return;
             MountAnimator.applyRootMotion = false;
-            RiderAnimator.applyRootMotion = false;
             MountAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-            RiderAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             mountGraph = PlayableGraph.Create("Mount_" + RunnerId);
             mountGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             idle = AnimationClipPlayable.Create(mountGraph, IdleClip);
@@ -104,6 +97,11 @@ namespace ProjectRun.Race
             var output = AnimationPlayableOutput.Create(mountGraph, "mount", MountAnimator);
             output.SetSourcePlayable(mixer);
             mountGraph.Play();
+            mixer.SetInputWeight(0, 1); mixer.SetInputWeight(1, 0);
+            idle.SetTime(0.2); mountGraph.Evaluate(0);
+            if (!HasRider) return;
+            RiderAnimator.applyRootMotion = false;
+            RiderAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             riderGraph = PlayableGraph.Create("Rider_" + RunnerId);
             riderGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             riding = AnimationClipPlayable.Create(riderGraph, RidingClip);
@@ -124,18 +122,6 @@ namespace ProjectRun.Race
         }
         private void LateUpdate()
         {
-            if (SpriteVisual != null)
-            {
-                if (race == null || race.Simulation == null) return;
-                var state = race.Simulation.Runners[RunnerId];
-                float travelled = race.Simulation.Phase == E_RacePhase.Result ? (float)state.Distance
-                    : Mathf.Lerp((float)state.PreviousDistance, (float)state.Distance, Mathf.Clamp01(race.Interpolation));
-                transform.SetPositionAndRotation(Data_RaceSimulation.CoursePoint(travelled, state.Lane),
-                    Quaternion.LookRotation(Data_RaceSimulation.CourseForward(travelled), Vector3.up));
-                CameraTarget.position = transform.position + Vector3.up * CameraFocusHeight;
-                HasPose = true;
-                return;
-            }
             if (race == null || !mountGraph.IsValid()) return;
             var s = race.Simulation.Runners[RunnerId];
             if (generation != race.Generation)
@@ -178,68 +164,72 @@ namespace ProjectRun.Race
             MountRoot.localPosition = Vector3.zero;
             MountRoot.localRotation = Quaternion.identity;
             float phase = (float)(gaitClock / RunClip.length * GallopsPerClip * Mathf.PI * 2);
-            // Play the entire seated cycle; the old 0.23..0.37 s sample barely moved any bones.
-            riding.SetTime(gaitClock / RunClip.length * GallopsPerClip * RidingClip.length + idleClock * (1 - blend) * 0.3);
-            riderGraph.Evaluate(0);
-            float surge = s.SkillAge >= 0 && s.SkillAge < 3.4f ? Mathf.Sin(Mathf.Clamp01(s.SkillAge / 3.4f) * Mathf.PI) : 0;
-            var seatRotation = Quaternion.Inverse(MountRoot.rotation) * SeatBone.rotation * Quaternion.Inverse(seatRestRotation);
-            float seatPitch = Mathf.Clamp(Mathf.DeltaAngle(0, seatRotation.eulerAngles.x), -18, 18);
-            float bend = Vector3.SignedAngle(forward, Data_RaceSimulation.CourseForward(distance + 5), Vector3.up);
-            float targetPitch = 5 + blend * 7 + surge * 5 + seatPitch * 0.3f;
-            float targetRoll = Mathf.Clamp(-bend * displayedSpeed * 0.12f, -7, 7);
-            float response = 1 - Mathf.Exp(-10 * poseDelta);
-            ridePitch = Mathf.Lerp(ridePitch, targetPitch, response);
-            rideRoll = Mathf.Lerp(rideRoll, targetRoll, response);
-            // A carried / chair pose already includes its own orientation and seat height.
-            // Applying the straddling lean to it pulls the passenger out of the hand or chair.
-            if (UseSocketAttachment)
+            if (HasRider)
             {
-                RiderRoot.SetPositionAndRotation(SeatBone.TransformPoint(RiderSocketOffset), SeatBone.rotation);
+                // Play the entire seated cycle; the old 0.23..0.37 s sample barely moved any bones.
+                riding.SetTime(gaitClock / RunClip.length * GallopsPerClip * RidingClip.length + idleClock * (1 - blend) * 0.3);
+                riderGraph.Evaluate(0);
+                float surge = s.SkillAge >= 0 && s.SkillAge < 3.4f ? Mathf.Sin(Mathf.Clamp01(s.SkillAge / 3.4f) * Mathf.PI) : 0;
+                var seatRotation = Quaternion.Inverse(MountRoot.rotation) * SeatBone.rotation * Quaternion.Inverse(seatRestRotation);
+                float seatPitch = Mathf.Clamp(Mathf.DeltaAngle(0, seatRotation.eulerAngles.x), -18, 18);
+                float bend = Vector3.SignedAngle(forward, Data_RaceSimulation.CourseForward(distance + 5), Vector3.up);
+                float targetPitch = 5 + blend * 7 + surge * 5 + seatPitch * 0.3f;
+                float targetRoll = Mathf.Clamp(-bend * displayedSpeed * 0.12f, -7, 7);
+                float response = 1 - Mathf.Exp(-10 * poseDelta);
+                ridePitch = Mathf.Lerp(ridePitch, targetPitch, response);
+                rideRoll = Mathf.Lerp(rideRoll, targetRoll, response);
+                // A carried / chair pose already includes its own orientation and seat height.
+                // Applying the straddling lean to it pulls the passenger out of the hand or chair.
+                if (UseSocketAttachment)
+                {
+                    RiderRoot.SetPositionAndRotation(SeatBone.TransformPoint(RiderSocketOffset), SeatBone.rotation);
+                }
+                else RiderRoot.localRotation = Quaternion.Euler(ridePitch, 0, rideRoll);
+                float motion = blend * RiderMotion;
+                float bodyPhase = Posture == E_RiderPosture.Carried ? phase * 2 : phase;
+                float compression = Mathf.Sin(bodyPhase - 0.45f);
+                float followThrough = Mathf.Sin(bodyPhase - 1.05f);
+                float sway = Mathf.Sin(phase * 0.5f + RunnerId * 0.7f);
+                float breath = Mathf.Sin((float)idleClock * 2.2f) * (1 - blend * 0.65f);
+                poseRight = transform.right; poseUp = transform.up; poseForward = transform.forward;
+                if (Posture == E_RiderPosture.Carried)
+                {
+                    // A horizontal passenger needs anatomical bending axes, not the mount's upright axes.
+                    poseUp = (RiderHead.position - RiderPelvis.position).normalized;
+                    poseForward = RiderHead.TransformDirection(FaceForwardAxis).normalized;
+                    poseRight = Vector3.Cross(poseUp, poseForward).normalized;
+                    poseForward = Vector3.Cross(poseRight, poseUp).normalized;
+                    RotateBone(RiderPelvis, compression * 1.4f * motion, 0, sway * 1.5f * motion);
+                }
+                // Different phase delays let the chest, neck and limbs absorb the support's movement.
+                RotateBone(spine, compression * 4.5f * motion + breath, 0, sway * 1.4f * motion);
+                RotateBone(chest, followThrough * 6 * motion, 0, -sway * 1.1f * motion);
+                RotateBone(neck, -followThrough * 3.8f * motion, 0, -sway * 0.4f * motion);
+                RotateBone(RiderHead, -compression * 1.7f * motion, sway * 0.8f * motion, 0);
+                RotateBone(leftArm, -followThrough * 3.5f * motion, 0, compression * 1.2f * motion);
+                RotateBone(rightArm, -followThrough * 3.5f * motion, 0, -compression * 1.2f * motion);
+                RotateBone(leftForearm, compression * 3 * motion, 0, 0);
+                RotateBone(rightForearm, compression * 3 * motion, 0, 0);
+                if (Posture == E_RiderPosture.Carried || Posture == E_RiderPosture.Seated)
+                {
+                    float leg = Mathf.Sin(phase - 1.45f) * motion;
+                    float otherLeg = Mathf.Sin(phase - 2.1f) * motion;
+                    RotateBone(leftThigh, leg * 2.2f, 0, 0);
+                    RotateBone(rightThigh, otherLeg * 2.2f, 0, 0);
+                    RotateBone(leftCalf, leg * 8, 0, 0);
+                    RotateBone(rightCalf, otherLeg * 7, 0, 0);
+                    RotateBone(leftFoot, -leg * 3.5f, 0, 0);
+                    RotateBone(rightFoot, -otherLeg * 3.5f, 0, 0);
+                }
+                for (int i = 0; i < cape.Length; i++)
+                    RotateBone(cape[i], (Mathf.Sin(phase - 1.2f - i * 0.6f) * (4 + i * 2) - blend * 5) * RiderMotion, 0, sway * motion);
+                Vector3 seatDelta = MountRoot.InverseTransformPoint(SeatBone.position) - seatRest;
+                Vector3 suspension = new Vector3(sway * 0.012f, (1 + Mathf.Sin(phase - 0.2f)) * 0.018f, followThrough * 0.012f) * motion;
+                Vector3 target = MountRoot.TransformPoint(SeatPosition + seatDelta + suspension);
+                if (!UseSocketAttachment) RiderRoot.position += target - RiderPelvis.position;
+                FaceTarget.position = RiderHead.position + transform.forward * 0.08f;
             }
-            else RiderRoot.localRotation = Quaternion.Euler(ridePitch, 0, rideRoll);
-            float motion = blend * RiderMotion;
-            float bodyPhase = Posture == E_RiderPosture.Carried ? phase * 2 : phase;
-            float compression = Mathf.Sin(bodyPhase - 0.45f);
-            float followThrough = Mathf.Sin(bodyPhase - 1.05f);
-            float sway = Mathf.Sin(phase * 0.5f + RunnerId * 0.7f);
-            float breath = Mathf.Sin((float)idleClock * 2.2f) * (1 - blend * 0.65f);
-            poseRight = transform.right; poseUp = transform.up; poseForward = transform.forward;
-            if (Posture == E_RiderPosture.Carried)
-            {
-                // A horizontal passenger needs anatomical bending axes, not the mount's upright axes.
-                poseUp = (RiderHead.position - RiderPelvis.position).normalized;
-                poseForward = RiderHead.TransformDirection(FaceForwardAxis).normalized;
-                poseRight = Vector3.Cross(poseUp, poseForward).normalized;
-                poseForward = Vector3.Cross(poseRight, poseUp).normalized;
-                RotateBone(RiderPelvis, compression * 1.4f * motion, 0, sway * 1.5f * motion);
-            }
-            // Different phase delays let the chest, neck and limbs absorb the support's movement.
-            RotateBone(spine, compression * 4.5f * motion + breath, 0, sway * 1.4f * motion);
-            RotateBone(chest, followThrough * 6 * motion, 0, -sway * 1.1f * motion);
-            RotateBone(neck, -followThrough * 3.8f * motion, 0, -sway * 0.4f * motion);
-            RotateBone(RiderHead, -compression * 1.7f * motion, sway * 0.8f * motion, 0);
-            RotateBone(leftArm, -followThrough * 3.5f * motion, 0, compression * 1.2f * motion);
-            RotateBone(rightArm, -followThrough * 3.5f * motion, 0, -compression * 1.2f * motion);
-            RotateBone(leftForearm, compression * 3 * motion, 0, 0);
-            RotateBone(rightForearm, compression * 3 * motion, 0, 0);
-            if (Posture == E_RiderPosture.Carried || Posture == E_RiderPosture.Seated)
-            {
-                float leg = Mathf.Sin(phase - 1.45f) * motion;
-                float otherLeg = Mathf.Sin(phase - 2.1f) * motion;
-                RotateBone(leftThigh, leg * 2.2f, 0, 0);
-                RotateBone(rightThigh, otherLeg * 2.2f, 0, 0);
-                RotateBone(leftCalf, leg * 8, 0, 0);
-                RotateBone(rightCalf, otherLeg * 7, 0, 0);
-                RotateBone(leftFoot, -leg * 3.5f, 0, 0);
-                RotateBone(rightFoot, -otherLeg * 3.5f, 0, 0);
-            }
-            for (int i = 0; i < cape.Length; i++)
-                RotateBone(cape[i], (Mathf.Sin(phase - 1.2f - i * 0.6f) * (4 + i * 2) - blend * 5) * RiderMotion, 0, sway * motion);
-            Vector3 seatDelta = MountRoot.InverseTransformPoint(SeatBone.position) - seatRest;
-            Vector3 suspension = new Vector3(sway * 0.012f, (1 + Mathf.Sin(phase - 0.2f)) * 0.018f, followThrough * 0.012f) * motion;
-            Vector3 target = MountRoot.TransformPoint(SeatPosition + seatDelta + suspension);
-            if (!UseSocketAttachment) RiderRoot.position += target - RiderPelvis.position;
-            FaceTarget.position = RiderHead.position + transform.forward * 0.08f;
+            else FaceTarget.SetPositionAndRotation(MonsterFaceTarget.position, MonsterFaceTarget.rotation);
             CameraTarget.position = transform.position + Vector3.up * CameraFocusHeight;
             bool boosted = s.SkillAge >= 0 && s.SkillAge < race.Entrants[RunnerId].SurgeDuration;
             var dustEmission = Dust.emission; dustEmission.rateOverTime = race.Paused || race.PresentationHeld || s.Speed < 2 ? 0 : (boosted ? 32 : 14);

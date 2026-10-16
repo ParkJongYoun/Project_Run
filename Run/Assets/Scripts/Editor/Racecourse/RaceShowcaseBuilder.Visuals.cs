@@ -103,7 +103,7 @@ namespace ProjectRun.Editor
             return ps;
         }
 
-        private static void CapturePortrait(GameObject runner, int index, bool faceOnly = false)
+        public static void CapturePortrait(GameObject runner, int index, bool faceOnly = false)
         {
             // Bake once so an immediate editor render uses this sampled pose, not a stale skinning buffer.
             var bakedRoot = new GameObject("portrait_pose");
@@ -112,7 +112,9 @@ namespace ProjectRun.Editor
             Vector3 faceCenter = Vector3.zero;
             foreach (var skin in runner.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
-                if (faceOnly && !skin.transform.IsChildOf(runner.GetComponent<RaceRunnerView>().RiderRoot)) continue;
+                if (!skin.enabled || skin.name.StartsWith("obj_outline")) continue;
+                var runnerView = runner.GetComponent<RaceRunnerView>();
+                if (faceOnly && runnerView.HasRider && !skin.transform.IsChildOf(runnerView.RiderRoot)) continue;
                 var mesh = new Mesh(); skin.BakeMesh(mesh); meshes.Add(mesh);
                 var part = new GameObject("portrait_part"); part.layer = 31;
                 part.transform.SetParent(bakedRoot.transform, false);
@@ -139,7 +141,7 @@ namespace ProjectRun.Editor
             }
             camera.transform.position = bounds.center + direction * distance * 1.06f;
             camera.transform.LookAt(bounds.center); camera.fieldOfView = 40;
-            if (faceOnly)
+            if (faceOnly && runner.GetComponent<RaceRunnerView>().HasRider)
             {
                 var view = runner.GetComponent<RaceRunnerView>();
                 var face = view.RiderHead;
@@ -149,6 +151,14 @@ namespace ProjectRun.Editor
                 camera.transform.position = focus + faceForward * 1.05f;
                 camera.transform.rotation = Quaternion.LookRotation(-faceForward, faceUp);
                 camera.fieldOfView = 36;
+            }
+            else if (faceOnly)
+            {
+                var view = runner.GetComponent<RaceRunnerView>();
+                Vector3 focus = view.MonsterFaceTarget.position + runner.transform.up * .18f;
+                Vector3 faceDirection = runner.transform.TransformDirection(new Vector3(.28f,.15f,1).normalized);
+                camera.transform.position = focus + faceDirection * Mathf.Max(2, bounds.size.y * 1.15f);
+                camera.transform.LookAt(focus); camera.fieldOfView = 38;
             }
             var rt = RenderTexture.GetTemporary(256, 256, 24, RenderTextureFormat.ARGB32);
             camera.targetTexture = rt;

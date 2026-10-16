@@ -1,0 +1,13 @@
+2026-10-16 / Scene_MonsterRenderCompare
+PASS: Three copies of the same fox, fixed Original / Toon / Outlined materials.
+PASS: No mounted riders; comparison has no Sys_Race scoring system.
+PASS: All 74 skeleton transforms match: maximum local position error 0, rotation error 0.
+PASS: Pause, 0.5x speed, angled camera and reset buttons; material assignments unchanged.
+PASS: Return to title and enter comparison again through actual UI button callbacks.
+PASS: New entry resets pause/speed/camera and runs automatically.
+PASS: Unity PC quality; WebGL default remains PC (index 1).
+PASS: Console has no errors or warnings after clean Play entry and scene round trip.
+Visual checks: compare_three_final_angled.png, compare_title_entry.png.
+Shared lighting/post-processing/turf on all three models, so shading changes are directly comparable.
+Web browser execution remains unverified: PowerShell execution-policy bypass was not authorized.
+PASS: WebGL build build-15ca5084c4 completed 2026-10-16 17:25 KST; 3 scenes; 214.11 MB; 0 errors, 0 warnings.

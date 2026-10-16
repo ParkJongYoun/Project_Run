@@ -34,9 +34,10 @@ namespace ProjectRun.Editor
                 presentation.Views[index].RunnerId = index;
                 Object.DestroyImmediate(old.gameObject);
                 var entry = race.Entrants[index];
-                entry.Prefab = prefab; entry.Mount = mountNames[index]; entry.SkillName = skills[index];
+                entry.Prefab = prefab; entry.Name = runnerNames[index]; entry.Mount = mountNames[index]; entry.SkillName = skills[index];
                 entry.Portrait = AssetDatabase.LoadAssetAtPath<Sprite>(art + "/UI/Portrait_" + index + ".png");
             }
+            RaceMonsterLookBuilder.ConfigureScene();
             // Replacing a mount preserves the scene bindings and portrait GUIDs.
             EditorUtility.SetDirty(race); EditorUtility.SetDirty(presentation);
             EditorSceneManager.MarkSceneDirty(scene);

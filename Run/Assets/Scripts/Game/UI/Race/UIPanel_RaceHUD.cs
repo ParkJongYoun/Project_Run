@@ -117,7 +117,7 @@ namespace ProjectRun.Race
                 if (RankFrames != null && i < RankFrames.Length) RankFrames[i].enabled = i == SelectedRunnerId;
             }
             FocusPortrait.sprite = setup.FacePortrait != null ? setup.FacePortrait : setup.Portrait;
-            FocusName.text = setup.Name + " · " + setup.Mount;
+            FocusName.text = setup.Name == setup.Mount ? setup.Name : setup.Name + " · " + setup.Mount;
             FocusNumber.text = (SelectedRunnerId + 1).ToString("00");
             float gap = Mathf.Max(0, (float)(sim.Runners[sim.Order[0]].Distance - selected.Distance));
             FocusGap.text = selected.Rank == 1 ? "선두로 달리는 중" : "선두와  " + gap.ToString("0.0") + " m";
@@ -167,11 +167,10 @@ namespace ProjectRun.Race
         private void UpdateWorldMarker()
         {
             var view = Presentation.Views[SelectedRunnerId];
-            bool spriteRunner = view.SpriteVisual != null;
-            var point = Director.RaceCamera.WorldToScreenPoint(view.RiderHead.position + (spriteRunner ? Vector3.zero : Vector3.up * .55f));
+            var point = Director.RaceCamera.WorldToScreenPoint(view.FaceTarget.position + Vector3.up * .55f);
             float uiScale = GetComponentInParent<Canvas>().scaleFactor;
             // Keep the badge and its pointer above the face at every camera distance.
-            point.y += (spriteRunner ? 20f : 44f) * uiScale;
+            point.y += 44f * uiScale;
             bool visible = point.z > 0 && point.x > 40 * uiScale && point.x < Screen.width - 40 * uiScale
                 && point.y > 335 * uiScale && point.y < Screen.height - 275 * uiScale
                 && !menuOpen && !Presentation.InCutscene && Race.Simulation.Phase != E_RacePhase.Result;

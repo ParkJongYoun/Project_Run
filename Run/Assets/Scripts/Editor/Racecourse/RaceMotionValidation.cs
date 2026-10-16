@@ -71,8 +71,8 @@ namespace ProjectRun.Editor
                 for (int i = 0; i < views.Length; i++)
                 {
                     var v = views[i];
-                    var relative = v.transform.InverseTransformVector(v.RiderHead.position - v.RiderPelvis.position);
-                    if (float.IsNaN(relative.y)) throw new InvalidOperationException("Non-finite rider pose.");
+                    var relative = v.transform.InverseTransformVector(v.FaceTarget.position - v.MountRoot.position);
+                    if (float.IsNaN(relative.y)) throw new InvalidOperationException("Non-finite runner pose.");
                     headMin[i] = Vector3.Min(headMin[i], relative); headMax[i] = Vector3.Max(headMax[i], relative);
                     minRate[i] = Mathf.Min(minRate[i], v.CurrentAnimationRate); maxRate[i] = Mathf.Max(maxRate[i], v.CurrentAnimationRate);
                     samples.AppendLine(time.ToString("F3", System.Globalization.CultureInfo.InvariantCulture) + "," + Time.frameCount + "," + i + "," + v.CurrentAnimationRate.ToString("F3") + "," + relative.x.ToString("F3") + "," + relative.y.ToString("F3") + "," + relative.z.ToString("F3"));
@@ -88,14 +88,14 @@ namespace ProjectRun.Editor
                 if (pauseStarted == 0)
                 {
                     race.Paused = true; pauseStarted = EditorApplication.timeSinceStartup;
-                    for (int i = 0; i < views.Length; i++) { pausedHead[i] = views[i].RiderHead.position; pausedRotation[i] = views[i].RiderHead.rotation; }
+                    for (int i = 0; i < views.Length; i++) { pausedHead[i] = views[i].FaceTarget.position; pausedRotation[i] = views[i].FaceTarget.rotation; }
                 }
                 else if (EditorApplication.timeSinceStartup - pauseStarted > 0.1)
                 {
                     for (int i = 0; i < views.Length; i++)
                     {
-                        pauseDrift = Mathf.Max(pauseDrift, Vector3.Distance(pausedHead[i], views[i].RiderHead.position));
-                        pauseTurn = Mathf.Max(pauseTurn, Quaternion.Angle(pausedRotation[i], views[i].RiderHead.rotation));
+                        pauseDrift = Mathf.Max(pauseDrift, Vector3.Distance(pausedHead[i], views[i].FaceTarget.position));
+                        pauseTurn = Mathf.Max(pauseTurn, Quaternion.Angle(pausedRotation[i], views[i].FaceTarget.rotation));
                     }
                     if (EditorApplication.timeSinceStartup - pauseStarted > 0.5)
                     { race.Paused = false; pauseDone = true; }
@@ -112,9 +112,9 @@ namespace ProjectRun.Editor
                 {
                     Vector3 range = headMax[i] - headMin[i];
                     passed &= range.magnitude > 0.08f && minRate[i] > 0.1f && maxRate[i] <= 1.85f;
-                    report.AppendLine(views[i].name + " head motion relative to hips (m)=" + range.ToString("F3") + " clip rate=" + minRate[i].ToString("F3") + ".." + maxRate[i].ToString("F3") + " gallops/clip=" + views[i].GallopsPerClip);
+                    report.AppendLine(views[i].name + " face motion relative to monster root (m)=" + range.ToString("F3") + " clip rate=" + minRate[i].ToString("F3") + ".." + maxRate[i].ToString("F3") + " gallops/clip=" + views[i].GallopsPerClip);
                 }
-                report.AppendLine("Paused pose / articulated rider motion / 2x execution: " + (passed ? "PASS" : "FAIL"));
+                report.AppendLine("Paused pose / monster animation / 2x execution: " + (passed ? "PASS" : "FAIL"));
                 File.WriteAllText(Path.Combine(directory, "motion-validation.txt"), report.ToString());
                 File.WriteAllText(Path.Combine(directory, "motion-telemetry.csv"), samples.ToString());
                 race.PlaybackSpeed = 1; race.Paused = false; director.ManualShot = -1;

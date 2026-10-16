@@ -9,12 +9,16 @@ namespace ProjectRun.Race
         public Sys_Race Race;
         public Sys_RacePresentation Presentation;
         public Camera RaceCamera;
-        public Sys_RaceSpritePresentation SpriteDirector;
         public E_RaceShot CurrentShot { get; private set; }
         public string ShotLabel { get; private set; }
         public int FocusRunner { get; private set; }
         public int ManualShot = -1;
         public float CameraDistanceScale = 1;
+#if UNITY_EDITOR
+        // Capture tooling only; never serialized or used in a player build.
+        [System.NonSerialized] public int CaptureShot = -1;
+        [System.NonSerialized] public int CaptureRunner = -1;
+#endif
         private Vector3 smoothedOffset;
         private Vector3 smoothedLook;
         private E_RaceShot previousShot = (E_RaceShot)(-1);
@@ -26,18 +30,12 @@ namespace ProjectRun.Race
         private float videoReturnUntil;
         private float videoBlendRemaining;
 
-        public void BeginSkillVideo(int runnerId) { videoRunner = runnerId; videoPlaying = true; if (SpriteDirector != null) SpriteDirector.BeginVideo(runnerId); }
-        public void EndSkillVideo() { videoPlaying = false; videoReturnUntil = Time.unscaledTime + 1.6f; if (SpriteDirector != null) SpriteDirector.EndVideo(); }
-        public void CancelSkillVideo() { videoRunner = -1; videoPlaying = false; videoReturnUntil = videoBlendRemaining = 0; if (SpriteDirector != null) SpriteDirector.CancelVideo(); }
+        public void BeginSkillVideo(int runnerId) { videoRunner = runnerId; videoPlaying = true; }
+        public void EndSkillVideo() { videoPlaying = false; videoReturnUntil = Time.unscaledTime + 1.6f; }
+        public void CancelSkillVideo() { videoRunner = -1; videoPlaying = false; videoReturnUntil = videoBlendRemaining = 0; }
 
         private void LateUpdate()
         {
-            if (SpriteDirector != null)
-            {
-                SpriteDirector.RenderCamera(ManualShot);
-                CurrentShot = SpriteDirector.Shot; ShotLabel = SpriteDirector.ShotLabel; FocusRunner = SpriteDirector.FocusRunner;
-                return;
-            }
             if (Presentation.Views == null || Presentation.Views.Length != Race.Entrants.Length || Presentation.Views.Length < 2 || !Presentation.Views[0].HasPose) return;
             if (Race.Paused && !videoPlaying && videoRunner >= 0) videoReturnUntil += Time.unscaledDeltaTime;
             var sim = Race.Simulation;
@@ -84,6 +82,10 @@ namespace ProjectRun.Race
                 CurrentShot = E_RaceShot.SkillVideo;
             }
             else if (returningFromVideo) { videoRunner = -1; videoBlendRemaining = .9f; }
+#if UNITY_EDITOR
+            if (CaptureShot >= 0) CurrentShot = (E_RaceShot)CaptureShot;
+            if (CaptureRunner >= 0) FocusRunner = CaptureRunner;
+#endif
             var view = Presentation.Views[FocusRunner];
             var state = sim.Runners[FocusRunner];
             Vector3 forward = Data_RaceSimulation.CourseForward((float)state.Distance);
@@ -113,13 +115,16 @@ namespace ProjectRun.Race
                     focus = (view.Focus + Presentation.Views[second].Focus) * 0.5f;
                     offset = right * -17 + forward * 8 + Vector3.up * 3; group = true; ShotLabel = left < 100 ? "라스트 스퍼트" : "추월 경쟁"; break;
                 case E_RaceShot.Rider:
-                    focus = view.FaceTarget.position + Vector3.down * 0.3f;
-                    offset = view.UseRiderFacingCloseup
-                        ? view.RiderHead.TransformDirection(view.FaceForwardAxis).normalized * 5.6f + Vector3.up * 0.5f
-                        : forward * 4.4f + right * -3.5f + Vector3.up * 0.5f;
+                    focus = view.FaceTarget.position + (view.HasRider ? Vector3.down * .3f : Vector3.up * .2f - forward * .35f);
+                    offset = view.HasRider
+                        ? (view.UseRiderFacingCloseup ? view.RiderHead.TransformDirection(view.FaceForwardAxis).normalized * 5.6f + Vector3.up * .5f
+                            : forward * 4.4f - right * 3.5f + Vector3.up * .5f)
+                        : forward * 5.4f + right * (sim.Runners[FocusRunner].Lane < 0 ? 2 : -2) + Vector3.up * 1.8f;
                     fov = 40; ShotLabel = "필살기"; break;
                 case E_RaceShot.Charge:
-                    focus = view.MonsterFaceTarget.position + Vector3.down * 0.2f; offset = forward * 5.5f + right * -4.5f + Vector3.up * 0.2f; fov = 44; ShotLabel = "각성"; break;
+                    focus = view.MonsterFaceTarget.position + Vector3.up * .2f;
+                    offset = forward * 6.8f + right * (sim.Runners[FocusRunner].Lane < 0 ? 2.8f : -2.8f) + Vector3.up * 1.7f;
+                    fov = 44; ShotLabel = "각성"; break;
                 case E_RaceShot.Burst:
                     var burstOffset = view.BurstCameraOffset;
                     offset = right * burstOffset.x + forward * (burstOffset.z - Mathf.Lerp(0, view.BurstTravel, (Presentation.SkillAge - 1.6f) / 1.8f)) + Vector3.up * burstOffset.y;
@@ -176,7 +181,7 @@ namespace ProjectRun.Race
             foreach (var view in Presentation.Views) sum += view.Focus;
             return sum / Presentation.Views.Length;
         }
-        public void CycleCamera() { ManualShot++; if (ManualShot > (SpriteDirector != null ? 2 : 5)) ManualShot = -1; }
+        public void CycleCamera() { ManualShot++; if (ManualShot > 5) ManualShot = -1; }
     }
 }
 

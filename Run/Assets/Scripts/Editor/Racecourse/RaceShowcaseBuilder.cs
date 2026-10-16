@@ -18,9 +18,7 @@ namespace ProjectRun.Editor
         private const string output = "Assets/Resources/Prefabs/Race";
         private const float modelScale = 1.6f;
         private static readonly string[] mounts = { "vehicle_edgar_001", "giantporing_001", "fox_001", "butlerwhisper_001", "vehicle_wolf_001", "vehicle_savage_001" };
-        private static readonly int[] boardingPoses = { 3, 10, 1, 16, 1, 1 };
-        private static readonly string[] outfits = { "warrior_m", "ranger_w", "magician_w", "defender_m", "novice_m", "swordsman_w" };
-        private static readonly string[] runnerNames = { "루카", "레나", "아리", "브란", "카일", "엘린" };
+        private static readonly string[] runnerNames = { "호랑이 에드가", "자이언트 포링", "구미호", "유령 왕좌", "검은늑대", "철갑멧돼지" };
         private static readonly string[] mountNames = { "호랑이 에드가", "자이언트 포링", "구미호", "유령 왕좌", "검은늑대", "철갑멧돼지" };
         private static readonly string[] skills = { "맹호 돌진", "탄력 대시", "여우의 잔상", "유령 행진", "질풍 추격", "대지의 포효" };
         private static readonly Color[] colors = { Hex("49A9DA"), Hex("ED83A1"), Hex("B38AD6"), Hex("E7B84E"), Hex("67B77C"), Hex("E98C4E") };
@@ -28,7 +26,7 @@ namespace ProjectRun.Editor
         private static readonly float[] lanes = { 1.66f, 6.75f, -7.19f, -2.29f, -5.06f, 4.35f };
         private static Font font;
 
-        [MenuItem("Tools/Project Run/Race/Build six-rider showcase")]
+        [MenuItem("Tools/Project Run/Race/Build six-monster showcase")]
         public static void Build()
         {
             var scene = SceneManager.GetActiveScene();
@@ -86,11 +84,12 @@ namespace ProjectRun.Editor
             BuildMapDress();
             BuildHUD(race, presentation, director);
             ConfigureRaceLighting();
+            RaceMonsterLookBuilder.ConfigureScene();
             camera.transform.position = new Vector3(62, 9, -49);
             camera.transform.LookAt(new Vector3(49, 2.3f, -68.5f)); camera.fieldOfView = 48;
             PlayerSettings.runInBackground = true;
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-            Debug.Log("Six-rider race showcase saved to Scene_All3D.");
+            Debug.Log("Six-monster race showcase saved to Scene_All3D.");
         }
 
         private static GameObject BuildRunner(int index)
@@ -115,43 +114,15 @@ namespace ProjectRun.Editor
             view.IdleClip = CopyClip(originalClips.First(c => c.name.Contains("stand")), mounts[index] + "_Idle", true);
             view.MountAnimator.runtimeAnimatorController = null;
             view.MountAnimator.applyRootMotion = false;
-            string gender = outfits[index].EndsWith("_m") ? "m" : "w";
-            var rider = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/OldAsset/Characters/Players/prefabs/character_" + gender + "_pawn.prefab"), model);
-            rider.name = "obj_rider"; rider.transform.localScale = Vector3.one * modelScale;
-            view.RiderRoot = rider.transform; view.RiderAnimator = rider.GetComponent<Animator>();
-            var boarding = view.RiderAnimator.runtimeAnimatorController.animationClips.First(c => c.name == "character_boarding_" + boardingPoses[index].ToString("00") + "_" + gender);
-            view.RidingClip = CopyClip(boarding, "Rider" + index + "_Boarding" + boardingPoses[index].ToString("00"), true);
-            view.RiderAnimator.runtimeAnimatorController = null;
-            foreach (var r in rider.GetComponentsInChildren<Renderer>(true)) Object.DestroyImmediate(r.gameObject);
-            var bones = rider.GetComponentsInChildren<Transform>(true).GroupBy(t => t.name).ToDictionary(g => g.Key, g => g.First());
-            AttachPart(rider.transform, bones, "body/" + outfits[index] + "_mesh");
-            AttachPart(rider.transform, bones, "face/face_" + gender + "_mesh");
-            AttachPart(rider.transform, bones, "hair/hair_0" + (index + 1) + "_1_" + gender + "_mesh");
-            view.RiderPelvis = bones["bone_pelvis"]; view.RiderHead = bones["bone_head"];
-            view.SeatPosition = index == 2 ? new Vector3(0, 0.92f, -0.28f) : new Vector3(0, 1.02f, -0.25f);
-            var mountBones = mount.GetComponentsInChildren<SkinnedMeshRenderer>().SelectMany(s => s.bones).Where(t => t != null).Distinct();
-            view.SeatBone = mountBones.Where(t => t.name.ToLowerInvariant().Contains("spine") || t.name.ToLowerInvariant().Contains("body"))
-                .OrderBy(t => Vector3.Distance(mount.transform.InverseTransformPoint(t.position), view.SeatPosition)).FirstOrDefault();
-            view.UseSocketAttachment = index != 2;
-            if (view.UseSocketAttachment)
-                view.SeatBone = mount.GetComponentsInChildren<Transform>(true).First(t => t.name == "socket_back");
             view.CameraTarget = Anchor(root.transform, "anchor_camera", new Vector3(0, 2.25f, 0));
             view.FaceTarget = Anchor(root.transform, "anchor_face", new Vector3(0, 3.8f, 0));
             view.MonsterFaceTarget = mount.GetComponentsInChildren<Transform>().First(t => t.name == "socket_head_mid");
             ConfigureRunnerMotion(view, index);
             AddEffects(view, colors[index]);
             view.IdleClip.SampleAnimation(mount, 0.2f);
-            view.RidingClip.SampleAnimation(rider, 0.3f);
             mount.transform.localPosition = Vector3.zero; mount.transform.localRotation = Quaternion.identity;
-            if (view.UseSocketAttachment)
-                rider.transform.SetPositionAndRotation(view.SeatBone.TransformPoint(view.RiderSocketOffset), view.SeatBone.rotation);
-            else
-            {
-                rider.transform.localRotation = Quaternion.Euler(10, 0, 0);
-                rider.transform.position += mount.transform.TransformPoint(view.SeatPosition) - view.RiderPelvis.position;
-            }
             view.CameraTarget.localPosition = Vector3.up * view.CameraFocusHeight;
-            view.FaceTarget.position = view.RiderHead.position;
+            view.FaceTarget.position = view.MonsterFaceTarget.position;
             foreach (var s in root.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
                 s.updateWhenOffscreen = true; s.shadowCastingMode = ShadowCastingMode.On;
@@ -159,29 +130,11 @@ namespace ProjectRun.Editor
             ApplyRunnerMaterials(root);
             CapturePortrait(root, index);
             CapturePortrait(root, index, true);
+            RaceMonsterLookBuilder.ConfigureRunner(view);
             string path = output + "/P_Runner_" + (index + 1).ToString("00") + ".prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab;
-        }
-
-        private static void AttachPart(Transform rider, System.Collections.Generic.Dictionary<string, Transform> bones, string relative)
-        {
-            string sourcePath = "Assets/OldAsset/Characters/Players/" + relative + ".prefab";
-            var source = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePath);
-            if (source == null) throw new InvalidOperationException("Missing rider part: " + sourcePath);
-            var original = source.GetComponent<SkinnedMeshRenderer>();
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GetAssetPath(original.sharedMesh));
-            var reference = model.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r => r.sharedMesh == original.sharedMesh);
-            var part = Object.Instantiate(source, rider); part.name = "obj_" + relative.Split('/')[0];
-            var skin = part.GetComponent<SkinnedMeshRenderer>();
-            skin.bones = reference.bones.Select(b => bones[b.name]).ToArray();
-            skin.rootBone = bones[reference.rootBone.name];
-            string converted = "Assets/ArtBundles/LegacyURP/Characters/Prefabs/Players/" + relative.Substring(0, relative.LastIndexOf('/') + 1) + "M_" + Path.GetFileName(relative) + ".prefab";
-            var convertedPart = AssetDatabase.LoadAssetAtPath<GameObject>(converted);
-            if (convertedPart == null) throw new InvalidOperationException("Missing converted material source: " + converted);
-            skin.sharedMaterials = convertedPart.GetComponentInChildren<SkinnedMeshRenderer>().sharedMaterials;
-            skin.localBounds = new Bounds(new Vector3(0, 0.9f, 0), new Vector3(3, 4, 3));
         }
 
         private static AnimationClip CopyClip(AnimationClip source, string name, bool loop)

@@ -15,7 +15,7 @@ namespace ProjectRun.Editor
     {
         private const string look = art + "/LookDevelopment";
 
-        [MenuItem("Tools/Project Run/Race/Apply rider motion and lit materials")]
+        [MenuItem("Tools/Project Run/Race/Apply runner motion and lit materials")]
         public static void ApplyPolish()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
@@ -30,6 +30,7 @@ namespace ProjectRun.Editor
                 {
                     ConfigureRunnerMotion(root.GetComponent<RaceRunnerView>(), i);
                     ApplyRunnerMaterials(root);
+                    RaceMonsterLookBuilder.ConfigureRunner(root.GetComponent<RaceRunnerView>());
                     PrefabUtility.SaveAsPrefabAsset(root, path);
                 }
                 finally { PrefabUtility.UnloadPrefabContents(root); }
@@ -42,6 +43,7 @@ namespace ProjectRun.Editor
                 EditorUtility.SetDirty(view);
             }
             ConfigureRaceLighting();
+            RaceMonsterLookBuilder.ConfigureScene();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
@@ -56,7 +58,7 @@ namespace ProjectRun.Editor
             view.CameraFocusHeight = new[] { 2.6f, 2.25f, 2.25f, 2.7f, 2.25f, 2.4f }[index] * modelScale / 2.2f;
             view.HasFootfalls = index != 1 && index != 3;
             view.Posture = index == 0 ? E_RiderPosture.Carried : index == 1 ? E_RiderPosture.Kneeling : index == 3 ? E_RiderPosture.Seated : E_RiderPosture.Straddling;
-            view.UseRiderFacingCloseup = index == 0;
+            view.UseRiderFacingCloseup = view.HasRider && index == 0;
             view.FaceForwardAxis = new Vector3(0.0137f, 0.9999f, 0.0001f);
             // The outermost poring needs a forward / outer angle above the rail,
             // keeping both the tiger and boar out of the line of sight.
@@ -67,8 +69,11 @@ namespace ProjectRun.Editor
         private static void ApplyRunnerMaterials(GameObject root)
         {
             Ensure(look + "/Materials"); Ensure(look + "/Textures");
+            var monsterLook = root.GetComponent<Sys_MonsterLook>();
+            if (monsterLook != null) monsterLook.Apply(E_MonsterRenderStyle.Original);
             foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
+                if (skin.name.StartsWith("obj_outline")) continue;
                 var materials = skin.sharedMaterials;
                 for (int i = 0; i < materials.Length; i++) materials[i] = LitMaterial(materials[i]);
                 skin.sharedMaterials = materials;
