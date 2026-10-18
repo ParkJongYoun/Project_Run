@@ -1,0 +1,21 @@
+필살기 인게임 연결 완료 · 2026-10-18
+
+적용: 로비 출전 흐름의 Scene_2D와 Scene_OvalToon. 포링·마이너 우로스·에드가 3종.
+첫 발동: 기존 만화 컷. 두 번째 발동: 캐릭터 및 모드별 MP4. 만화 연출과 원화는 유지.
+1회차는 진행률 34%부터 기존 전술 조건을 보고, 40%까지 발동을 보장. 2회차는 72% 이후이면서 첫 스킬 효과 11초가 끝난 뒤 발동. 두 번째도 경기 계산에서 실제 스킬을 발동한다.
+경기 중 영상은 1배속으로 재생하고 전체 경기 계산을 함께 홀드한다. 영상 종료·생략 뒤 정상 주행. 정지/재개, 결과 건너뛰기, 연출 OFF, 재시작 시 정리.
+원본: DataBundles/아트/필살기영상. 런타임: Assets/StreamingAssets/Video/DemoSkills. 512×288, 24fps, 6.583초, 무음 H.264 MP4 6개.
+
+검증: 3종 × 2개 씬 실제 Unity 플레이 완료. PASS 80 항목.
+각 경기 첫 만화·두 번째 영상, 6개 영상의 실제 첫 프레임 디코딩, 경기 홀드, 정지/재개, 두 연출의 건너뛰기, 종료 후 주행, 재시작 및 결과 생략 확인.
+같은 경기 입력에 대한 고정 스텝 계산과 실제 재생·배속 결과의 완주 시간/순위가 일치. 연출 OFF에서도 발동 횟수 2회와 결과 동일. 기존 일반 경기의 기본 1회 발동 유지.
+컴파일 및 플레이 콘솔 오류·경고 없음. 검증 전 사용자 데이터를 복원하고 타이틀로 복귀.
+웹 빌드는 이번 작업에서 다시 생성하지 않았으며 실제 브라우저 재생 검증은 미실시.
+
+주요 코드:
+Assets/Scripts/Game/Race/Simulation/Data_RaceSimulation.cs
+Assets/Scripts/Game/Race/Presentation/Sys_DemoRace.cs
+Assets/Scripts/Game/Race/Presentation/Sys_DemoSkillVideo.cs
+Assets/Scripts/Game/UI/Race/UIPanel_DemoRace.cs
+Assets/Scripts/Game/UI/Race/UIPanel_DemoRace.Video.cs
+Assets/Scripts/Editor/Demo/DemoSkillVideoValidation.cs

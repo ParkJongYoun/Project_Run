@@ -1,0 +1,168 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "에드가_3D_시작장면.png"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_int8_convrot.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "A spectacular 6.6-second 3D cel-shaded racing skill cinematic for an ANTHROPOMORPHIC TIGER MAN ATHLETE. Match the supplied first and last frames. He is an upright stocky humanoid sprinter with exactly TWO LEGS and TWO ARMS. At EVERY moment his head is above his shoulders, ribcage above waist, hips high above the ground. BOTH HANDS are clenched fists held in the air, elbows bent like a human athlete. Only his TWO FEET contact the ground. Keep the same broad orange striped body, white beard and brows, small ears, one striped tail, dark brown traditional hat, mouth pipe, large RED backpack bundle with golden rope, and the inanimate gold tiger ornament. All equipment remains securely attached, the hat and pipe remain steady. Clear three-dimensional game-model forms and strong toon shadow bands, not photoreal and not a flat illustration.\n0.0-0.9 seconds: he stands upright calmly on the moonlit path, raises BOTH FISTS to waist level, bends BOTH ELBOWS into a running stance and shifts weight between his TWO FEET, chest tall. Thin blue sparks gather along his feet and forearms. The visible forest contains pines, bamboo, stone lanterns, mountains and a bright moon.\n0.9-1.7 seconds: sharp cut to his calm face becoming intensely focused, cyan light flashes across his eyes. His hat and pipe remain visible. A small wisp of pipe smoke drifts backward.\n1.7-2.5 seconds: medium shot showing his WAIST, UPRIGHT TORSO and TWO LEGS together. He drives his RIGHT KNEE upward while his LEFT FOOT pushes strongly off the turf, torso only slightly leaned forward, left bent arm pumping forward and right bent arm pumping back. A brilliant thin blue-white lightning ring bursts from the push-off foot. Keep his knees and hips clearly distinguishable from his hands.\n2.5-5.5 seconds: full-body side tracking shot of an upright BIPEDAL OLYMPIC SPRINTER. His right and left feet alternate powerful footfalls and high knee drives, two bent arms pump rhythmically beside his upper torso, his chest remains elevated and his face stays at adult standing height. His posture matches a running man, torso tilted only 15 degrees. The red bundle bounces subtly on his back. Accelerate in THREE forceful speed bursts. Thin electric cyan arcs and ribbons surge backward at each burst, whipping grass and leaves behind him. Strong environmental parallax, dramatic but readable full-body locomotion. Camera at waist height shows his entire upright silhouette, both hands above the waist and both feet beneath his hips. Blue energy stays behind him and never covers his face.\n5.5-6.6 seconds: camera tracks backward into the exact frontal three-quarter running pose in the last reference frame. Continue running on TWO FEET with a confident expression, one knee driving forward, opposite fist forward, the other arm back. Three fine cyan lightning streaks flare behind. Finish on the supplied last frame and continued forward momentum. Preserve body shape and all equipment. Bright enough moonlit environment to see scenery. No captions, no logos, no panels, no UI, no extra characters, no extra limbs, no transformations, no flight, no crawling, no hands on the ground, no low animal crouch, no sustained blackout or whiteout. The single most important movement requirement is the upright human-style two-legged running gait.",
+      "width": 512,
+      "height": 288,
+      "length": 158,
+      "first_frame": [
+        "1",
+        0
+      ],
+      "last_frame": [
+        "15",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 1810202616
+    }
+  },
+  "7": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "8": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "6",
+        0
+      ],
+      "guider": [
+        "9",
+        0
+      ],
+      "sampler": [
+        "7",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ],
+      "fps": 24
+    }
+  },
+  "13": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "12",
+        0
+      ],
+      "filename_prefix": "ProjectRunUltimate/Eddga_3D_512_v02",
+      "format": "mp4",
+      "format.codec": "h264"
+    }
+  },
+  "14": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "lora_name": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "strength_model": 1.0
+    }
+  },
+  "15": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "에드가_3D_마무리장면.png"
+    }
+  }
+}

@@ -1,0 +1,115 @@
+using UnityEngine;
+
+namespace ProjectRun.Race
+{
+    // Presentation time only: never advances or changes the race simulation.
+    public sealed class UIItem_MinorousComic : MonoBehaviour
+    {
+        public const float Duration = 8.2f;
+        private static readonly float[] starts = { .45f, 1.35f, 2.65f, 3.8f, 4.9f, 6.05f };
+        private static readonly string[] beats = { "대열을 향해", "숨을 모으고…", "팔에 힘을!", "다리에 힘을!", "땅을 박차고!", "대열 돌파!" };
+        private static readonly Vector2[][] corners =
+        {
+            new[] { new Vector2(27,77), new Vector2(517,77), new Vector2(469,307), new Vector2(27,307) },
+            new[] { new Vector2(549,77), new Vector2(1644,77), new Vector2(1644,341), new Vector2(501,329) },
+            new[] { new Vector2(27,341), new Vector2(686,341), new Vector2(637,632), new Vector2(27,632) },
+            new[] { new Vector2(719,375), new Vector2(1127,375), new Vector2(1174,632), new Vector2(668,632) },
+            new[] { new Vector2(1165,375), new Vector2(1644,375), new Vector2(1644,913), new Vector2(1214,913) },
+            new[] { new Vector2(27,665), new Vector2(1179,665), new Vector2(1179,913), new Vector2(27,913) }
+        };
+        private RectTransform viewport, cameraRoot;
+        private readonly RectTransform[] panels = new RectTransform[6];
+        private readonly UIItem_ComicPanel[] art = new UIItem_ComicPanel[6];
+        private readonly UIItem_ComicPanel[] frames = new UIItem_ComicPanel[6];
+        private UnityEngine.UI.Text beat;
+        private UnityEngine.UI.Image flash;
+        private int activeCut = -1;
+        public int ActiveCut => activeCut;
+
+        public static UIItem_MinorousComic Create(RectTransform parent)
+        {
+            var texture = Mgr_Bundle.Load<Texture2D>("UI/Demo/MinorousComic/Minorous_Storyboard");
+            var template = Mgr_Bundle.Load<Material>("UI/Demo/MinorousComic/Mat_ComicPanel");
+            if (texture == null || template == null) return null;
+            var root = DemoUI.Fill(parent, "group_minorous_comic");
+            var view = root.gameObject.AddComponent<UIItem_MinorousComic>();
+            view.Build(texture, template);
+            view.Evaluate(0);
+            return view;
+        }
+
+        private void Build(Texture texture, Material template)
+        {
+            DemoUI.Shade(transform, "bg_ink", new Color(.045f, .035f, .027f)).raycastTarget = true;
+            viewport = DemoUI.Fill(transform, "obj_comic_viewport");
+            viewport.offsetMin = new Vector2(16, 64);
+            viewport.offsetMax = new Vector2(-16, -64);
+            viewport.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
+            cameraRoot = DemoUI.Rect(viewport, "obj_comic_camera", 0, 0, 1672, 850);
+            DemoUI.Shade(cameraRoot, "bg_paper", new Color(.84f, .81f, .72f));
+            for (int i = 0; i < panels.Length; i++)
+            {
+                // Move each cut about its own center, with artwork and frame as separate children.
+                var graphic = DemoUI.Rect(cameraRoot, "group_cut_" + i, 0, 0, 0, 0);
+                var picture = DemoUI.Rect(graphic, "img_art", 0, 0, 0, 0).gameObject.AddComponent<UIItem_ComicPanel>();
+                picture.Configure(texture, corners[i], template, false);
+                graphic.anchoredPosition = picture.rectTransform.anchoredPosition;
+                graphic.sizeDelta = picture.rectTransform.sizeDelta;
+                picture.rectTransform.anchoredPosition = Vector2.zero;
+                var border = DemoUI.Rect(graphic, "img_frame", 0, 0, 0, 0).gameObject.AddComponent<UIItem_ComicPanel>();
+                border.Configure(null, corners[i], null, true);
+                border.rectTransform.anchoredPosition = Vector2.zero;
+                panels[i] = graphic; art[i] = picture; frames[i] = border;
+            }
+            flash = DemoUI.Shade(viewport, "img_contact_flash", Color.clear);
+            var title = DemoUI.Text(transform, "txt_skill", "대열 돌파", -405, -31, 390, 54, 38, DemoUI.Paper, TextAnchor.MiddleLeft, true);
+            title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0, 1);
+            title.rectTransform.anchoredPosition = new Vector2(235, -31);
+            var name = DemoUI.Text(transform, "txt_monster", "마이너 우로스", 427, -32, 340, 44, 21, DemoUI.Gold, TextAnchor.MiddleRight);
+            name.rectTransform.anchorMin = name.rectTransform.anchorMax = new Vector2(1, 1);
+            name.rectTransform.anchoredPosition = new Vector2(-213, -32);
+            beat = DemoUI.Text(transform, "txt_beat", "", -80, 31, 650, 48, 29, DemoUI.Paper, TextAnchor.MiddleCenter, true);
+            beat.rectTransform.anchorMin = beat.rectTransform.anchorMax = new Vector2(.5f, 0);
+        }
+
+        public void Evaluate(float elapsed)
+        {
+            int current = -1;
+            for (int i = 0; i < starts.Length; i++) if (elapsed >= starts[i]) current = i;
+            if (current != activeCut)
+            {
+                activeCut = current;
+                if (current >= 0) panels[current].SetAsLastSibling();
+            }
+            float local = current < 0 ? 0 : elapsed - starts[current];
+            float end = current < 0 ? starts[0] : current == 5 ? Duration : starts[current + 1];
+            float length = current < 0 ? starts[0] : end - starts[current];
+            float focus = Smooth(0, .22f, local) * (1 - Smooth(length - .28f, length, local));
+            float outro = Smooth(7.35f, 8.05f, elapsed);
+            for (int i = 0; i < panels.Length; i++)
+            {
+                float ignition = Smooth(starts[i], starts[i] + .16f, elapsed);
+                bool selected = current == i;
+                float light = selected ? ignition : i < current ? .48f : 0;
+                art[i].SetLight(light, Mathf.Lerp(.40f, 1, selected ? ignition : i < current ? .40f : 0));
+                frames[i].color = Color.Lerp(new Color(.11f, .10f, .09f), new Color(1, .79f, .32f), selected ? ignition : 0);
+                panels[i].localScale = Vector3.one * (1 + (selected ? .026f * focus * (1 - outro) : 0));
+            }
+            float fit = Mathf.Min(viewport.rect.width / 1672, viewport.rect.height / 850) / 1.12f;
+            float zoom = 1 + focus * (current == 5 ? .095f : .075f) * (1 - outro);
+            cameraRoot.localScale = Vector3.one * (fit * zoom);
+            Vector2 aim = current < 0 ? Vector2.zero : panels[current].anchoredPosition;
+            // Pan with the zoom and return between cuts; the page remains readable around the active cut.
+            cameraRoot.anchoredPosition = -aim * fit * (zoom - 1) * .62f;
+            float impact = current >= 4 ? (1 - Smooth(.02f, .25f, local)) : 0;
+            cameraRoot.anchoredPosition += new Vector2(Mathf.Sin(local * 67), Mathf.Cos(local * 53)) * impact * 3;
+            var margin = (viewport.rect.size - new Vector2(1672, 850) * fit * zoom) * .5f;
+            var position = cameraRoot.anchoredPosition;
+            cameraRoot.anchoredPosition = new Vector2(Mathf.Clamp(position.x, -margin.x, margin.x), Mathf.Clamp(position.y, -margin.y, margin.y));
+            flash.color = new Color(1, .84f, .53f, impact * .13f);
+            beat.text = current < 0 ? "" : beats[current];
+        }
+
+        private static float Smooth(float start, float end, float value) => Mathf.SmoothStep(0, 1, Mathf.InverseLerp(start, end, value));
+    }
+}

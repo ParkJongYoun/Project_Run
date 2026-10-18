@@ -1,0 +1,158 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "2D_시작장면.png"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_int8_convrot.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "A spectacular 6.6-second ultimate-skill animation for a fantasy racing game. Preserve the exact minotaur in the first image: stocky muscular orange-furred body, auburn mane, large upright ivory horns, amber eyes, cream chest, teal waist sash, brown shorts, white wrist wraps and dark cloven hooves. Keep his cute but powerful proportions, two horns, two arms and two legs, with no weapons or rider. Polished hand-drawn 2D anime animation with expressive clean outlines and painted scenery. The skill is Formation Breaker, explosive physical acceleration.\n0.0-1.2 seconds: the low camera pushes in slightly as the braced minotaur exhales visible steam, tightens both fists and compresses his powerful legs. Grass bends outward and small stones tremble. The grand stone stadium arches, colorful pennants, grass racing track and distant green mountains remain clearly visible. Golden sparks coil around his wrists and hooves.\n1.2-2.1 seconds: sharp cinematic cut to a fierce eye-and-horns close-up. His eyes catch a brilliant amber glint, mane and teal sash snap backward as pressure rises. The stadium is still identifiable behind him.\n2.1-2.8 seconds: dramatic ground-level close-up of one cloven hoof stamping into the track. A single enormous golden circular shockwave blasts grass, dust and pebbles outward, with a brief crisp impact flash and strong camera jolt. The flash clears immediately.\n2.8-5.8 seconds: hard cut to a wide low three-quarter tracking shot. He launches into an extremely fast heavy sprint along the track, leaning forward, arms driving and hooves hammering, each stride throwing up dust. A huge translucent golden bull-shaped energy silhouette surges behind him for a moment, then stretches into brilliant golden ribbons. The stadium arches sweep past in parallax. Clear readable body movement, spectacular sparks, sunlight and debris. Energy curls around his silhouette without hiding his face or costume. Accelerate visibly and forcefully.\n5.8-6.6 seconds: the camera swings toward his front for a powerful charging hero shot, fierce confident gaze, one fist driving forward, the golden wake splits outward to both sides, with the stone arches and sky visible behind. Finish on continued forward momentum for return to racing. Fluid character animation, changing poses and genuine locomotion, bold dynamic camera cuts, high contrast golden effects against blue sky and green track. No static slideshow, no panel borders, no captions, no logos, no interface, no extra limbs, no character redesign, no prolonged whiteout, no background replaced by abstract speed lines.",
+      "width": 512,
+      "height": 288,
+      "length": 158,
+      "first_frame": [
+        "1",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 1810202601
+    }
+  },
+  "7": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "8": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "6",
+        0
+      ],
+      "guider": [
+        "9",
+        0
+      ],
+      "sampler": [
+        "7",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ],
+      "fps": 24
+    }
+  },
+  "13": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "12",
+        0
+      ],
+      "filename_prefix": "ProjectRunUltimate/Minorous_2D_512_v01",
+      "format": "mp4",
+      "format.codec": "h264"
+    }
+  },
+  "14": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "lora_name": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "strength_model": 1.0
+    }
+  }
+}
