@@ -15,8 +15,8 @@ namespace ProjectRun.Editor
         public static void ApplyMountVariety()
         {
             var scene = SceneManager.GetActiveScene();
-            if (EditorApplication.isPlaying || scene.path != "Assets/Scenes/Scene_All3D.unity")
-                throw new InvalidOperationException("Open Scene_All3D in Edit mode.");
+            if (EditorApplication.isPlaying || scene.path != "Assets/Scenes/Scene_Oval.unity")
+                throw new InvalidOperationException("Open Scene_Oval in Edit mode.");
             var race = Object.FindFirstObjectByType<Sys_Race>();
             var presentation = Object.FindFirstObjectByType<Sys_RacePresentation>();
             if (race == null || race.Entrants.Length != mounts.Length || presentation.Views.Length != mounts.Length)

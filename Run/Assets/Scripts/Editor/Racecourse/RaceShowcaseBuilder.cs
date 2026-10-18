@@ -30,8 +30,8 @@ namespace ProjectRun.Editor
         public static void Build()
         {
             var scene = SceneManager.GetActiveScene();
-            if (scene.path != "Assets/Scenes/Scene_All3D.unity" || EditorApplication.isPlaying)
-                throw new InvalidOperationException("Open Scene_All3D in Edit mode.");
+            if (scene.path != "Assets/Scenes/Scene_Oval.unity" || EditorApplication.isPlaying)
+                throw new InvalidOperationException("Open Scene_Oval in Edit mode.");
             Ensure(art + "/Animations"); Ensure(art + "/Materials"); Ensure(art + "/UI");
             Ensure(output); Ensure(resources + "/Prefabs/UI/Panel"); Ensure(resources + "/Audio/Race");
             font = AssetDatabase.LoadAssetAtPath<Font>("Assets/ArtBundles/UI/SGLReference/Fonts/NanumMyeongjo-Bold.ttf");
@@ -89,7 +89,7 @@ namespace ProjectRun.Editor
             camera.transform.LookAt(new Vector3(49, 2.3f, -68.5f)); camera.fieldOfView = 48;
             PlayerSettings.runInBackground = true;
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-            Debug.Log("Six-monster race showcase saved to Scene_All3D.");
+            Debug.Log("Six-monster race showcase saved to Scene_Oval.");
         }
 
         private static GameObject BuildRunner(int index)

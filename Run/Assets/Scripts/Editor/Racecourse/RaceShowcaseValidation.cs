@@ -20,7 +20,7 @@ namespace ProjectRun.Editor
         private static int frameStart;
         private static double wallStart;
 
-        public static string StartCapture(string outputDirectory = "DataBundles/Scene_All3D/RaceValidation/Sequence")
+        public static string StartCapture(string outputDirectory = "DataBundles/Scene_Oval/RaceValidation/Sequence")
         {
             if (!EditorApplication.isPlaying) throw new InvalidOperationException("Enter Play mode first.");
             activeRace = UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
@@ -84,8 +84,8 @@ namespace ProjectRun.Editor
             results.Add("Missing bones: " + missingBones + "; missing/unsupported materials: " + missingMaterials);
             results.Add("Instance count matches entries: " + (views.Length == race.Entrants.Length));
             string report = string.Join("\n", results);
-            Directory.CreateDirectory("DataBundles/Scene_All3D/RaceValidation");
-            File.WriteAllText("DataBundles/Scene_All3D/RaceValidation/simulation-validation.txt", report);
+            Directory.CreateDirectory("DataBundles/Scene_Oval/RaceValidation");
+            File.WriteAllText("DataBundles/Scene_Oval/RaceValidation/simulation-validation.txt", report);
             return report;
         }
         private static Data_RaceSimulation Run(Data_RunnerSetup[] entries, int fps, int speed)

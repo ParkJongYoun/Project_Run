@@ -19,8 +19,8 @@ namespace ProjectRun.Editor
         public static void ApplyPolish()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            if (EditorApplication.isPlaying || scene.path != "Assets/Scenes/Scene_All3D.unity")
-                throw new InvalidOperationException("Open Scene_All3D in Edit mode.");
+            if (EditorApplication.isPlaying || scene.path != "Assets/Scenes/Scene_Oval.unity")
+                throw new InvalidOperationException("Open Scene_Oval in Edit mode.");
             Ensure(look + "/Materials"); Ensure(look + "/Textures"); Ensure(look + "/Lighting");
             for (int i = 0; i < mounts.Length; i++)
             {

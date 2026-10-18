@@ -28,8 +28,8 @@ namespace ProjectRun.Editor
         public static void Build()
         {
             var scene = SceneManager.GetActiveScene();
-            if (scene.path != "Assets/Scenes/Scene_All3D.unity" || EditorApplication.isPlaying)
-                throw new InvalidOperationException("Open Scene_All3D in Edit mode before building the course.");
+            if (scene.path != "Assets/Scenes/Scene_Oval.unity" || EditorApplication.isPlaying)
+                throw new InvalidOperationException("Open Scene_Oval in Edit mode before building the course.");
             EnsureFolder(artPath + "/Materials");
             EnsureFolder(artPath + "/Meshes");
             EnsureFolder(artPath + "/Textures");
@@ -527,7 +527,7 @@ namespace ProjectRun.Editor
 
         private static void SetCamera(Vector3 position, Vector3 target, float fov)
         {
-            if (SceneManager.GetActiveScene().path != "Assets/Scenes/Scene_All3D.unity") return;
+            if (SceneManager.GetActiveScene().path != "Assets/Scenes/Scene_Oval.unity") return;
             var camera = Camera.main;
             if (camera == null)
             {

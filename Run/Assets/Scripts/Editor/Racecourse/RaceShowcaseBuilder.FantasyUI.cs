@@ -91,7 +91,7 @@ namespace ProjectRun.Editor
             var canvasRoot = GetRoot("UICanvas_Root"); var canvasObject = GetChild(canvasRoot.transform, "Canvas_Game");
             var canvas = Get<Canvas>(canvasObject); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = (int)E_CanvasLayer.Game;
             var scaler = Get<UnityEngine.UI.CanvasScaler>(canvasObject); scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(720,1280); scaler.matchWidthOrHeight = 0;
+            PlayModeLandscapeLayout.ConfigureCanvas(scaler);
             Get<UnityEngine.UI.GraphicRaycaster>(canvasObject);
             if (Object.FindFirstObjectByType<EventSystem>() == null)
             {
@@ -189,6 +189,8 @@ namespace ProjectRun.Editor
             hud.RestartButton=FantasyButton(menuPanel,"btn_restart","다시 달리기",0,-63,332,64,out restartLabel);
             hud.MenuCloseButton=FantasyButton(menuPanel,"btn_close","닫기",0,-144,218,58,out closeLabel);menu.gameObject.SetActive(false);
             RefineFantasyHUD(hud, race, root);
+            PlayModeLandscapeLayout.ApplyHUD(hud);
+            director.LandscapeComposition = true;
             hud.Race=null;hud.Director=null;hud.Presentation=null;
             PrefabUtility.SaveAsPrefabAssetAndConnect(panel.gameObject,resources+"/Prefabs/UI/Panel/UIPanel_RaceHUD.prefab",InteractionMode.AutomatedAction);
             hud.Race=race;hud.Director=director;hud.Presentation=presentation;PrefabUtility.RecordPrefabInstancePropertyModifications(hud);

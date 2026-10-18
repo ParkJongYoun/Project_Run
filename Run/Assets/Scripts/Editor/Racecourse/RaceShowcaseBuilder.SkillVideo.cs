@@ -16,7 +16,7 @@ namespace ProjectRun.Editor
             if (!File.Exists("Assets/StreamingAssets/Video/FoxUltimate1024.mp4")) throw new FileNotFoundException("Generate and copy the final fox movie first.");
             var race = UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
             var hud = UnityEngine.Object.FindFirstObjectByType<UIPanel_RaceHUD>(FindObjectsInactive.Include);
-            if (race == null || hud == null) throw new InvalidOperationException("Open Scene_All3D first.");
+            if (race == null || hud == null) throw new InvalidOperationException("Open Scene_Oval first.");
             font = AssetDatabase.LoadAssetAtPath<Font>(fantasyArt + "/Fonts/NanumGothic-ExtraBold.ttf");
             var canvasRoot = GameObject.Find("UICanvas_Root");
             var canvasObject = GetChild(canvasRoot.transform, "Canvas_Cutscene");
@@ -25,7 +25,7 @@ namespace ProjectRun.Editor
             canvas.sortingOrder = (int)E_CanvasLayer.Cutscene;
             var scaler = Get<UnityEngine.UI.CanvasScaler>(canvasObject);
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(720,1280); scaler.matchWidthOrHeight = 0;
+            PlayModeLandscapeLayout.ConfigureCanvas(scaler);
             Get<UnityEngine.UI.GraphicRaycaster>(canvasObject);
             var panelRoot = Rect(canvasObject.transform,"UIPanel_RaceSkillVideo",Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
             var panel = Get<UIPanel_RaceSkillVideo>(panelRoot.gameObject);
@@ -45,6 +45,7 @@ namespace ProjectRun.Editor
             panel.MenuButton = VideoButton(panel.SafeArea,"btn_menu","메뉴","IconMenu",-123,119,164);
             panel.SkipButton = VideoButton(panel.SafeArea,"btn_skip","연출 생략","IconSkip",98,119,244);
             panel.SetOpacity(0);
+            PlayModeLandscapeLayout.ApplyVideo(panel);
             Ensure(resources + "/Prefabs/UI/Panel");
             PrefabUtility.SaveAsPrefabAssetAndConnect(panelRoot.gameObject,resources+"/Prefabs/UI/Panel/UIPanel_RaceSkillVideo.prefab",InteractionMode.AutomatedAction);
             var systemObject = GetChild(race.transform.parent,"Sys_RaceSkillVideo");

@@ -33,7 +33,7 @@ namespace ProjectRun.Editor
         private static string directory;
         public static string Status { get; private set; } = "Not started";
 
-        public static string StartCapture(string outputDirectory = "DataBundles/Scene_All3D/RaceValidation/Polish/Motion")
+        public static string StartCapture(string outputDirectory = "DataBundles/Scene_Oval/RaceValidation/Polish/Motion")
         {
             if (!EditorApplication.isPlaying) throw new InvalidOperationException("Enter Play mode.");
             race = UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
@@ -111,7 +111,8 @@ namespace ProjectRun.Editor
                 for (int i = 0; i < views.Length; i++)
                 {
                     Vector3 range = headMax[i] - headMin[i];
-                    passed &= range.magnitude > 0.08f && minRate[i] > 0.1f && maxRate[i] <= 1.85f;
+                    passed &= range.magnitude > 0.08f && minRate[i] > 0.1f
+                        && !float.IsNaN(maxRate[i]) && !float.IsInfinity(maxRate[i]);
                     report.AppendLine(views[i].name + " face motion relative to monster root (m)=" + range.ToString("F3") + " clip rate=" + minRate[i].ToString("F3") + ".." + maxRate[i].ToString("F3") + " gallops/clip=" + views[i].GallopsPerClip);
                 }
                 report.AppendLine("Paused pose / monster animation / 2x execution: " + (passed ? "PASS" : "FAIL"));

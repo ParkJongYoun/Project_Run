@@ -19,8 +19,8 @@ namespace ProjectRun.Editor
         [MenuItem("Tools/Project Run/Race/Install monster-only rendering comparison")]
         public static void Install()
         {
-            if (EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_All3D")
-                throw new InvalidOperationException("Open Scene_All3D in Edit mode.");
+            if (EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_Oval")
+                throw new InvalidOperationException("Open Scene_Oval in Edit mode.");
             var presentation = Object.FindFirstObjectByType<Sys_RacePresentation>();
             for (int i = 0; i < presentation.Race.Entrants.Length; i++)
             {
@@ -275,7 +275,7 @@ namespace ProjectRun.Editor
         private static UIItem_RenderStyle CreateControls(UIPanel_RaceHUD hud)
         {
             var existing=hud.GetComponentInChildren<UIItem_RenderStyle>(true);
-            if(existing!=null) { ((RectTransform)existing.transform).anchoredPosition=new Vector2(0,-304); return existing; }
+            if(existing!=null) { PlayModeLandscapeLayout.ApplyRenderStyles(existing); return existing; }
             var group=new GameObject("group_render_style",typeof(RectTransform));
             var rect=(RectTransform)group.transform; rect.SetParent(hud.SafeArea,false);
             rect.anchorMin=rect.anchorMax=new Vector2(.5f,1); rect.sizeDelta=new Vector2(650,48); rect.anchoredPosition=new Vector2(0,-304);
@@ -295,6 +295,7 @@ namespace ProjectRun.Editor
                 var label=text.GetComponent<Text>(); label.font=hud.PhaseLabel.font; label.fontSize=21; label.alignment=TextAnchor.MiddleCenter; label.text=labels[i]; label.raycastTarget=false;
                 item.Labels[i]=label;
             }
+            PlayModeLandscapeLayout.ApplyRenderStyles(item);
             return item;
         }
     }

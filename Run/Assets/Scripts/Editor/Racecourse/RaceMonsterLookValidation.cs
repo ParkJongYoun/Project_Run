@@ -23,8 +23,8 @@ namespace ProjectRun.Editor
 
         public static string Run()
         {
-            if (!EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_All3D")
-                throw new InvalidOperationException("Play Scene_All3D before validation.");
+            if (!EditorApplication.isPlaying || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_Oval")
+                throw new InvalidOperationException("Play Scene_Oval before validation.");
             var race = UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
             var presentation = UnityEngine.Object.FindFirstObjectByType<Sys_RacePresentation>();
             var director = UnityEngine.Object.FindFirstObjectByType<Sys_RaceCamera>();
