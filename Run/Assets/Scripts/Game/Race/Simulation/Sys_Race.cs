@@ -6,9 +6,13 @@ namespace ProjectRun.Race
     public sealed class Sys_Race : MonoBehaviour
     {
         public Data_RunnerSetup[] Entrants = new Data_RunnerSetup[6];
+        public Data_RaceCourse Course;
+        [Min(1)] public int LapCount = 1;
         public float CountdownSeconds = 4;
         public float PlaybackSpeed = 1;
         public bool Paused;
+        [Tooltip("Enable deterministic blocking, gap selection and overtaking for this scene.")]
+        public bool EnableLaneContests;
         public Data_RaceSimulation Simulation { get; private set; }
         public float Countdown { get; private set; }
         public int Generation { get; private set; }
@@ -19,11 +23,11 @@ namespace ProjectRun.Race
         private double accumulator;
         private bool firstFrame = true;
 
-        private void Awake() { Application.runInBackground = true; RestartRace(); }
+        private void Awake() { Application.runInBackground = true; Sys_DemoRace.ConfigureRace(this); RestartRace(); }
         public void RestartRace()
         {
             if (Simulation != null) Simulation.Changed -= Publish;
-            Simulation = new Data_RaceSimulation(Entrants);
+            Simulation = new Data_RaceSimulation(Entrants, Course, EnableLaneContests, LapCount);
             Simulation.Changed += Publish;
             Countdown = CountdownSeconds;
             accumulator = 0;

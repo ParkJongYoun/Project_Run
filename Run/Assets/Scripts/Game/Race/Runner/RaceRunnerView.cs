@@ -5,6 +5,14 @@ using UnityEngine.Playables;
 namespace ProjectRun.Race
 {
     public enum E_RiderPosture { Straddling, Carried, Kneeling, Seated }
+    [System.Serializable]
+    public sealed class Data_MotionPropAttachment
+    {
+        public Transform Prop;
+        public Transform Hand;
+        public Vector3 LocalPosition;
+        public Quaternion LocalRotation = Quaternion.identity;
+    }
     [DefaultExecutionOrder(-50)]
     public sealed class RaceRunnerView : MonoBehaviour
     {
@@ -39,10 +47,27 @@ namespace ProjectRun.Race
         public ParticleSystem Sparks;
         public TrailRenderer[] Trails;
         public Transform Shadow;
-        [Header("Gait calibration")]
-        [Tooltip("World metres per second at the source clip's original playback speed. Calibrated from planted paws, including model scale.")]
+        [Header("Run animation")]
+        [Tooltip("Scale this monster's base animation rate by current race speed / the entrant's BaseSpeed. Disable while tuning a fixed cadence.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("SyncRunAnimationToMovement")]
+        [SerializeField] private bool ScaleRunAnimationWithSpeed = true;
+        [Tooltip("Animation playback rate at the entrant's BaseSpeed. Each monster can be tuned independently; acceleration scales from this value.")]
+        [InspectorName("Base Run Animation Speed")]
+        [SerializeField, Min(0)] private float RunAnimationSpeed = 1;
+        [Header("Monster motion preview")]
+        [Tooltip("Enable before entering Play Mode. Disable to restore the original Run Clip and turn off the added skill gesture.")]
+        [SerializeField] private bool UseMonsterMotionPreview;
+        [SerializeField] private AnimationClip PreviewRunClip;
+        [SerializeField] private AnimationClip SkillGestureClip;
+        [SerializeField] private AvatarMask SkillGestureMask;
+        [Tooltip("Gesture duration in race seconds, independent of the monster's run animation rate.")]
+        [SerializeField, Min(0.1f)] private float SkillGestureDuration = 1.8f;
+        [SerializeField, Range(0, 1)] private float SkillGestureWeight = 1;
+        [Tooltip("Independent prop bones that must follow the hand when the copied arm motion is active.")]
+        [SerializeField] private Data_MotionPropAttachment[] MotionPropAttachments = new Data_MotionPropAttachment[0];
+        // Retained for older prefab/builder compatibility; the base-speed ratio replaces stride calibration.
         [UnityEngine.Serialization.FormerlySerializedAs("AnimationStride")]
-        public float RunReferenceSpeed = 12;
+        [HideInInspector] public float RunReferenceSpeed = 12;
         [Tooltip("Complete gallops in one source clip; some legacy clips contain two.")]
         public int GallopsPerClip = 1;
         [Range(0, 2)] public float RiderMotion = 1;
@@ -50,7 +75,7 @@ namespace ProjectRun.Race
         public bool HasRider => RiderAnimator != null && RiderRoot != null && RidingClip != null;
         public bool HasPose { get; private set; }
         public float CurrentAnimationRate { get; private set; }
-        public float GaitPhase => RunClip == null ? 0 : Mathf.Repeat((float)(gaitClock / RunClip.length * GallopsPerClip), 1);
+        public float GaitPhase => activeRunClip == null ? 0 : Mathf.Repeat((float)(gaitClock / activeRunClip.length * GallopsPerClip), 1);
         private Sys_Race race;
         private PlayableGraph mountGraph;
         private PlayableGraph riderGraph;
@@ -58,9 +83,15 @@ namespace ProjectRun.Race
         private AnimationClipPlayable run;
         private AnimationClipPlayable riding;
         private AnimationMixerPlayable mixer;
+        private AnimationClip activeRunClip;
+        private AnimationClipPlayable previewRun;
+        private AnimationLayerMixerPlayable runLayers;
+        private AnimationClipPlayable skillGesture;
+        private AnimationLayerMixerPlayable skillLayers;
         private Vector3 seatRest;
         private Quaternion seatRestRotation;
         private double previousClock;
+        private Vector3 previousPosition;
         private double gaitClock;
         private double idleClock;
         private float ridePitch;
@@ -90,12 +121,36 @@ namespace ProjectRun.Race
             mountGraph = PlayableGraph.Create("Mount_" + RunnerId);
             mountGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
             idle = AnimationClipPlayable.Create(mountGraph, IdleClip);
-            run = AnimationClipPlayable.Create(mountGraph, RunClip);
+            activeRunClip = RunClip;
+            run = AnimationClipPlayable.Create(mountGraph, activeRunClip);
             mixer = AnimationMixerPlayable.Create(mountGraph, 2);
             mountGraph.Connect(idle, 0, mixer, 0);
             mountGraph.Connect(run, 0, mixer, 1);
             var output = AnimationPlayableOutput.Create(mountGraph, "mount", MountAnimator);
             output.SetSourcePlayable(mixer);
+            if (UseMonsterMotionPreview && PreviewRunClip != null && SkillGestureMask != null)
+            {
+                previewRun = AnimationClipPlayable.Create(mountGraph, PreviewRunClip);
+                runLayers = AnimationLayerMixerPlayable.Create(mountGraph, 2);
+                mountGraph.Connect(mixer, 0, runLayers, 0);
+                mountGraph.Connect(previewRun, 0, runLayers, 1);
+                runLayers.SetInputWeight(0, 1);
+                runLayers.SetInputWeight(1, 0);
+                runLayers.SetLayerMaskFromAvatarMask(1, SkillGestureMask);
+                output.SetSourcePlayable(runLayers);
+            }
+            if (UseMonsterMotionPreview && SkillGestureClip != null && SkillGestureMask != null)
+            {
+                skillGesture = AnimationClipPlayable.Create(mountGraph, SkillGestureClip);
+                skillLayers = AnimationLayerMixerPlayable.Create(mountGraph, 2);
+                if (runLayers.IsValid()) mountGraph.Connect(runLayers, 0, skillLayers, 0);
+                else mountGraph.Connect(mixer, 0, skillLayers, 0);
+                mountGraph.Connect(skillGesture, 0, skillLayers, 1);
+                skillLayers.SetInputWeight(0, 1);
+                skillLayers.SetInputWeight(1, 0);
+                skillLayers.SetLayerMaskFromAvatarMask(1, SkillGestureMask);
+                output.SetSourcePlayable(skillLayers);
+            }
             mountGraph.Play();
             mixer.SetInputWeight(0, 1); mixer.SetInputWeight(1, 0);
             idle.SetTime(0.2); mountGraph.Evaluate(0);
@@ -124,10 +179,17 @@ namespace ProjectRun.Race
         {
             if (race == null || !mountGraph.IsValid()) return;
             var s = race.Simulation.Runners[RunnerId];
+            float interpolation = Mathf.Clamp01(race.Interpolation);
+            float distance = Mathf.Lerp((float)s.PreviousDistance, (float)s.Distance, interpolation);
+            float lane = race.Simulation.UsesLaneContests ? Mathf.Lerp(s.PreviousLane, s.Lane, interpolation) : s.Lane;
+            bool moving = race.Simulation.Phase == E_RacePhase.Running || race.Simulation.Phase == E_RacePhase.Finishing;
+            if (race.Simulation.Phase == E_RacePhase.Result) { distance = (float)s.Distance; lane = s.Lane; }
+            Vector3 position = race.Simulation.Point(distance, lane);
             if (generation != race.Generation)
             {
                 generation = race.Generation; previousClock = 0;
-                gaitClock = RunnerId * 0.173 * RunClip.length / Mathf.Max(1, GallopsPerClip);
+                previousPosition = position;
+                gaitClock = RunnerId * 0.173 * activeRunClip.length / Mathf.Max(1, GallopsPerClip);
                 idleClock = RunnerId * 0.3; ridePitch = 0; rideRoll = 0; displayedSpeed = 0;
                 lastFoot = -1;
                 foreach (var trail in Trails) trail.Clear();
@@ -138,41 +200,60 @@ namespace ProjectRun.Race
                 + Mathf.Clamp01(race.Interpolation) * Data_RaceSimulation.StepSeconds);
             double delta = System.Math.Max(0, clock - previousClock);
             previousClock = clock;
-            float poseDelta = race.Paused ? 0 : (race.Countdown > 0 || race.Simulation.Phase == E_RacePhase.Result
+            float poseDelta = race.Paused || race.PresentationHeld ? 0 : (race.Countdown > 0 || race.Simulation.Phase == E_RacePhase.Result
                 ? Time.unscaledDeltaTime * race.PlaybackSpeed : (float)delta);
             idleClock += poseDelta;
-            displayedSpeed = Mathf.Lerp(displayedSpeed, s.Speed, 1 - Mathf.Exp(-12 * poseDelta));
-            CurrentAnimationRate = Mathf.Clamp(displayedSpeed / Mathf.Max(0.1f, RunReferenceSpeed), 0, 1.85f);
-            gaitClock += delta * CurrentAnimationRate;
-            int foot = (int)(gaitClock / RunClip.length * GallopsPerClip * 2);
+            // Tune cadence at BaseSpeed, then preserve that relationship through acceleration and slowdown.
+            float travel = moving && delta > 0 ? Vector3.Distance(previousPosition, position) : 0;
+            previousPosition = position;
+            float speedRatio = ScaleRunAnimationWithSpeed
+                ? Mathf.Max(0, s.Speed) / Mathf.Max(0.1f, race.Entrants[RunnerId].BaseSpeed) : 1;
+            double gaitDelta = travel > 0
+                ? delta * Mathf.Max(0, RunAnimationSpeed) * speedRatio : 0;
+            CurrentAnimationRate = delta > 0 ? (float)(gaitDelta / delta) : 0;
+            gaitClock += gaitDelta;
+            float motionSpeed = moving && delta > 0 ? travel / (float)delta : 0;
+            displayedSpeed = Mathf.Lerp(displayedSpeed, motionSpeed, 1 - Mathf.Exp(-12 * poseDelta));
+            int foot = (int)(gaitClock / activeRunClip.length * GallopsPerClip * 2);
             if (HasFootfalls && foot != lastFoot && s.Speed > 2 && !race.Paused)
             {
                 lastFoot = foot;
                 var camera = Camera.main;
                 if (camera != null) Mgr_Sound.PlayFoot(Mathf.Clamp01(1 - Vector3.Distance(camera.transform.position, transform.position) / 38));
             }
-            float distance = Mathf.Lerp((float)s.PreviousDistance, (float)s.Distance, Mathf.Clamp01(race.Interpolation));
-            if (race.Simulation.Phase == E_RacePhase.Result) distance = (float)s.Distance;
-            transform.position = Data_RaceSimulation.CoursePoint(distance, s.Lane);
-            var forward = Data_RaceSimulation.CourseForward(distance);
+            transform.position = position;
+            var forward = race.Simulation.Forward(distance);
+            // Face the chosen gap as well as the course: a lane change must not look like sideways sliding.
+            if (race.Simulation.UsesLaneContests && s.Speed > .5f)
+            {
+                var lateral = (race.Simulation.Point(distance, lane + .1f) - position).normalized;
+                forward = (forward * s.Speed + lateral * s.LaneVelocity).normalized;
+            }
             transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
             float blend = Mathf.SmoothStep(0, 1, displayedSpeed / 4);
             mixer.SetInputWeight(0, 1 - blend); mixer.SetInputWeight(1, blend);
             idle.SetTime(idleClock * 0.65);
             run.SetTime(gaitClock);
+            if (runLayers.IsValid())
+            {
+                runLayers.SetInputWeight(1, blend);
+                previewRun.SetTime(gaitClock / activeRunClip.length * PreviewRunClip.length);
+            }
+            UpdateSkillGesture(s.SkillAge, clock - race.Simulation.Time, moving && !s.Finished && !race.IsSkipping);
             mountGraph.Evaluate(0);
+            UpdateMotionProps();
             MountRoot.localPosition = Vector3.zero;
             MountRoot.localRotation = Quaternion.identity;
-            float phase = (float)(gaitClock / RunClip.length * GallopsPerClip * Mathf.PI * 2);
+            float phase = (float)(gaitClock / activeRunClip.length * GallopsPerClip * Mathf.PI * 2);
             if (HasRider)
             {
                 // Play the entire seated cycle; the old 0.23..0.37 s sample barely moved any bones.
-                riding.SetTime(gaitClock / RunClip.length * GallopsPerClip * RidingClip.length + idleClock * (1 - blend) * 0.3);
+                riding.SetTime(gaitClock / activeRunClip.length * GallopsPerClip * RidingClip.length + idleClock * (1 - blend) * 0.3);
                 riderGraph.Evaluate(0);
                 float surge = s.SkillAge >= 0 && s.SkillAge < 3.4f ? Mathf.Sin(Mathf.Clamp01(s.SkillAge / 3.4f) * Mathf.PI) : 0;
                 var seatRotation = Quaternion.Inverse(MountRoot.rotation) * SeatBone.rotation * Quaternion.Inverse(seatRestRotation);
                 float seatPitch = Mathf.Clamp(Mathf.DeltaAngle(0, seatRotation.eulerAngles.x), -18, 18);
-                float bend = Vector3.SignedAngle(forward, Data_RaceSimulation.CourseForward(distance + 5), Vector3.up);
+                float bend = Vector3.SignedAngle(forward, race.Simulation.Forward(distance + 5), Vector3.up);
                 float targetPitch = 5 + blend * 7 + surge * 5 + seatPitch * 0.3f;
                 float targetRoll = Mathf.Clamp(-bend * displayedSpeed * 0.12f, -7, 7);
                 float response = 1 - Mathf.Exp(-10 * poseDelta);
@@ -237,6 +318,31 @@ namespace ProjectRun.Race
             foreach (var trail in Trails) trail.emitting = boosted && !race.Paused && !race.PresentationHeld;
             Shadow.localPosition = new Vector3(0, 0.035f, -0.2f);
             HasPose = true;
+        }
+        private void UpdateMotionProps()
+        {
+            if (!UseMonsterMotionPreview || MotionPropAttachments == null) return;
+            foreach (var attachment in MotionPropAttachments)
+            {
+                if (attachment == null || attachment.Prop == null || attachment.Hand == null) continue;
+                attachment.Prop.SetPositionAndRotation(attachment.Hand.TransformPoint(attachment.LocalPosition),
+                    attachment.Hand.rotation * attachment.LocalRotation);
+            }
+        }
+        private void UpdateSkillGesture(float skillAge, double interpolationOffset, bool moving)
+        {
+            if (!skillLayers.IsValid()) return;
+            float age = skillAge < 0 ? -1 : Mathf.Max(0, skillAge + (float)interpolationOffset);
+            float duration = Mathf.Max(0.1f, SkillGestureDuration);
+            bool active = UseMonsterMotionPreview && moving && age >= 0 && age < duration;
+            float weight = active
+                ? Mathf.SmoothStep(0, 1, age / Mathf.Min(0.18f, duration * 0.25f))
+                    * Mathf.SmoothStep(0, 1, (duration - age) / Mathf.Min(0.3f, duration * 0.25f))
+                    * SkillGestureWeight : 0;
+            skillLayers.SetInputWeight(1, weight);
+            // Use the simulation clock so pause, presentation holds, playback speed and restart stay aligned.
+            // Only the mask's arm/shoulder bones change; locomotion and race calculation continue underneath.
+            skillGesture.SetTime(Mathf.Clamp01(age / duration) * SkillGestureClip.length);
         }
         private Transform FindBone(string boneName)
         {

@@ -14,6 +14,7 @@ namespace ProjectRun.Race
         public int FocusRunner { get; private set; }
         public int ManualShot = -1;
         public float CameraDistanceScale = 1;
+        public bool LandscapeComposition;
 #if UNITY_EDITOR
         // Capture tooling only; never serialized or used in a player build.
         [System.NonSerialized] public int CaptureShot = -1;
@@ -36,11 +37,12 @@ namespace ProjectRun.Race
 
         private void LateUpdate()
         {
-            if (Presentation.Views == null || Presentation.Views.Length != Race.Entrants.Length || Presentation.Views.Length < 2 || !Presentation.Views[0].HasPose) return;
+            if (Presentation.Views == null || Presentation.Views.Length != Race.Entrants.Length || Presentation.Views.Length == 0 || !Presentation.Views[0].HasPose) return;
             if (Race.Paused && !videoPlaying && videoRunner >= 0) videoReturnUntil += Time.unscaledDeltaTime;
             var sim = Race.Simulation;
             float time = (float)sim.Time;
-            int leader = sim.Order[0], second = sim.Order[1];
+            bool solo = Presentation.Views.Length == 1;
+            int leader = sim.Order[0], second = solo ? leader : sim.Order[1];
             FocusRunner = leader;
             float left = Presentation.Remaining;
             if (Race.Countdown > 0) CurrentShot = E_RaceShot.Opening;
@@ -58,7 +60,7 @@ namespace ProjectRun.Race
             {
                 int cycle = Mathf.FloorToInt((time - 5) / 4.5f) % 5;
                 CurrentShot = cycle == 0 ? E_RaceShot.Tracking : cycle == 1 ? E_RaceShot.Low : cycle == 2 ? E_RaceShot.Front : cycle == 3 ? E_RaceShot.Duel : E_RaceShot.Pack;
-                if (cycle == 1) FocusRunner = sim.Order[1];
+                if (cycle == 1) FocusRunner = second;
                 if (CurrentShot == E_RaceShot.Duel)
                 {
                     // Predict the nearest closing pair rather than cutting after a pass is over.
@@ -88,7 +90,7 @@ namespace ProjectRun.Race
 #endif
             var view = Presentation.Views[FocusRunner];
             var state = sim.Runners[FocusRunner];
-            Vector3 forward = Data_RaceSimulation.CourseForward((float)state.Distance);
+            Vector3 forward = sim.Forward((float)state.Distance);
             Vector3 right = Vector3.Cross(Vector3.up, forward);
             Vector3 focus = view.Focus;
             Vector3 offset;
@@ -135,7 +137,67 @@ namespace ProjectRun.Race
                 default:
                     focus = view.Focus + Vector3.up * 0.3f; offset = forward * 8 + right * -7 + Vector3.up * 1.5f; fov = 42; ShotLabel = "우승"; break;
             }
+            // A one-runner test uses the same race/camera flow with closer composition.
+            if (solo)
+            {
+                group = false;
+                switch (CurrentShot)
+                {
+                    case E_RaceShot.Opening:
+                        offset = right * -8.5f + forward * 6 + Vector3.up * 2.8f;
+                        fov = 43; break;
+                    case E_RaceShot.Pack:
+                    case E_RaceShot.Tracking:
+                    case E_RaceShot.Duel:
+                        focus = view.Focus;
+                        offset = right * -8.6f + forward * 4.8f + Vector3.up * 1.4f;
+                        fov = 40; ShotLabel = left < 100 ? "라스트 스퍼트" : "단독 주행"; break;
+                    case E_RaceShot.Low:
+                        offset = right * -8.4f + forward * 5.3f + Vector3.up * .6f;
+                        fov = 40; break;
+                    case E_RaceShot.Front:
+                        offset = forward * 10.5f + right * -1.8f + Vector3.up * 1.2f;
+                        fov = 40; ShotLabel = "정면 주행"; break;
+                    case E_RaceShot.Finish:
+                        offset = right * -9 + forward * 2 + Vector3.up;
+                        fov = 40; break;
+                    case E_RaceShot.Winner:
+                        offset = forward * 6 + right * -7 + Vector3.up * 1.4f;
+                        fov = 40; break;
+                }
+            }
+            // Follow the road through scenery; oval side cameras would pass through town buildings.
+            if (sim.Course != null && !solo && CurrentShot != E_RaceShot.Rider && CurrentShot != E_RaceShot.Charge && CurrentShot != E_RaceShot.Burst)
+            {
+                float d = (float)state.Distance;
+                bool frontView = ManualShot == 3 || CurrentShot == E_RaceShot.Winner;
+                float behind = CurrentShot == E_RaceShot.Opening ? 28 : 23;
+                Vector3 cameraPoint = sim.Point(d + (frontView ? 22 : -behind));
+                focus = sim.Point(d + (frontView ? 0 : 8)) + Vector3.up * 2;
+                offset = cameraPoint + Vector3.up * (ManualShot == 2 ? 6 : 13) - focus;
+                fov = 55;
+                group = false;
+                ShotLabel = sim.Course.Region(d);
+            }
             float aspect = RaceCamera.aspect;
+            if (LandscapeComposition && aspect >= 1 && group)
+            {
+                // Bring the pack closer in a wide frame, then fit both axes inside the HUD margins.
+                offset *= .78f;
+                Quaternion aim = Quaternion.LookRotation(-offset.normalized, Vector3.up);
+                Vector3 cameraRight = aim * Vector3.right, cameraUp = aim * Vector3.up, cameraForward = aim * Vector3.forward;
+                float tangent = Mathf.Tan(fov * Mathf.Deg2Rad * .5f);
+                float required = offset.magnitude;
+                for (int i = 0; i < Presentation.Views.Length; i++)
+                {
+                    if ((CurrentShot == E_RaceShot.Duel || CurrentShot == E_RaceShot.Finish) && i != FocusRunner && i != second) continue;
+                    Vector3 delta = Presentation.Views[i].Focus - focus;
+                    float depth = Vector3.Dot(delta, cameraForward);
+                    required = Mathf.Max(required, (Mathf.Abs(Vector3.Dot(delta, cameraRight)) + 2f) / (tangent * aspect * .88f) - depth);
+                    required = Mathf.Max(required, (Mathf.Abs(Vector3.Dot(delta, cameraUp)) + 2.3f) / (tangent * .58f) - depth);
+                }
+                offset = offset.normalized * required;
+            }
             if (group) offset *= Mathf.Clamp(0.62f / Mathf.Max(0.4f, aspect), 1, 1.35f);
             // Group composition accounts for actual distances, not just the nominal lanes.
             if (group && CurrentShot != E_RaceShot.Duel && CurrentShot != E_RaceShot.Finish)

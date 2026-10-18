@@ -26,6 +26,7 @@ namespace ProjectRun.Race
         public RectTransform WorldMarker;
         public UnityEngine.UI.Text WorldMarkerText;
         public UnityEngine.UI.Text Announcement, SkillName, SkillRunner;
+        public UIItem_RaceCommentary Commentary;
         public GameObject AnnouncementRoot, SkillRoot, ResultRoot, MenuRoot;
         public UnityEngine.UI.Text ResultName, ResultDetails;
         public UIItem_RaceResult[] ResultRows;
@@ -35,6 +36,8 @@ namespace ProjectRun.Race
         public UnityEngine.UI.Button PauseButton, CutsceneButton, RestartButton, MenuCloseButton, ResultReplay;
         public UnityEngine.UI.Text CameraButtonLabel, SpeedButtonLabel, CutsceneButtonLabel;
         public int SelectedRunnerId = 2;
+        // Left, bottom, right, top clearance in Canvas reference units.
+        public Vector4 WorldMarkerInsets = new Vector4(40, 335, 40, 275);
         private UnityAction[] selectionActions;
         private bool menuOpen, pausedBeforeMenu;
         private int generation = -1, previousRank;
@@ -98,12 +101,12 @@ namespace ProjectRun.Race
             var selected = sim.Runners[SelectedRunnerId]; var setup = Race.Entrants[SelectedRunnerId];
             if (generation != Race.Generation) { generation = Race.Generation; previousRank = 0; rankChangeUntil = 0; }
             DistanceLabel.text = Mathf.CeilToInt(Presentation.Remaining).ToString();
-            PhaseLabel.text = sim.Phase == E_RacePhase.Result ? "경기 종료" : Presentation.Remaining < 120 ? "최종 직선" : sim.Time < 5 ? "출발" : "초원 레이스";
+            PhaseLabel.text = sim.Phase == E_RacePhase.Result ? "경기 종료" : Presentation.Remaining < 120 ? "최종 직선" : sim.Time < 5 ? "출발" : sim.Course != null ? sim.Course.Region((float)sim.Runners[sim.Order[0]].Distance) : "초원 레이스";
             ShotLabel.text = Director.ShotLabel;
             CameraButtonLabel.text = "카메라";
             SpeedButtonLabel.text = Race.PlaybackSpeed > 1 ? "2배" : "1배";
             CutsceneButtonLabel.text = Presentation.Cutscenes ? "컷씬 연출  ON" : "컷씬 연출  OFF";
-            float progress = Mathf.Clamp01(1 - Presentation.Remaining / Data_RaceSimulation.Length);
+            float progress = Mathf.Clamp01(1 - Presentation.Remaining / sim.CourseLength);
             ProgressFill.fillAmount = progress;
             ProgressHandle.anchorMin = ProgressHandle.anchorMax = new Vector2(progress, .5f);
             ProgressHandle.anchoredPosition = Vector2.zero;
@@ -136,7 +139,8 @@ namespace ProjectRun.Race
             CountdownLabel.text = Race.Countdown > .9f ? Mathf.CeilToInt(Race.Countdown - .9f).ToString() : Race.Countdown > 0 ? "READY" : sim.Time < .9 ? "START!" : "";
             CountdownLabel.gameObject.SetActive(CountdownLabel.text.Length > 0);
             if (CountdownRoot != null) CountdownRoot.SetActive(CountdownLabel.text.Length > 0);
-            Announcement.text = string.IsNullOrEmpty(Presentation.Announcement) ? "여섯 주자의 초원컵 레이스" : Presentation.Announcement;
+            if (Commentary == null) Announcement.text = string.IsNullOrEmpty(Presentation.Announcement)
+                ? (count == 1 ? setup.Name + " 단독 주행" : sim.Course != null ? sim.Course.CourseName + " 레이스" : "여섯 주자의 초원컵 레이스") : Presentation.Announcement;
             bool cinematic = Presentation.InCutscene; SkillRoot.SetActive(cinematic);
             if (cinematic)
             {
@@ -171,13 +175,14 @@ namespace ProjectRun.Race
             float uiScale = GetComponentInParent<Canvas>().scaleFactor;
             // Keep the badge and its pointer above the face at every camera distance.
             point.y += 44f * uiScale;
-            bool visible = point.z > 0 && point.x > 40 * uiScale && point.x < Screen.width - 40 * uiScale
-                && point.y > 335 * uiScale && point.y < Screen.height - 275 * uiScale
+            var safe = Screen.safeArea;
+            bool visible = point.z > 0 && point.x > safe.xMin + WorldMarkerInsets.x * uiScale && point.x < safe.xMax - WorldMarkerInsets.z * uiScale
+                && point.y > safe.yMin + WorldMarkerInsets.y * uiScale && point.y < safe.yMax - WorldMarkerInsets.w * uiScale
                 && !menuOpen && !Presentation.InCutscene && Race.Simulation.Phase != E_RacePhase.Result;
             WorldMarker.gameObject.SetActive(visible);
             if (!visible) return;
             Vector2 local; RectTransformUtility.ScreenPointToLocalPointInRectangle(SafeArea, point, null, out local);
-            WorldMarker.anchoredPosition = local; WorldMarkerText.text = "MY " + (SelectedRunnerId + 1).ToString("00");
+            WorldMarker.localPosition = new Vector3(local.x, local.y, 0); WorldMarkerText.text = "MY " + (SelectedRunnerId + 1).ToString("00");
         }
         private void UpdateSafeArea()
         {

@@ -31,6 +31,14 @@ namespace ProjectRun.Race
         public float SurgePower = 2.7f;
         public float SurgeDuration = 5.5f;
         public float Lane;
+        public bool ConditionalSkill;
+        public int DemoSkillType;
+        public float SkillProgress = .62f;
+        public int SkillActivationLimit = 1;
+        public float RepeatSkillProgress = .72f;
+        public float StaminaDrainMultiplier = 1;
+        public bool UseStamina;
+        public Data_RunnerSetup Copy() => (Data_RunnerSetup)MemberwiseClone();
     }
 
     public sealed class Data_RunnerState
@@ -42,8 +50,15 @@ namespace ProjectRun.Race
         public float Speed;
         public float Lane;
         public float Stamina = 1;
+        public float PreviousLane;
+        public float TargetLane;
+        public float LaneVelocity;
+        public int BlockedBy = -1;
+        public bool IsContesting;
         public float SkillAge = -1;
         public bool SkillUsed;
+        public int SkillActivationCount;
+        public float SkillStarted = -1;
         public bool Finished;
         public double FinishTime;
     }
@@ -54,6 +69,15 @@ namespace ProjectRun.Race
         public const double StepSeconds = 1.0 / 60.0;
         public const float Radius = 68.5f;
         public static readonly float Length = 360 + 2 * Mathf.PI * Radius;
+        public readonly Data_RaceCourse Course;
+        public readonly int LapCount;
+        public float LapLength => Course != null ? Course.Length : Length;
+        /// <summary>Total distance to the finish; positions wrap at LapLength.</summary>
+        public float CourseLength => LapLength * LapCount;
+        public int CurrentLap(double distance) => Mathf.Clamp((int)(System.Math.Max(0, distance) / LapLength) + 1, 1, LapCount);
+        public Vector3 Point(float distance, float lane = 0) => Course != null ? Course.Point(distance, lane) : CoursePoint(distance, lane);
+        public Vector3 Forward(float distance) => Course != null ? Course.Forward(distance) : CourseForward(distance);
+        public float Metric(float distance, float lane) => Course != null ? Course.Metric(distance, lane) : CourseMetric(distance, lane);
         public readonly Data_RunnerState[] Runners;
         public readonly int[] Order;
         public E_RacePhase Phase { get; private set; }
@@ -62,18 +86,27 @@ namespace ProjectRun.Race
         public event Action<Data_RaceEvent> Changed;
         private readonly Data_RunnerSetup[] setups;
         private readonly int[] previousRanks;
+        private readonly Data_RaceLaneContest laneContest;
+        public bool UsesLaneContests => laneContest != null;
+        public bool IsAirborne(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType==1 && Runners[id].SkillAge>=.7f && Runners[id].SkillAge<2.2f;
+        public bool IsBursting(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType>0 && Runners[id].SkillAge>=0 && Runners[id].SkillAge<setups[id].SurgeDuration;
         private double firstFinish = -1;
         private double lastOvertakeNotice = -10;
 
-        public Data_RaceSimulation(Data_RunnerSetup[] setups)
+        public Data_RaceSimulation(Data_RunnerSetup[] setups, Data_RaceCourse course = null, bool enableLaneContests = false, int lapCount = 1)
         {
+            if (course != null && !course.IsValid) throw new ArgumentException("Race course must contain a valid closed path.", nameof(course));
+            Course = course;
+            LapCount = Mathf.Max(1, lapCount);
             this.setups = setups;
             Runners = new Data_RunnerState[setups.Length];
             Order = new int[setups.Length];
             previousRanks = new int[setups.Length];
+            if (enableLaneContests) laneContest = new Data_RaceLaneContest(setups.Length, course != null ? course.RoadWidth : 20);
             for (int i = 0; i < setups.Length; i++)
             {
-                Runners[i] = new Data_RunnerState { Id = i, Rank = i + 1, Lane = setups[i].Lane };
+                Runners[i] = new Data_RunnerState { Id = i, Rank = i + 1, Lane = setups[i].Lane,
+                    PreviousLane = setups[i].Lane, TargetLane = setups[i].Lane };
                 Order[i] = i;
                 previousRanks[i] = i + 1;
             }
@@ -93,34 +126,39 @@ namespace ProjectRun.Race
             double previousTime = Time;
             Time += StepSeconds;
             float t = (float)Time;
+            laneContest?.Plan(this,setups);
             for (int i = 0; i < Runners.Length; i++)
             {
                 var runner = Runners[i];
                 var setup = setups[i];
                 runner.PreviousDistance = runner.Distance;
-                if (!runner.SkillUsed && t >= setup.SurgeTime && !runner.Finished)
+                runner.PreviousLane = runner.Lane;
+                if (!runner.Finished && ShouldActivate(i))
                 {
                     runner.SkillUsed = true;
+                    runner.SkillActivationCount++;
+                    runner.SkillStarted = t;
+                    runner.SkillAge = 0;
                     Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Skill, i, t));
                 }
-                runner.SkillAge = runner.SkillUsed ? t - setup.SurgeTime : -1;
-                float boost = runner.SkillAge >= 0 && runner.SkillAge < setup.SurgeDuration
-                    ? setup.SurgePower * Mathf.SmoothStep(0, 1, runner.SkillAge / 0.75f)
-                      * (1 - Mathf.SmoothStep(0, 1, (runner.SkillAge - setup.SurgeDuration + 1) / 1f)) : 0;
-                float early = setup.EarlyPower * (1 - Mathf.SmoothStep(0, 1, (t - 7) / 19));
-                float late = setup.LatePower * Mathf.SmoothStep(0, 1, (t - 36) / 17);
-                // Different endurance and cadence profiles produce real catches and passes.
-                float cadence = 0.23f * Mathf.Sin(t * 0.39f + i * 1.8f);
-                float target = setup.BaseSpeed + early + late + cadence + boost;
+                runner.SkillAge = runner.SkillUsed ? t - runner.SkillStarted : -1;
+                float target = DesiredSpeed(i);
                 if (runner.Finished) target = Mathf.Max(1.8f, runner.Speed - 4.5f * (float)StepSeconds);
+                if (laneContest != null) target = laneContest.AdvanceLaneAndLimitSpeed(i,this,target);
                 runner.Speed = Mathf.MoveTowards(runner.Speed, target, (float)StepSeconds * (t < 3 ? 6 : 2.4f));
-                runner.Stamina = Mathf.Clamp01(1 - t * (0.0069f + i * 0.0003f));
-                runner.Lane = setup.Lane + Mathf.Sin(t * 0.3f + i) * 0.07f;
-                float metric = CourseMetric((float)runner.Distance, runner.Lane);
-                runner.Distance += runner.Speed / metric * StepSeconds;
-                if (!runner.Finished && runner.Distance >= Length)
+                runner.Stamina = Mathf.Clamp01(1 - t * (0.0069f + i * 0.0003f) * Mathf.Max(.1f, setup.StaminaDrainMultiplier));
+                if (laneContest == null) runner.Lane = setup.Lane + Mathf.Sin(t * 0.3f + i) * 0.07f;
+                float metric = Metric((float)runner.Distance, runner.Lane);
+                double advance = runner.Speed / metric * StepSeconds;
+                if (laneContest != null)
                 {
-                    double fraction = (Length - runner.PreviousDistance) / (runner.Distance - runner.PreviousDistance);
+                    advance = laneContest.LimitAdvance(i,this,advance);
+                    runner.Speed = Mathf.Min(runner.Speed,(float)(advance * metric / StepSeconds));
+                }
+                runner.Distance += advance;
+                if (!runner.Finished && runner.Distance >= CourseLength)
+                {
+                    double fraction = (CourseLength - runner.PreviousDistance) / (runner.Distance - runner.PreviousDistance);
                     runner.FinishTime = previousTime + fraction * StepSeconds;
                     runner.Finished = true;
                     if (firstFinish < 0) { firstFinish = runner.FinishTime; Phase = E_RacePhase.Finishing; }
@@ -151,6 +189,38 @@ namespace ProjectRun.Race
                 Phase = E_RacePhase.Result;
                 Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Result, Order[0], t));
             }
+        }
+
+        public float DesiredSpeed(int id)
+        {
+            var setup = setups[id]; float t = (float)Time;
+            float age = setup.ConditionalSkill ? (Runners[id].SkillUsed ? t-Runners[id].SkillStarted : -1) : t-setup.SurgeTime;
+            float boost = age >= 0 && age < setup.SurgeDuration
+                ? setup.SurgePower * Mathf.SmoothStep(0,1,age/.75f)
+                    * (1-Mathf.SmoothStep(0,1,(age-setup.SurgeDuration+1)/1f)) : 0;
+            float early = setup.EarlyPower * (1-Mathf.SmoothStep(0,1,(t-7)/19));
+            float late = setup.LatePower * Mathf.SmoothStep(0,1,(t-36)/17);
+            float cadence = .23f * Mathf.Sin(t*.39f+id*1.8f);
+            float fatigue = setup.UseStamina ? Mathf.Lerp(.86f,1,Mathf.Clamp01(Runners[id].Stamina/.5f)) : 1;
+            return (setup.BaseSpeed + early + late + cadence + boost) * fatigue;
+        }
+
+        private bool ShouldActivate(int id)
+        {
+            var setup=setups[id];var runner=Runners[id];
+            if(runner.SkillActivationCount>=Mathf.Max(1,setup.SkillActivationLimit))return false;
+            if(runner.SkillActivationCount>0)
+                return setup.ConditionalSkill && runner.Distance/CourseLength>=setup.RepeatSkillProgress
+                    && Time-runner.SkillStarted>=setup.SurgeDuration;
+            if(!setup.ConditionalSkill) return Time>=setup.SurgeTime;
+            float progress=(float)(runner.Distance/CourseLength);
+            if(progress<setup.SkillProgress)return false;
+            // Tactical conditions use simulation data only. A late-course opportunity also
+            // permits a clear leader to use the skill, without depending on camera visibility.
+            bool nearby=false;
+            for(int i=0;i<Runners.Length;i++) if(i!=id && Runners[i].Distance>runner.Distance && Runners[i].Distance-runner.Distance<55)nearby=true;
+            float guaranteedProgress=setup.SkillActivationLimit>1?Mathf.Min(.74f,setup.SkillProgress+.06f):.74f;
+            return nearby || progress>=guaranteedProgress;
         }
 
         private static bool IsAhead(Data_RunnerState a, Data_RunnerState b)

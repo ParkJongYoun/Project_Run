@@ -6,6 +6,8 @@ namespace ProjectRun.Race
     {
         public Sys_Race Race;
         public RaceRunnerView[] Views;
+        [Tooltip("Optional pooled skill aura prefab for this race's 3D runners.")]
+        public RaceRunnerSkillAura SkillAuraPrefab;
         public int SkillRunner { get; private set; } = -1;
         public float SkillStarted { get; private set; }
         public string Announcement { get; private set; }
@@ -14,7 +16,7 @@ namespace ProjectRun.Race
         public float SkillAge => SkillRunner < 0 ? -1 : (float)Race.Simulation.Time - SkillStarted;
         public bool VideoSequenceActive { get; private set; }
         public bool InCutscene => VideoSequenceActive || (Cutscenes && SkillStarted != videoReplacedSkillStarted && SkillAge >= 0 && SkillAge < 3.4f && Remaining > 85);
-        public float Remaining => Mathf.Max(0, Data_RaceSimulation.Length - (float)Race.Simulation.Runners[Race.Simulation.Order[0]].Distance);
+        public float Remaining => Mathf.Max(0, Race.Simulation.CourseLength - (float)Race.Simulation.Runners[Race.Simulation.Order[0]].Distance);
         private float announcementUntil;
         private int generation = -1;
         private float videoReplacedSkillStarted = float.NegativeInfinity;
@@ -26,6 +28,7 @@ namespace ProjectRun.Race
             if (Views != null && Views.Length == Race.Entrants.Length && Views[0] != null)
             {
                 for (int i = 0; i < Views.Length; i++) Views[i].Bind(Race, i);
+                CreateSkillAuras();
                 return;
             }
             Views = new RaceRunnerView[Race.Entrants.Length];
@@ -37,6 +40,17 @@ namespace ProjectRun.Race
                 runner.name = "P_Runner_" + (i + 1).ToString("00");
                 Views[i] = runner.GetComponent<RaceRunnerView>();
                 Views[i].Bind(Race, i);
+            }
+            CreateSkillAuras();
+        }
+        private void CreateSkillAuras()
+        {
+            if (SkillAuraPrefab == null) return;
+            for (int i = 0; i < Views.Length; i++)
+            {
+                var aura = Instantiate(SkillAuraPrefab, Views[i].transform);
+                aura.name = "obj_skill_aura";
+                aura.Bind(Race, i, Race.Entrants[i].Color);
             }
         }
         private void Update()
