@@ -88,7 +88,7 @@ namespace ProjectRun.Editor
                 data.Center=bounds.center; data.Radius=bounds.extents.magnitude*1.06f;
                 data.AzimuthCount=16; data.ElevationCount=9; data.TileSize=384;
                 data.MinimumElevation=-90; data.MaximumElevation=90;
-                data.PoseDescription="Scene_All3D P_Runner_03 / fox RunClip gait phase 0.18 / mount-only private clone; one identical mesh pose in every view";
+                data.PoseDescription="Scene_Oval P_Runner_03 / fox RunClip gait phase 0.18 / mount-only private clone; one identical mesh pose in every view";
                 EditorUtility.SetDirty(data); AssetDatabase.SaveAssets();
                 return $"Frozen {count} meshes; center={bounds.center}, radius={data.Radius}; one shared pose for all 144 views.";
             }

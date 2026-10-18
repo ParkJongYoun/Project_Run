@@ -50,7 +50,7 @@ namespace ProjectRun.Editor
             public List<string> Warnings = new List<string>();
         }
 
-        public static string ReportDirectory => Path.GetFullPath(Path.Combine(Application.dataPath, "../DataBundles/LegacyURP"));
+        public static string ReportDirectory => Path.GetFullPath(Path.Combine(Application.dataPath, "../DataBundles/기존에셋_URP변환"));
         public static string StatePath => Path.Combine(ReportDirectory, "ConversionState.json");
 
         [MenuItem("Tools/Project Run/Legacy URP/Build missing converted assets")]

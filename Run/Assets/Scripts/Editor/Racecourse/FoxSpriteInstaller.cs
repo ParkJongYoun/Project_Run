@@ -40,7 +40,7 @@ namespace ProjectRun.Editor
         public static void Install()
         {
             if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play Mode before installing.");
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_All3D") throw new InvalidOperationException("Open Scene_All3D first.");
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Scene_Oval") throw new InvalidOperationException("Open Scene_Oval first.");
             Directory.CreateDirectory(Art + "/Frames"); Directory.CreateDirectory(Art + "/Materials");
             Directory.CreateDirectory("Assets/Resources/FoxImpostor"); AssetDatabase.Refresh();
             var set = AssetDatabase.LoadAssetAtPath<Data_FoxSpriteSet>(SetPath);
@@ -104,7 +104,7 @@ namespace ProjectRun.Editor
             EditorSceneManager.MarkSceneDirty(view.gameObject.scene); EditorSceneManager.SaveScene(view.gameObject.scene);
             Directory.CreateDirectory(FoxSpriteCapture.Output + "/Review");
             File.WriteAllText(FoxSpriteCapture.Output + "/Review/import-registration.csv", report.ToString());
-            Debug.Log("Installed 12 camera pairs / 24 fox sprites in Scene_All3D. Toggle RaceFoxSpriteView.UseSprites to compare.");
+            Debug.Log("Installed 12 camera pairs / 24 fox sprites in Scene_Oval. Toggle RaceFoxSpriteView.UseSprites to compare.");
         }
 
         [MenuItem("Project Run/Fox 2D/Toggle original 3D comparison")]

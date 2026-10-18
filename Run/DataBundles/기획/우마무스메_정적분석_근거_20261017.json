@@ -1,0 +1,4453 @@
+{
+  "title": "우마무스메 달리기와 카메라 정적 분석 근거",
+  "game_capture_date": "2026-10-17",
+  "document_date": "2026-10-18",
+  "scope": "Declarations and typed stored defaults only. No method bodies, runtime memory values or actual call sequence were recovered.",
+  "metadata": {
+    "source": "D:\\umamusume\\client\\umamusume_Data\\il2cpp_data\\Metadata\\global-metadata.dat",
+    "sha256": "13d9770bcf854f9f1ff73d520d2db43f2fef7bb75d96841a208c47ebfe862654",
+    "version": 31
+  },
+  "motion_defaults": [
+    {
+      "class": "Gallop.RacePlayableAnimation",
+      "field": "RUNBLEND_RATE_TIRED",
+      "type": "System.Single",
+      "value": -1.0,
+      "field_index": 3374,
+      "field_token": "0x4000d2f",
+      "default_record_offset": 22184100,
+      "value_file_offset": 23056521,
+      "raw_hex": "000080bf"
+    },
+    {
+      "class": "Gallop.RacePlayableAnimation",
+      "field": "RUNBLEND_RATE_NORMAL",
+      "type": "System.Single",
+      "value": 0.0,
+      "field_index": 3375,
+      "field_token": "0x4000d30",
+      "default_record_offset": 22184112,
+      "value_file_offset": 23056525,
+      "raw_hex": "00000000"
+    },
+    {
+      "class": "Gallop.RacePlayableAnimation",
+      "field": "RUNBLEND_RATE_FAST",
+      "type": "System.Single",
+      "value": 1.0,
+      "field_index": 3376,
+      "field_token": "0x4000d31",
+      "default_record_offset": 22184124,
+      "value_file_offset": 23056529,
+      "raw_hex": "0000803f"
+    },
+    {
+      "class": "Gallop.RacePlayableAnimation",
+      "field": "RUNBLEND_RATE_LASTSPURT",
+      "type": "System.Single",
+      "value": 1.5,
+      "field_index": 3377,
+      "field_token": "0x4000d32",
+      "default_record_offset": 22184136,
+      "value_file_offset": 23056533,
+      "raw_hex": "0000c03f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "RUN_FAST_MOTION_SPEED",
+      "type": "System.Single",
+      "value": 1.125,
+      "field_index": 7217,
+      "field_token": "0x4001c32",
+      "default_record_offset": 22200768,
+      "value_file_offset": 23069027,
+      "raw_hex": "0000903f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "RUN_NORMAL_MOTION_SPEED",
+      "type": "System.Single",
+      "value": 1.0,
+      "field_index": 7218,
+      "field_token": "0x4001c33",
+      "default_record_offset": 22200780,
+      "value_file_offset": 23069031,
+      "raw_hex": "0000803f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "RUN_SLOW_MOTION_SPEED",
+      "type": "System.Single",
+      "value": 0.875,
+      "field_index": 7219,
+      "field_token": "0x4001c34",
+      "default_record_offset": 22200792,
+      "value_file_offset": 23069035,
+      "raw_hex": "0000603f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "RUNBLEND_RATE_MAX",
+      "type": "System.Single",
+      "value": 1.0,
+      "field_index": 7229,
+      "field_token": "0x4001c3e",
+      "default_record_offset": 22200912,
+      "value_file_offset": 23069075,
+      "raw_hex": "0000803f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "BLEND_RATE_RUN_FACE_THRESHOLD_FAST",
+      "type": "System.Single",
+      "value": 1.0,
+      "field_index": 7342,
+      "field_token": "0x4001caf",
+      "default_record_offset": 22201116,
+      "value_file_offset": 23069279,
+      "raw_hex": "0000803f"
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "field": "BLEND_RATE_RUN_FACE_THRESHOLD_NORMAL",
+      "type": "System.Single",
+      "value": 0.0,
+      "field_index": 7343,
+      "field_token": "0x4001cb0",
+      "default_record_offset": 22201128,
+      "value_file_offset": 23069283,
+      "raw_hex": "00000000"
+    },
+    {
+      "class": "Gallop.CourseLane",
+      "field": "GOAL_DIR_CALC_OFFSET",
+      "type": "System.Single",
+      "value": 10.0,
+      "field_index": 79212,
+      "field_token": "0x401356d",
+      "default_record_offset": 22385532,
+      "value_file_offset": 23358705,
+      "raw_hex": "00002041"
+    },
+    {
+      "class": "Gallop.CourseLane",
+      "field": "BANK_ANGLE_SAMPLING_DIST",
+      "type": "System.Single",
+      "value": 10.0,
+      "field_index": 79213,
+      "field_token": "0x401356e",
+      "default_record_offset": 22385544,
+      "value_file_offset": 23358709,
+      "raw_hex": "00002041"
+    }
+  ],
+  "camera_master": {
+    "source": "D:\\umamusume\\client\\Assets\\master\\master.mdb",
+    "tables": {
+      "race_player_camera": {
+        "columns": [
+          "id",
+          "priority",
+          "prefab_name",
+          "category"
+        ],
+        "count": 122,
+        "samples": [
+          [
+            100000,
+            0,
+            "pfb_cam_race00000_01_00_000_00",
+            1
+          ],
+          [
+            100001,
+            0,
+            "pfb_cam_race00000_01_00_001_00",
+            1
+          ],
+          [
+            100002,
+            0,
+            "pfb_cam_race00000_01_00_002_00",
+            1
+          ],
+          [
+            101000,
+            0,
+            "pfb_cam_race00000_01_01_000_00",
+            1
+          ]
+        ]
+      }
+    }
+  },
+  "declarations": [
+    {
+      "class": "Gallop.RaceSimulateReader",
+      "type_index": 14885,
+      "metadata_offset": 46989012,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "_simData",
+          "index": 83144
+        },
+        {
+          "name": "_curTime",
+          "index": 83145
+        },
+        {
+          "name": "_eventDataAsc",
+          "index": 83146
+        },
+        {
+          "name": "_eventDataAscRO",
+          "index": 83147
+        },
+        {
+          "name": "TopFinishHorseIndex",
+          "index": 83148
+        },
+        {
+          "name": "TopFinishTimeRaw",
+          "index": 83149
+        },
+        {
+          "name": "_importer",
+          "index": 83150
+        }
+      ],
+      "methods": [
+        {
+          "name": "SetCurrentTime",
+          "index": 100693,
+          "token": "0x6018956",
+          "parameters": [
+            "targetTime"
+          ]
+        },
+        {
+          "name": "GetDistance",
+          "index": 100696,
+          "token": "0x6018959",
+          "parameters": [
+            "horseIndex",
+            "time"
+          ]
+        },
+        {
+          "name": "CalcFrameDataCache",
+          "index": 100708,
+          "token": "0x6018965",
+          "parameters": []
+        },
+        {
+          "name": "GetLanePositionFromCache",
+          "index": 100711,
+          "token": "0x6018968",
+          "parameters": [
+            "horseIndex"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CourseLane",
+      "type_index": 14237,
+      "metadata_offset": 46931988,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "GOAL_DIR_CALC_OFFSET",
+          "index": 79212
+        },
+        {
+          "name": "BANK_ANGLE_SAMPLING_DIST",
+          "index": 79213
+        },
+        {
+          "name": "<CourseLaneAnim>k__BackingField",
+          "index": 79214
+        },
+        {
+          "name": "<CourseOverRunLaneAnim>k__BackingField",
+          "index": 79215
+        },
+        {
+          "name": "_courceBankAngle",
+          "index": 79216
+        },
+        {
+          "name": "_goalPos",
+          "index": 79217
+        },
+        {
+          "name": "_goalDir",
+          "index": 79218
+        },
+        {
+          "name": "_goalRot",
+          "index": 79219
+        },
+        {
+          "name": "_rotationFix",
+          "index": 79220
+        },
+        {
+          "name": "_rotationFixRot",
+          "index": 79221
+        },
+        {
+          "name": "_invRotationFixRot",
+          "index": 79222
+        },
+        {
+          "name": "_startPosition",
+          "index": 79223
+        },
+        {
+          "name": "_startRotation",
+          "index": 79224
+        }
+      ],
+      "methods": [
+        {
+          "name": "GetCourseBankAngle",
+          "index": 94481,
+          "token": "0x6017112",
+          "parameters": [
+            "distance"
+          ]
+        },
+        {
+          "name": "GetLaneTransform",
+          "index": 94482,
+          "token": "0x6017113",
+          "parameters": [
+            "distance",
+            "position",
+            "rotation"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.HorseMotionSelector",
+      "type_index": 14319,
+      "metadata_offset": 46939204,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "SWEAT_COOLTIME_MAX",
+          "index": 79729
+        },
+        {
+          "name": "OVERRUN_MOTION_SELECT_DISTANCE",
+          "index": 79730
+        },
+        {
+          "name": "OVERRUN_CHECK_TIME_3_OFFSET",
+          "index": 79731
+        },
+        {
+          "name": "_owner",
+          "index": 79732
+        },
+        {
+          "name": "_randomGenerator",
+          "index": 79733
+        },
+        {
+          "name": "_courseDistance",
+          "index": 79734
+        },
+        {
+          "name": "_isStartMotionPlayed",
+          "index": 79735
+        },
+        {
+          "name": "_sweatCooltime",
+          "index": 79736
+        },
+        {
+          "name": "_isEnableSweat",
+          "index": 79737
+        },
+        {
+          "name": "_overRunCheckTime1",
+          "index": 79738
+        },
+        {
+          "name": "_overRunCheckTime2",
+          "index": 79739
+        },
+        {
+          "name": "_overRunCheckTime3",
+          "index": 79740
+        },
+        {
+          "name": "_isOverRun01Continue",
+          "index": 79741
+        }
+      ],
+      "methods": [
+        {
+          "name": "SelectStart",
+          "index": 95236,
+          "token": "0x6017405",
+          "parameters": []
+        },
+        {
+          "name": "SelectAfterFinish",
+          "index": 95237,
+          "token": "0x6017406",
+          "parameters": []
+        },
+        {
+          "name": "SelectRace",
+          "index": 95238,
+          "token": "0x6017407",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.HorseMotionBlendRateCalculator",
+      "type_index": 14317,
+      "metadata_offset": 46939028,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "_owner",
+          "index": 79726
+        },
+        {
+          "name": "_paramDefine",
+          "index": 79727
+        },
+        {
+          "name": "_baseSpeed",
+          "index": 79728
+        }
+      ],
+      "methods": [
+        {
+          "name": "CalcMotionBlendRate",
+          "index": 95225,
+          "token": "0x60173fa",
+          "parameters": [
+            "deltaTime",
+            "prevBlendRate"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.HorseMotionSpeedCalculator",
+      "type_index": 14321,
+      "metadata_offset": 46939380,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "_owner",
+          "index": 79742
+        },
+        {
+          "name": "_paramDefine",
+          "index": 79743
+        },
+        {
+          "name": "_runMotionSpeedCoefByRunningType",
+          "index": 79744
+        }
+      ],
+      "methods": [
+        {
+          "name": "CalcRunMotionSpeed",
+          "index": 95248,
+          "token": "0x6017411",
+          "parameters": []
+        },
+        {
+          "name": "IsUseMotionSpeedByRunningType",
+          "index": 95249,
+          "token": "0x6017412",
+          "parameters": []
+        },
+        {
+          "name": "GetMotionSpeedCoefByRunningType",
+          "index": 95250,
+          "token": "0x6017413",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.HorseRaceInfoReplay",
+      "type_index": 14327,
+      "metadata_offset": 46939908,
+      "parent_name": "Gallop.HorseRaceInfo",
+      "fields": [
+        {
+          "name": "_simulateReader",
+          "index": 79896
+        },
+        {
+          "name": "_curveRotZ",
+          "index": 79897
+        },
+        {
+          "name": "_rotY",
+          "index": 79898
+        },
+        {
+          "name": "_rotZ",
+          "index": 79899
+        },
+        {
+          "name": "_temptationModePrev",
+          "index": 79900
+        },
+        {
+          "name": "_temptationMode",
+          "index": 79901
+        },
+        {
+          "name": "_temptationCount",
+          "index": 79902
+        },
+        {
+          "name": "_lastSpurtStartDistance",
+          "index": 79903
+        },
+        {
+          "name": "_motionSelector",
+          "index": 79904
+        },
+        {
+          "name": "_motionSpeedCalc",
+          "index": 79905
+        },
+        {
+          "name": "_motionBlendRateCalc",
+          "index": 79906
+        },
+        {
+          "name": "_runMotionRate",
+          "index": 79907
+        },
+        {
+          "name": "_raceMotionId",
+          "index": 79908
+        },
+        {
+          "name": "_runMotionSpeed",
+          "index": 79909
+        }
+      ],
+      "methods": [
+        {
+          "name": "UpdateRotYByLaneMove",
+          "index": 95735,
+          "token": "0x60175f8",
+          "parameters": [
+            "prevLane",
+            "curLane",
+            "deltaTime"
+          ]
+        },
+        {
+          "name": "UpdateRotZByLaneMove",
+          "index": 95736,
+          "token": "0x60175f9",
+          "parameters": [
+            "prevLane",
+            "curLane",
+            "deltaTime"
+          ]
+        },
+        {
+          "name": "SetCurveRotZ",
+          "index": 95742,
+          "token": "0x60175ff",
+          "parameters": [
+            "courseBankAngleZ",
+            "deltaTime"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RacePlayableAnimation",
+      "type_index": 965,
+      "metadata_offset": 45764052,
+      "parent_name": "Gallop.PlayableAnimator",
+      "fields": [
+        {
+          "name": "ADDMOTION_STATE",
+          "index": 3372
+        },
+        {
+          "name": "ONESHOT_STATE",
+          "index": 3373
+        },
+        {
+          "name": "RUNBLEND_RATE_TIRED",
+          "index": 3374
+        },
+        {
+          "name": "RUNBLEND_RATE_NORMAL",
+          "index": 3375
+        },
+        {
+          "name": "RUNBLEND_RATE_FAST",
+          "index": 3376
+        },
+        {
+          "name": "RUNBLEND_RATE_LASTSPURT",
+          "index": 3377
+        },
+        {
+          "name": "_blendWeight",
+          "index": 3378
+        },
+        {
+          "name": "_reserveMotionState",
+          "index": 3379
+        },
+        {
+          "name": "_currentMotionState",
+          "index": 3380
+        },
+        {
+          "name": "_prevMotionState",
+          "index": 3381
+        },
+        {
+          "name": "_changeStateCallback",
+          "index": 3382
+        },
+        {
+          "name": "_connectedMotionClipArray",
+          "index": 3383
+        },
+        {
+          "name": "_connectedAddMotionClipArray",
+          "index": 3384
+        },
+        {
+          "name": "_clipPlayableDict",
+          "index": 3385
+        },
+        {
+          "name": "<AddBlendWeight>k__BackingField",
+          "index": 3386
+        }
+      ],
+      "methods": [
+        {
+          "name": "get_CurrentRunBlendNormalizePlayTimeWithLoop",
+          "index": 5402,
+          "token": "0x600151b",
+          "parameters": []
+        },
+        {
+          "name": "SetInputWeight",
+          "index": 5408,
+          "token": "0x6001521",
+          "parameters": [
+            "mixer",
+            "localBlendWeight",
+            "blendWeight"
+          ]
+        },
+        {
+          "name": "SetPrevBlendInputWeight",
+          "index": 5409,
+          "token": "0x6001522",
+          "parameters": [
+            "mixer",
+            "localBlendWeight",
+            "blendWeight"
+          ]
+        },
+        {
+          "name": "PlayStateCrossFade",
+          "index": 5422,
+          "token": "0x600152f",
+          "parameters": [
+            "state",
+            "startTime",
+            "blendTime"
+          ]
+        },
+        {
+          "name": "PlayStateCrossFade",
+          "index": 5423,
+          "token": "0x6001530",
+          "parameters": [
+            "state",
+            "startTime",
+            "blendTime",
+            "forceState"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RaceModelController",
+      "type_index": 1510,
+      "metadata_offset": 45812012,
+      "parent_name": "Gallop.ModelController",
+      "fields": [
+        {
+          "name": "RUN_FAST_MOTION_SPEED",
+          "index": 7217
+        },
+        {
+          "name": "RUN_NORMAL_MOTION_SPEED",
+          "index": 7218
+        },
+        {
+          "name": "RUN_SLOW_MOTION_SPEED",
+          "index": 7219
+        },
+        {
+          "name": "RUNBLEND_RATE_MAX",
+          "index": 7229
+        },
+        {
+          "name": "_slopeInvRotXInterpRate",
+          "index": 7301
+        },
+        {
+          "name": "_motionSpeedAdjustByHeight",
+          "index": 7345
+        }
+      ],
+      "methods": [
+        {
+          "name": "SetCySpringRunSpeed",
+          "index": 9894,
+          "token": "0x60026a7",
+          "parameters": [
+            "rate"
+          ]
+        },
+        {
+          "name": "ShouldFootSEPlay",
+          "index": 9904,
+          "token": "0x60026b1",
+          "parameters": [
+            "index",
+            "normalizeTimeWithLoop"
+          ]
+        },
+        {
+          "name": "OnRightFootCallback",
+          "index": 9906,
+          "token": "0x60026b3",
+          "parameters": []
+        },
+        {
+          "name": "OnLeftFootCallback",
+          "index": 9907,
+          "token": "0x60026b4",
+          "parameters": []
+        },
+        {
+          "name": "UpdateLevelOfDetail",
+          "index": 9933,
+          "token": "0x60026ce",
+          "parameters": []
+        },
+        {
+          "name": "UpdateSlopeInvRotation",
+          "index": 9983,
+          "token": "0x6002700",
+          "parameters": []
+        },
+        {
+          "name": "UpdateTransform",
+          "index": 10006,
+          "token": "0x6002717",
+          "parameters": [
+            "horse",
+            "characterParameter"
+          ]
+        },
+        {
+          "name": "CalcFinalRot",
+          "index": 10012,
+          "token": "0x600271d",
+          "parameters": [
+            "horseRotY",
+            "horseRotZ",
+            "laneRot",
+            "retRot"
+          ]
+        },
+        {
+          "name": "UpdateTransform",
+          "index": 10013,
+          "token": "0x600271e",
+          "parameters": [
+            "horse"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.Model.Component.RaceFootSmokeController",
+      "type_index": 28132,
+      "metadata_offset": 48154748,
+      "parent_name": "Gallop.Model.Component.FootSmokeController",
+      "fields": [
+        {
+          "name": "_heightUpdateInvoker",
+          "index": 165878
+        },
+        {
+          "name": "_curMotionID",
+          "index": 165879
+        },
+        {
+          "name": "_raceAnimator",
+          "index": 165880
+        },
+        {
+          "name": "_raceModelController",
+          "index": 165881
+        },
+        {
+          "name": "_onCurrentNormalizePlayTimeWithLoop",
+          "index": 165882
+        },
+        {
+          "name": "_changedLegObjectArray",
+          "index": 165883
+        },
+        {
+          "name": "_isSyncVisibleAndRenderer",
+          "index": 165884
+        }
+      ],
+      "methods": [
+        {
+          "name": "GetToePos",
+          "index": 183451,
+          "token": "0x602cc9c",
+          "parameters": [
+            "legIndex"
+          ]
+        },
+        {
+          "name": "SetMotion",
+          "index": 183452,
+          "token": "0x602cc9d",
+          "parameters": [
+            "motionID"
+          ]
+        },
+        {
+          "name": "IsShouldPlay",
+          "index": 183454,
+          "token": "0x602cc9f",
+          "parameters": [
+            "index",
+            "normalizedTime"
+          ]
+        },
+        {
+          "name": "GetPlayNormalizeTime",
+          "index": 183455,
+          "token": "0x602cca0",
+          "parameters": []
+        },
+        {
+          "name": "GetFootEffectPrefab",
+          "index": 183457,
+          "token": "0x602cca2",
+          "parameters": [
+            "footEffectPrefabArray",
+            "groundType"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RaceParamDefine",
+      "type_index": 15261,
+      "metadata_offset": 47022100,
+      "parent_name": "UnityEngine.ScriptableObject",
+      "fields": [
+        {
+          "name": "runMotionSpeedCoef",
+          "index": 85446
+        },
+        {
+          "name": "runMotionSpeedMin",
+          "index": 85447
+        },
+        {
+          "name": "runMotionSpeedMax",
+          "index": 85448
+        },
+        {
+          "name": "runMotionSpeedBaseHorseSpeed",
+          "index": 85449
+        },
+        {
+          "name": "runMotionSpeedHorseSpeedRate",
+          "index": 85450
+        },
+        {
+          "name": "runMotionBlendRateMinSpeedOffset",
+          "index": 85451
+        },
+        {
+          "name": "runMotionBlendRateMaxSpeedOffset",
+          "index": 85452
+        },
+        {
+          "name": "laneMoveRotYThresholdPerSec",
+          "index": 85453
+        },
+        {
+          "name": "laneMoveRotYThresholdRotZ",
+          "index": 85454
+        },
+        {
+          "name": "laneMoveRotYPerMovedLane",
+          "index": 85455
+        },
+        {
+          "name": "laneMoveRotYMax",
+          "index": 85456
+        },
+        {
+          "name": "laneMoveRotYRotatePerSec",
+          "index": 85457
+        },
+        {
+          "name": "laneMoveRotYRotatePerSecToZero",
+          "index": 85458
+        },
+        {
+          "name": "laneMoveRotZThresholdPerSec",
+          "index": 85459
+        },
+        {
+          "name": "laneMoveRotZThresholdRotZ",
+          "index": 85460
+        },
+        {
+          "name": "laneMoveRotZPerMovedLane",
+          "index": 85461
+        },
+        {
+          "name": "laneMoveRotZMax",
+          "index": 85462
+        },
+        {
+          "name": "laneMoveRotZRotatePerSec",
+          "index": 85463
+        },
+        {
+          "name": "laneMoveRotZRotatePerSecToZero",
+          "index": 85464
+        },
+        {
+          "name": "RunMotionSpeedCoefByRunningType",
+          "index": 85465
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseBaseParam",
+      "type_index": 13920,
+      "metadata_offset": 46904092,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "_startDistance",
+          "index": 76158,
+          "token": "0x401297f"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseBaseParamInterp",
+      "type_index": 13921,
+      "metadata_offset": 46904180,
+      "parent_name": "Gallop.CourseBaseParam",
+      "fields": [
+        {
+          "name": "InterpolationType",
+          "index": 76163,
+          "token": "0x4012984"
+        },
+        {
+          "name": "InterpolationCurve",
+          "index": 76164,
+          "token": "0x4012985"
+        }
+      ],
+      "methods": [
+        {
+          "name": "Evaluate",
+          "index": 92157,
+          "token": "0x60167fe",
+          "parameters": [
+            "currentTime",
+            "nextParam"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CourseCameraTable",
+      "type_index": 13954,
+      "metadata_offset": 46907084,
+      "parent_name": "UnityEngine.MonoBehaviour",
+      "fields": [
+        {
+          "name": "cameraParams",
+          "index": 76422,
+          "token": "0x4012a87"
+        },
+        {
+          "name": "cameraParamsHalfGate",
+          "index": 76423,
+          "token": "0x4012a88"
+        },
+        {
+          "name": "cameraParamsGI",
+          "index": 76424,
+          "token": "0x4012a89"
+        },
+        {
+          "name": "cameraParamsGIHalfGate",
+          "index": 76425,
+          "token": "0x4012a8a"
+        },
+        {
+          "name": "CameraParamsByRaceInstanceId1",
+          "index": 76426,
+          "token": "0x4012a8b"
+        },
+        {
+          "name": "CameraParamsByRaceInstanceId2",
+          "index": 76427,
+          "token": "0x4012a8c"
+        },
+        {
+          "name": "CameraParamsByRaceInstanceId3",
+          "index": 76428,
+          "token": "0x4012a8d"
+        },
+        {
+          "name": "CameraParamsByRaceInstanceId4",
+          "index": 76429,
+          "token": "0x4012a8e"
+        },
+        {
+          "name": "flipParams",
+          "index": 76430,
+          "token": "0x4012a8f"
+        },
+        {
+          "name": "CameraDOFArray",
+          "index": 76431,
+          "token": "0x4012a90"
+        },
+        {
+          "name": "CameraColorCorrectionArray",
+          "index": 76432,
+          "token": "0x4012a91"
+        },
+        {
+          "name": "CameraSunShaftArray",
+          "index": 76433,
+          "token": "0x4012a92"
+        },
+        {
+          "name": "CameraPostFilmArray",
+          "index": 76434,
+          "token": "0x4012a93"
+        },
+        {
+          "name": "CameraRadialBlurArray",
+          "index": 76435,
+          "token": "0x4012a94"
+        },
+        {
+          "name": "CameraLensDistortionArray",
+          "index": 76436,
+          "token": "0x4012a95"
+        },
+        {
+          "name": "CameraFlucuationArray",
+          "index": 76437,
+          "token": "0x4012a96"
+        },
+        {
+          "name": "CameraChromaticAberrationArray",
+          "index": 76438,
+          "token": "0x4012a97"
+        },
+        {
+          "name": "CameraDOFsByRaceInstanceId1",
+          "index": 76439,
+          "token": "0x4012a98"
+        },
+        {
+          "name": "CameraColorCorrectionsByRaceInstanceId1",
+          "index": 76440,
+          "token": "0x4012a99"
+        },
+        {
+          "name": "CameraSunShaftsByRaceInstanceId1",
+          "index": 76441,
+          "token": "0x4012a9a"
+        },
+        {
+          "name": "CameraPostFilmsByRaceInstanceId1",
+          "index": 76442,
+          "token": "0x4012a9b"
+        },
+        {
+          "name": "CameraRadialBlursByRaceInstanceId1",
+          "index": 76443,
+          "token": "0x4012a9c"
+        },
+        {
+          "name": "CameraLensDistortionsByRaceInstanceId1",
+          "index": 76444,
+          "token": "0x4012a9d"
+        },
+        {
+          "name": "CameraFlucuationsByRaceInstanceId1",
+          "index": 76445,
+          "token": "0x4012a9e"
+        },
+        {
+          "name": "CameraChromaticAberrationsByRaceInstanceId1",
+          "index": 76446,
+          "token": "0x4012a9f"
+        },
+        {
+          "name": "CameraMultiCameraArray",
+          "index": 76447,
+          "token": "0x4012aa0"
+        },
+        {
+          "name": "CameraMultiCameraColorCorrectionArray",
+          "index": 76448,
+          "token": "0x4012aa1"
+        },
+        {
+          "name": "CameraMultiCameraRadialBlurArray",
+          "index": 76449,
+          "token": "0x4012aa2"
+        },
+        {
+          "name": "_skipToDistance",
+          "index": 76450,
+          "token": "0x4012aa3"
+        }
+      ],
+      "methods": [
+        {
+          "name": "GetCourseCameraParam",
+          "index": 92272,
+          "token": "0x6016871",
+          "parameters": [
+            "targetParam",
+            "outParam"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RaceCourseCameraEvent",
+      "type_index": 14151,
+      "metadata_offset": 46924420,
+      "parent_name": "Gallop.RaceCameraEventBase",
+      "fields": [
+        {
+          "name": "cameraParamsOriginal",
+          "index": 77855,
+          "token": "0x4013020"
+        },
+        {
+          "name": "cameraParamsHalfGateOriginal",
+          "index": 77856,
+          "token": "0x4013021"
+        },
+        {
+          "name": "cameraParamsGIOriginal",
+          "index": 77857,
+          "token": "0x4013022"
+        },
+        {
+          "name": "cameraParamsGIHalfGateOriginal",
+          "index": 77858,
+          "token": "0x4013023"
+        },
+        {
+          "name": "cameraParamsMerged",
+          "index": 77859,
+          "token": "0x4013024"
+        },
+        {
+          "name": "CameraParamsRaceInstanceId1",
+          "index": 77860,
+          "token": "0x4013025"
+        },
+        {
+          "name": "CameraParamsRaceInstanceId2",
+          "index": 77861,
+          "token": "0x4013026"
+        },
+        {
+          "name": "CameraParamsRaceInstanceId3",
+          "index": 77862,
+          "token": "0x4013027"
+        },
+        {
+          "name": "CameraParamsRaceInstanceId4",
+          "index": 77863,
+          "token": "0x4013028"
+        },
+        {
+          "name": "flipParam",
+          "index": 77864,
+          "token": "0x4013029"
+        },
+        {
+          "name": "CameraDOFBaseArray",
+          "index": 77865,
+          "token": "0x401302a"
+        },
+        {
+          "name": "CameraColorCorrectionBaseArray",
+          "index": 77866,
+          "token": "0x401302b"
+        },
+        {
+          "name": "CameraSunShaftBaseArray",
+          "index": 77867,
+          "token": "0x401302c"
+        },
+        {
+          "name": "CameraPostFilmBaseArray",
+          "index": 77868,
+          "token": "0x401302d"
+        },
+        {
+          "name": "CameraRadialBlurBaseArray",
+          "index": 77869,
+          "token": "0x401302e"
+        },
+        {
+          "name": "CameraLensDistortionBaseArray",
+          "index": 77870,
+          "token": "0x401302f"
+        },
+        {
+          "name": "CameraFluctuationBaseArray",
+          "index": 77871,
+          "token": "0x4013030"
+        },
+        {
+          "name": "CameraChromaticAberrationBaseArray",
+          "index": 77872,
+          "token": "0x4013031"
+        },
+        {
+          "name": "CameraDOFsByRaceInstanceId1",
+          "index": 77873,
+          "token": "0x4013032"
+        },
+        {
+          "name": "CameraColorCorrectionsByRaceInstanceId1",
+          "index": 77874,
+          "token": "0x4013033"
+        },
+        {
+          "name": "CameraSunShaftsByRaceInstanceId1",
+          "index": 77875,
+          "token": "0x4013034"
+        },
+        {
+          "name": "CameraPostFilmsByRaceInstanceId1",
+          "index": 77876,
+          "token": "0x4013035"
+        },
+        {
+          "name": "CameraRadialBlursByRaceInstanceId1",
+          "index": 77877,
+          "token": "0x4013036"
+        },
+        {
+          "name": "CameraLensDistortionsByRaceInstanceId1",
+          "index": 77878,
+          "token": "0x4013037"
+        },
+        {
+          "name": "CameraFluctuationsByRaceInstanceId1",
+          "index": 77879,
+          "token": "0x4013038"
+        },
+        {
+          "name": "CameraChromaticAberrationsByRaceInstanceId1",
+          "index": 77880,
+          "token": "0x4013039"
+        },
+        {
+          "name": "CameraDOFMergedArray",
+          "index": 77881,
+          "token": "0x401303a"
+        },
+        {
+          "name": "CameraColorCorrectionMergedArray",
+          "index": 77882,
+          "token": "0x401303b"
+        },
+        {
+          "name": "CameraSunShaftMergedArray",
+          "index": 77883,
+          "token": "0x401303c"
+        },
+        {
+          "name": "CameraPostFilmMergedArray",
+          "index": 77884,
+          "token": "0x401303d"
+        },
+        {
+          "name": "CameraRadialBlurMergedArray",
+          "index": 77885,
+          "token": "0x401303e"
+        },
+        {
+          "name": "CameraLensDistortionMergedArray",
+          "index": 77886,
+          "token": "0x401303f"
+        },
+        {
+          "name": "CameraFluctuationMergedArray",
+          "index": 77887,
+          "token": "0x4013040"
+        },
+        {
+          "name": "CameraChromaticAberrationMergedArray",
+          "index": 77888,
+          "token": "0x4013041"
+        },
+        {
+          "name": "CameraMultiCameraArray",
+          "index": 77889,
+          "token": "0x4013042"
+        },
+        {
+          "name": "CameraMultiCameraColorCorrectionArray",
+          "index": 77890,
+          "token": "0x4013043"
+        },
+        {
+          "name": "CameraMultiCameraRadialBlurArray",
+          "index": 77891,
+          "token": "0x4013044"
+        },
+        {
+          "name": "prevCameraIndex",
+          "index": 77892,
+          "token": "0x4013045"
+        },
+        {
+          "name": "cameraIndex",
+          "index": 77893,
+          "token": "0x4013046"
+        },
+        {
+          "name": "lastUpdateCameraIndex",
+          "index": 77894,
+          "token": "0x4013047"
+        },
+        {
+          "name": "_restDistance",
+          "index": 77895,
+          "token": "0x4013048"
+        },
+        {
+          "name": "prevFlipIndex",
+          "index": 77896,
+          "token": "0x4013049"
+        },
+        {
+          "name": "flipIndex",
+          "index": 77897,
+          "token": "0x401304a"
+        },
+        {
+          "name": "prevMultiCameraIndex",
+          "index": 77898,
+          "token": "0x401304b"
+        },
+        {
+          "name": "multiCameraIndex",
+          "index": 77899,
+          "token": "0x401304c"
+        },
+        {
+          "name": "_multiCameraParameter",
+          "index": 77900,
+          "token": "0x401304d"
+        },
+        {
+          "name": "_isOverrideShadowDistanceAsset",
+          "index": 77901,
+          "token": "0x401304e"
+        }
+      ],
+      "methods": [
+        {
+          "name": "GetParamIndex",
+          "index": 93408,
+          "token": "0x6016ce1",
+          "parameters": [
+            "param",
+            "restDistance"
+          ]
+        },
+        {
+          "name": "UpdateIndex",
+          "index": 93414,
+          "token": "0x6016ce7",
+          "parameters": [
+            "restDistance",
+            "forceUpdate"
+          ]
+        },
+        {
+          "name": "ExecPastKeyOnSkip",
+          "index": 93415,
+          "token": "0x6016ce8",
+          "parameters": []
+        },
+        {
+          "name": "MergeCourseParams",
+          "index": 93420,
+          "token": "0x6016ced",
+          "parameters": []
+        },
+        {
+          "name": "CalcCurrentTime",
+          "index": 93424,
+          "token": "0x6016cf1",
+          "parameters": [
+            "index",
+            "restDistance",
+            "speed"
+          ]
+        },
+        {
+          "name": "CalcCurrentTime",
+          "index": 93425,
+          "token": "0x6016cf2",
+          "parameters": [
+            "cameraParam",
+            "restDistance",
+            "speed"
+          ]
+        },
+        {
+          "name": "SortDistance",
+          "index": 93426,
+          "token": "0x6016cf3",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RaceCameraEventBase",
+      "type_index": 14133,
+      "metadata_offset": 46922836,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "cameraUpdate",
+          "index": 77602,
+          "token": "0x4012f23"
+        },
+        {
+          "name": "TargetOffsetY",
+          "index": 77603,
+          "token": "0x4012f24",
+          "stored_float": 1.5,
+          "value_offset": 23357307
+        },
+        {
+          "name": "_forceDisableColorCollection",
+          "index": 77604,
+          "token": "0x4012f25"
+        },
+        {
+          "name": "_raceImageEffect",
+          "index": 77605,
+          "token": "0x4012f26"
+        },
+        {
+          "name": "_cameraManager",
+          "index": 77606,
+          "token": "0x4012f27"
+        },
+        {
+          "name": "_cameraParameter",
+          "index": 77607,
+          "token": "0x4012f28"
+        },
+        {
+          "name": "_bezierWork",
+          "index": 77608,
+          "token": "0x4012f29"
+        },
+        {
+          "name": "<HasBusTarget>k__BackingField",
+          "index": 77609,
+          "token": "0x4012f2a"
+        },
+        {
+          "name": "<BusTargetPos>k__BackingField",
+          "index": 77610,
+          "token": "0x4012f2b"
+        },
+        {
+          "name": "<BusTargetForward>k__BackingField",
+          "index": 77611,
+          "token": "0x4012f2c"
+        }
+      ],
+      "methods": [
+        {
+          "name": "CalcShiftTargetPosAndDir",
+          "index": 93016,
+          "token": "0x6016b59",
+          "parameters": [
+            "pos",
+            "dir",
+            "pos0",
+            "pos1",
+            "dir0",
+            "dir1",
+            "time",
+            "moveTime"
+          ]
+        },
+        {
+          "name": "CalcInterpolatedOffset",
+          "index": 93019,
+          "token": "0x6016b5c",
+          "parameters": [
+            "cameraParam",
+            "param"
+          ]
+        },
+        {
+          "name": "GetTargetPosition",
+          "index": 93021,
+          "token": "0x6016b5e",
+          "parameters": [
+            "targetIndex",
+            "isUseLaneOriginPosition",
+            "laneOriginOffset",
+            "isForceUseLaneOriginPosition",
+            "isClipTargetTransOnGoal"
+          ]
+        },
+        {
+          "name": "GetTargetRotation",
+          "index": 93022,
+          "token": "0x6016b5f",
+          "parameters": [
+            "targetIndex",
+            "isClipTargetTransOnGoal"
+          ]
+        },
+        {
+          "name": "CalcInterpolatedFov",
+          "index": 93032,
+          "token": "0x6016b69",
+          "parameters": [
+            "cameraParam",
+            "param"
+          ]
+        },
+        {
+          "name": "CalcInterpolatedRoll",
+          "index": 93033,
+          "token": "0x6016b6a",
+          "parameters": [
+            "cameraParam",
+            "param"
+          ]
+        },
+        {
+          "name": "CalcInterpolatedPosition",
+          "index": 93035,
+          "token": "0x6016b6c",
+          "parameters": [
+            "cameraParam",
+            "param"
+          ]
+        },
+        {
+          "name": "HideRachi",
+          "index": 93058,
+          "token": "0x6016b83",
+          "parameters": [
+            "isHideRachi",
+            "rachiHideNoArray"
+          ]
+        },
+        {
+          "name": "HideStartGate",
+          "index": 93059,
+          "token": "0x6016b84",
+          "parameters": [
+            "isHideStartGate"
+          ]
+        },
+        {
+          "name": "HideAudience",
+          "index": 93060,
+          "token": "0x6016b85",
+          "parameters": [
+            "isHideAudience"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CourseCameraControlType",
+      "type_index": 13915,
+      "metadata_offset": 46903652,
+      "parent_name": "System.Enum",
+      "fields": [
+        {
+          "name": "value__",
+          "index": 76129,
+          "token": "0x4012962"
+        },
+        {
+          "name": "None",
+          "index": 76130,
+          "token": "0x4012963"
+        },
+        {
+          "name": "Pan",
+          "index": 76131,
+          "token": "0x4012964"
+        },
+        {
+          "name": "Truck_Standard",
+          "index": 76132,
+          "token": "0x4012965"
+        },
+        {
+          "name": "Truck_Move",
+          "index": 76133,
+          "token": "0x4012966"
+        },
+        {
+          "name": "Fix",
+          "index": 76134,
+          "token": "0x4012967"
+        },
+        {
+          "name": "Drone",
+          "index": 76135,
+          "token": "0x4012968"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseCameraTargetType",
+      "type_index": 13916,
+      "metadata_offset": 46903740,
+      "parent_name": "System.Enum",
+      "fields": [
+        {
+          "name": "value__",
+          "index": 76136,
+          "token": "0x4012969"
+        },
+        {
+          "name": "None",
+          "index": 76137,
+          "token": "0x401296a"
+        },
+        {
+          "name": "Shift",
+          "index": 76138,
+          "token": "0x401296b"
+        },
+        {
+          "name": "ShiftContinue",
+          "index": 76139,
+          "token": "0x401296c"
+        },
+        {
+          "name": "InvShift",
+          "index": 76140,
+          "token": "0x401296d"
+        },
+        {
+          "name": "First",
+          "index": 76141,
+          "token": "0x401296e"
+        },
+        {
+          "name": "Last",
+          "index": 76142,
+          "token": "0x401296f"
+        },
+        {
+          "name": "Center",
+          "index": 76143,
+          "token": "0x4012970"
+        },
+        {
+          "name": "Player",
+          "index": 76144,
+          "token": "0x4012971"
+        },
+        {
+          "name": "OrderDirect",
+          "index": 76145,
+          "token": "0x4012972"
+        },
+        {
+          "name": "IndexDirect",
+          "index": 76146,
+          "token": "0x4012973"
+        },
+        {
+          "name": "Popularity",
+          "index": 76147,
+          "token": "0x4012974"
+        },
+        {
+          "name": "PositionCenter",
+          "index": 76148,
+          "token": "0x4012975"
+        },
+        {
+          "name": "JikkyoOrder",
+          "index": 76149,
+          "token": "0x4012976"
+        },
+        {
+          "name": "World",
+          "index": 76150,
+          "token": "0x4012977"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CameraInterpolationType",
+      "type_index": 13903,
+      "metadata_offset": 46902596,
+      "parent_name": "System.Enum",
+      "fields": [
+        {
+          "name": "value__",
+          "index": 75990,
+          "token": "0x40128d7"
+        },
+        {
+          "name": "None",
+          "index": 75991,
+          "token": "0x40128d8"
+        },
+        {
+          "name": "Linear",
+          "index": 75992,
+          "token": "0x40128d9"
+        },
+        {
+          "name": "EaseIn",
+          "index": 75993,
+          "token": "0x40128da"
+        },
+        {
+          "name": "EaseOut",
+          "index": 75994,
+          "token": "0x40128db"
+        },
+        {
+          "name": "EaseInOut",
+          "index": 75995,
+          "token": "0x40128dc"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseCameraTypeParam",
+      "type_index": 13959,
+      "metadata_offset": 46907524,
+      "parent_name": "Gallop.CourseBaseParamInterp",
+      "fields": [
+        {
+          "name": "BEZIER_CONTROL_POINT_MAX",
+          "index": 76465,
+          "token": "0x4012ab2"
+        },
+        {
+          "name": "ControlType",
+          "index": 76466,
+          "token": "0x4012ab3"
+        },
+        {
+          "name": "Vec_0",
+          "index": 76467,
+          "token": "0x4012ab4"
+        },
+        {
+          "name": "Vec_1",
+          "index": 76468,
+          "token": "0x4012ab5"
+        },
+        {
+          "name": "BezierPoint0Array",
+          "index": 76469,
+          "token": "0x4012ab6"
+        },
+        {
+          "name": "BezierPoint1Array",
+          "index": 76470,
+          "token": "0x4012ab7"
+        },
+        {
+          "name": "IsNearFar",
+          "index": 76471,
+          "token": "0x4012ab8"
+        },
+        {
+          "name": "NearClip",
+          "index": 76472,
+          "token": "0x4012ab9"
+        },
+        {
+          "name": "FarClip",
+          "index": 76473,
+          "token": "0x4012aba"
+        },
+        {
+          "name": "IsOverrideBackgroundColor",
+          "index": 76474,
+          "token": "0x4012abb"
+        },
+        {
+          "name": "BackgroundColor",
+          "index": 76475,
+          "token": "0x4012abc"
+        },
+        {
+          "name": "IsRachiHide",
+          "index": 76476,
+          "token": "0x4012abd"
+        },
+        {
+          "name": "RachiHideNoArray",
+          "index": 76477,
+          "token": "0x4012abe"
+        },
+        {
+          "name": "GroundBlurRate",
+          "index": 76478,
+          "token": "0x4012abf"
+        }
+      ],
+      "methods": [
+        {
+          "name": "SetInterp",
+          "index": 92300,
+          "token": "0x601688d",
+          "parameters": [
+            "prevParam",
+            "nextParam",
+            "t"
+          ]
+        },
+        {
+          "name": "HasBezier0",
+          "index": 92303,
+          "token": "0x6016890",
+          "parameters": []
+        },
+        {
+          "name": "HasBezier1",
+          "index": 92305,
+          "token": "0x6016892",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CourseCameraTargetOffsetParam",
+      "type_index": 13956,
+      "metadata_offset": 46907260,
+      "parent_name": "Gallop.CourseBaseParamInterp",
+      "fields": [
+        {
+          "name": "BEZIER_CONTROL_POINT_MAX",
+          "index": 76454,
+          "token": "0x4012aa7"
+        },
+        {
+          "name": "TargetOffset",
+          "index": 76455,
+          "token": "0x4012aa8"
+        },
+        {
+          "name": "BezierPointArray",
+          "index": 76456,
+          "token": "0x4012aa9"
+        }
+      ],
+      "methods": [
+        {
+          "name": "SetInterp",
+          "index": 92283,
+          "token": "0x601687c",
+          "parameters": [
+            "prevParam",
+            "nextParam",
+            "t"
+          ]
+        },
+        {
+          "name": "HasBezier",
+          "index": 92285,
+          "token": "0x601687e",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CourseCameraParam",
+      "type_index": 13922,
+      "metadata_offset": 46904268,
+      "parent_name": "Gallop.CourseBaseParam",
+      "fields": [
+        {
+          "name": "DefaultTargetShiftMoveTime",
+          "index": 76165,
+          "token": "0x4012986",
+          "stored_float": 1.7999999523162842,
+          "value_offset": 23357089
+        },
+        {
+          "name": "_runningDirection",
+          "index": 76166,
+          "token": "0x4012987"
+        },
+        {
+          "name": "_controlType",
+          "index": 76167,
+          "token": "0x4012988"
+        },
+        {
+          "name": "_vec0",
+          "index": 76168,
+          "token": "0x4012989"
+        },
+        {
+          "name": "_vec1",
+          "index": 76169,
+          "token": "0x401298a"
+        },
+        {
+          "name": "_vecInterpolation",
+          "index": 76170,
+          "token": "0x401298b"
+        },
+        {
+          "name": "_fovStart",
+          "index": 76171,
+          "token": "0x401298c"
+        },
+        {
+          "name": "_fovEnd",
+          "index": 76172,
+          "token": "0x401298d"
+        },
+        {
+          "name": "_fovInterpolation",
+          "index": 76173,
+          "token": "0x401298e"
+        },
+        {
+          "name": "isNearFar",
+          "index": 76174,
+          "token": "0x401298f"
+        },
+        {
+          "name": "nearClip",
+          "index": 76175,
+          "token": "0x4012990"
+        },
+        {
+          "name": "farClip",
+          "index": 76176,
+          "token": "0x4012991"
+        },
+        {
+          "name": "_targetType",
+          "index": 76177,
+          "token": "0x4012992"
+        },
+        {
+          "name": "_targetIndexDirect",
+          "index": 76178,
+          "token": "0x4012993"
+        },
+        {
+          "name": "_targetShiftTime",
+          "index": 76179,
+          "token": "0x4012994"
+        },
+        {
+          "name": "_targetShiftMoveTime",
+          "index": 76180,
+          "token": "0x4012995"
+        },
+        {
+          "name": "_targetFirstShiftTimeAdd",
+          "index": 76181,
+          "token": "0x4012996"
+        },
+        {
+          "name": "_targetCenterPositionFirstWeight",
+          "index": 76182,
+          "token": "0x4012997"
+        },
+        {
+          "name": "_useTargetInterpolation",
+          "index": 76183,
+          "token": "0x4012998"
+        },
+        {
+          "name": "_useLaneOriginPosition",
+          "index": 76184,
+          "token": "0x4012999"
+        },
+        {
+          "name": "_laneOriginOffset",
+          "index": 76185,
+          "token": "0x401299a"
+        },
+        {
+          "name": "IsClipTargetTransOnGoal",
+          "index": 76186,
+          "token": "0x401299b"
+        },
+        {
+          "name": "_targetOffset",
+          "index": 76187,
+          "token": "0x401299c"
+        },
+        {
+          "name": "_targetOffsetEnd",
+          "index": 76188,
+          "token": "0x401299d"
+        },
+        {
+          "name": "_targetOffsetInterpolation",
+          "index": 76189,
+          "token": "0x401299e"
+        },
+        {
+          "name": "_cameraInterpolation",
+          "index": 76190,
+          "token": "0x401299f"
+        },
+        {
+          "name": "_startRoll",
+          "index": 76191,
+          "token": "0x40129a0"
+        },
+        {
+          "name": "_endRoll",
+          "index": 76192,
+          "token": "0x40129a1"
+        },
+        {
+          "name": "_cameraRollInterpolation",
+          "index": 76193,
+          "token": "0x40129a2"
+        },
+        {
+          "name": "_useJikkyouOrder",
+          "index": 76194,
+          "token": "0x40129a3"
+        },
+        {
+          "name": "_startGateHide",
+          "index": 76195,
+          "token": "0x40129a4"
+        },
+        {
+          "name": "_rachiHide",
+          "index": 76196,
+          "token": "0x40129a5"
+        },
+        {
+          "name": "_rachiHideNo",
+          "index": 76197,
+          "token": "0x40129a6"
+        },
+        {
+          "name": "_audienceHide",
+          "index": 76198,
+          "token": "0x40129a7"
+        },
+        {
+          "name": "_isShake",
+          "index": 76199,
+          "token": "0x40129a8"
+        },
+        {
+          "name": "_positionShake",
+          "index": 76200,
+          "token": "0x40129a9"
+        },
+        {
+          "name": "_positionShakeInterpolation",
+          "index": 76201,
+          "token": "0x40129aa"
+        },
+        {
+          "name": "_targetShake",
+          "index": 76202,
+          "token": "0x40129ab"
+        },
+        {
+          "name": "_targetShakeInterpolation",
+          "index": 76203,
+          "token": "0x40129ac"
+        },
+        {
+          "name": "_isShakePerlinNoise",
+          "index": 76204,
+          "token": "0x40129ad"
+        },
+        {
+          "name": "_shakeSelfScaleStart",
+          "index": 76205,
+          "token": "0x40129ae"
+        },
+        {
+          "name": "_shakeSelfFrequencyStart",
+          "index": 76206,
+          "token": "0x40129af"
+        },
+        {
+          "name": "_shakeSelfScaleEnd",
+          "index": 76207,
+          "token": "0x40129b0"
+        },
+        {
+          "name": "_shakeSelfFrequencyEnd",
+          "index": 76208,
+          "token": "0x40129b1"
+        },
+        {
+          "name": "ShakeSelfRotZScaleStart",
+          "index": 76209,
+          "token": "0x40129b2"
+        },
+        {
+          "name": "ShakeSelfRotZFrequencyStart",
+          "index": 76210,
+          "token": "0x40129b3"
+        },
+        {
+          "name": "ShakeSelfRotZScaleEnd",
+          "index": 76211,
+          "token": "0x40129b4"
+        },
+        {
+          "name": "ShakeSelfRotZFrequencyEnd",
+          "index": 76212,
+          "token": "0x40129b5"
+        },
+        {
+          "name": "_shakeTargetScaleStart",
+          "index": 76213,
+          "token": "0x40129b6"
+        },
+        {
+          "name": "_shakeTargetFrequencyStart",
+          "index": 76214,
+          "token": "0x40129b7"
+        },
+        {
+          "name": "_shakeTargetScaleEnd",
+          "index": 76215,
+          "token": "0x40129b8"
+        },
+        {
+          "name": "_shakeTargetFrequencyEnd",
+          "index": 76216,
+          "token": "0x40129b9"
+        },
+        {
+          "name": "_groundBlurRateStart",
+          "index": 76217,
+          "token": "0x40129ba"
+        },
+        {
+          "name": "_groundBlurRateEnd",
+          "index": 76218,
+          "token": "0x40129bb"
+        },
+        {
+          "name": "_targetGroundBlurRateInterpolate",
+          "index": 76219,
+          "token": "0x40129bc"
+        },
+        {
+          "name": "_isOverrideGrassFurSetting",
+          "index": 76220,
+          "token": "0x40129bd"
+        },
+        {
+          "name": "_isEnableGrassFur",
+          "index": 76221,
+          "token": "0x40129be"
+        },
+        {
+          "name": "_grassFadeBeginDist",
+          "index": 76222,
+          "token": "0x40129bf"
+        },
+        {
+          "name": "_grassFadeEndDist",
+          "index": 76223,
+          "token": "0x40129c0"
+        },
+        {
+          "name": "_grassFadeOffsetPower",
+          "index": 76224,
+          "token": "0x40129c1"
+        },
+        {
+          "name": "_grassShellStepScale",
+          "index": 76225,
+          "token": "0x40129c2"
+        },
+        {
+          "name": "_grassAlphaCutout",
+          "index": 76226,
+          "token": "0x40129c3"
+        },
+        {
+          "name": "_grassOcclusion",
+          "index": 76227,
+          "token": "0x40129c4"
+        },
+        {
+          "name": "_grassShellAmount",
+          "index": 76228,
+          "token": "0x40129c5"
+        },
+        {
+          "name": "_grassNoiseTexSize",
+          "index": 76229,
+          "token": "0x40129c6"
+        },
+        {
+          "name": "_isOverrideShadowDistanceSettings",
+          "index": 76230,
+          "token": "0x40129c7"
+        },
+        {
+          "name": "_charaDistanceRange",
+          "index": 76231,
+          "token": "0x40129c8"
+        },
+        {
+          "name": "_shadowDistanceCorrect",
+          "index": 76232,
+          "token": "0x40129c9"
+        },
+        {
+          "name": "_isIncludeGateForCalcShadowDistance",
+          "index": 76233,
+          "token": "0x40129ca"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseCameraShakeParam",
+      "type_index": 13949,
+      "metadata_offset": 46906644,
+      "parent_name": "Gallop.CourseBaseParamInterp",
+      "fields": [
+        {
+          "name": "ActionModeValue",
+          "index": 76377,
+          "token": "0x4012a5a"
+        },
+        {
+          "name": "SelfScale",
+          "index": 76378,
+          "token": "0x4012a5b"
+        },
+        {
+          "name": "SelfFrequency",
+          "index": 76379,
+          "token": "0x4012a5c"
+        },
+        {
+          "name": "SelfRotZScale",
+          "index": 76380,
+          "token": "0x4012a5d"
+        },
+        {
+          "name": "SelfRotZFrequency",
+          "index": 76381,
+          "token": "0x4012a5e"
+        },
+        {
+          "name": "TargetScale",
+          "index": 76382,
+          "token": "0x4012a5f"
+        },
+        {
+          "name": "TargetFrequency",
+          "index": 76383,
+          "token": "0x4012a60"
+        },
+        {
+          "name": "HandShakePower",
+          "index": 76384,
+          "token": "0x4012a61"
+        },
+        {
+          "name": "HandShakeFrequency",
+          "index": 76385,
+          "token": "0x4012a62"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.CourseCameraSwitchParam",
+      "type_index": 13953,
+      "metadata_offset": 46906996,
+      "parent_name": "Gallop.CourseBaseParam",
+      "fields": [
+        {
+          "name": "MULTI_CAMERA_NUM",
+          "index": 76389,
+          "token": "0x4012a66"
+        },
+        {
+          "name": "TRANSPARENT_PARAM_NUM",
+          "index": 76390,
+          "token": "0x4012a67"
+        },
+        {
+          "name": "enableMainCamera",
+          "index": 76391,
+          "token": "0x4012a68"
+        },
+        {
+          "name": "enableMultiCamera",
+          "index": 76392,
+          "token": "0x4012a69"
+        },
+        {
+          "name": "EnableFadeCamera",
+          "index": 76393,
+          "token": "0x4012a6a"
+        },
+        {
+          "name": "EnableMonitorCamera",
+          "index": 76394,
+          "token": "0x4012a6b"
+        },
+        {
+          "name": "FadeFrame",
+          "index": 76395,
+          "token": "0x4012a6c"
+        },
+        {
+          "name": "FadeCameraInterpolationType",
+          "index": 76396,
+          "token": "0x4012a6d"
+        },
+        {
+          "name": "EnableTransparentCamera",
+          "index": 76397,
+          "token": "0x4012a6e"
+        },
+        {
+          "name": "TransparentSplitScreenType",
+          "index": 76398,
+          "token": "0x4012a6f"
+        },
+        {
+          "name": "TransparentParamArray",
+          "index": 76399,
+          "token": "0x4012a70"
+        },
+        {
+          "name": "IsEffectCameraOrthographic",
+          "index": 76400,
+          "token": "0x4012a71"
+        },
+        {
+          "name": "EffectCameraOrthographicSize",
+          "index": 76401,
+          "token": "0x4012a72"
+        },
+        {
+          "name": "IsDrawMaskIn",
+          "index": 76402,
+          "token": "0x4012a73"
+        },
+        {
+          "name": "IsDrawAfterPostEffectWithStencil",
+          "index": 76403,
+          "token": "0x4012a74"
+        },
+        {
+          "name": "StencilLightMode",
+          "index": 76404,
+          "token": "0x4012a75"
+        },
+        {
+          "name": "IsDelayReleaseAntiAliasingTextureEnabled",
+          "index": 76405,
+          "token": "0x4012a76"
+        },
+        {
+          "name": "IsMainCameraImmediateReleaseAntiAliasingTexture",
+          "index": 76406,
+          "token": "0x4012a77"
+        },
+        {
+          "name": "IsMultiCameraImmediateReleaseAntiAliasingTextureArray",
+          "index": 76407,
+          "token": "0x4012a78"
+        }
+      ],
+      "methods": [
+        {
+          "name": "GetInterpolationRate",
+          "index": 92264,
+          "token": "0x6016869",
+          "parameters": [
+            "rate",
+            "interpolationType"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.CameraKeyContainer",
+      "type_index": 24354,
+      "metadata_offset": 47822284,
+      "parent_name": "UnityEngine.MonoBehaviour",
+      "fields": [
+        {
+          "name": "playTime",
+          "index": 126701,
+          "token": "0x401eeee"
+        },
+        {
+          "name": "cullingType",
+          "index": 126702,
+          "token": "0x401eeef"
+        },
+        {
+          "name": "pivotKeyList",
+          "index": 126703,
+          "token": "0x401eef0"
+        },
+        {
+          "name": "fovKeyList",
+          "index": 126704,
+          "token": "0x401eef1"
+        },
+        {
+          "name": "targetKeyList",
+          "index": 126705,
+          "token": "0x401eef2"
+        },
+        {
+          "name": "rollKeyList",
+          "index": 126706,
+          "token": "0x401eef3"
+        },
+        {
+          "name": "shakeKeyList",
+          "index": 126707,
+          "token": "0x401eef4"
+        },
+        {
+          "name": "bloomKeyList",
+          "index": 126708,
+          "token": "0x401eef5"
+        },
+        {
+          "name": "dofKeyList",
+          "index": 126709,
+          "token": "0x401eef6"
+        },
+        {
+          "name": "colorCorrectionKeyList",
+          "index": 126710,
+          "token": "0x401eef7"
+        },
+        {
+          "name": "postFilmKeyList",
+          "index": 126711,
+          "token": "0x401eef8"
+        },
+        {
+          "name": "postRadialBlurKeyList",
+          "index": 126712,
+          "token": "0x401eef9"
+        },
+        {
+          "name": "PostSunShaftKeyList",
+          "index": 126713,
+          "token": "0x401eefa"
+        },
+        {
+          "name": "PostLensDistortionKeyList",
+          "index": 126714,
+          "token": "0x401eefb"
+        },
+        {
+          "name": "PostFluctuarionKeyList",
+          "index": 126715,
+          "token": "0x401eefc"
+        },
+        {
+          "name": "PostChromaticAberrationKeyList",
+          "index": 126716,
+          "token": "0x401eefd"
+        },
+        {
+          "name": "PostToneCurveKeyList",
+          "index": 126717,
+          "token": "0x401eefe"
+        },
+        {
+          "name": "PostExposureKeyList",
+          "index": 126718,
+          "token": "0x401eeff"
+        },
+        {
+          "name": "CharacterFacialEyeList",
+          "index": 126719,
+          "token": "0x401ef00"
+        },
+        {
+          "name": "CharacterFacialEyebrowList",
+          "index": 126720,
+          "token": "0x401ef01"
+        },
+        {
+          "name": "CharacterFacialMouthList",
+          "index": 126721,
+          "token": "0x401ef02"
+        },
+        {
+          "name": "CharacterFacialEarList",
+          "index": 126722,
+          "token": "0x401ef03"
+        },
+        {
+          "name": "CharacterFacialEyeTrackList",
+          "index": 126723,
+          "token": "0x401ef04"
+        },
+        {
+          "name": "CharacterFacialEffectList",
+          "index": 126724,
+          "token": "0x401ef05"
+        },
+        {
+          "name": "CharacterNodeList",
+          "index": 126725,
+          "token": "0x401ef06"
+        },
+        {
+          "name": "BackGroundList",
+          "index": 126726,
+          "token": "0x401ef07"
+        },
+        {
+          "name": "GroundBlurList",
+          "index": 126727,
+          "token": "0x401ef08"
+        },
+        {
+          "name": "CourseViewList",
+          "index": 126728,
+          "token": "0x401ef09"
+        },
+        {
+          "name": "AudioListenerList",
+          "index": 126729,
+          "token": "0x401ef0a"
+        },
+        {
+          "name": "MultiMaskList",
+          "index": 126730,
+          "token": "0x401ef0b"
+        },
+        {
+          "name": "PrefabList",
+          "index": 126731,
+          "token": "0x401ef0c"
+        },
+        {
+          "name": "MultiCameraList",
+          "index": 126732,
+          "token": "0x401ef0d"
+        },
+        {
+          "name": "PrefabObjectList",
+          "index": 126733,
+          "token": "0x401ef0e"
+        },
+        {
+          "name": "MultiCameraMask",
+          "index": 126734,
+          "token": "0x401ef0f"
+        },
+        {
+          "name": "disableDither",
+          "index": 126735,
+          "token": "0x401ef10"
+        },
+        {
+          "name": "IsDrawInMask",
+          "index": 126736,
+          "token": "0x401ef11"
+        },
+        {
+          "name": "IsHideSkillInfo",
+          "index": 126737,
+          "token": "0x401ef12"
+        },
+        {
+          "name": "IsForceEnableMultiCamera",
+          "index": 126738,
+          "token": "0x401ef13"
+        },
+        {
+          "name": "PrefabInstanceList",
+          "index": 126739,
+          "token": "0x401ef14"
+        },
+        {
+          "name": "KeyframePrefabArray",
+          "index": 126740,
+          "token": "0x401ef15"
+        },
+        {
+          "name": "MultiCameraMaskInstanceArray",
+          "index": 126741,
+          "token": "0x401ef16"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "class": "Gallop.KeyframeCameraPlayer",
+      "type_index": 24362,
+      "metadata_offset": 47822988,
+      "parent_name": "System.Object",
+      "fields": [
+        {
+          "name": "MAIN_TARGET_INDEX",
+          "index": 126765,
+          "token": "0x401ef2e"
+        },
+        {
+          "name": "PLAYER_CHARACTER_MAX_NUM",
+          "index": 126766,
+          "token": "0x401ef2f"
+        },
+        {
+          "name": "PREFAB_TRACK_NUM",
+          "index": 126767,
+          "token": "0x401ef30"
+        },
+        {
+          "name": "MULTICAMERA_NUM",
+          "index": 126768,
+          "token": "0x401ef31"
+        },
+        {
+          "name": "RIVAL_CHARACTER_NAX_NUM",
+          "index": 126769,
+          "token": "0x401ef32"
+        },
+        {
+          "name": "MULTICAMERA_CHILD_TRANSFORM_NUM",
+          "index": 126770,
+          "token": "0x401ef33"
+        },
+        {
+          "name": "MULTIMASK_CHILD_L_NAME",
+          "index": 126771,
+          "token": "0x401ef34"
+        },
+        {
+          "name": "MULTIMASK_CHILD_R_NAME",
+          "index": 126772,
+          "token": "0x401ef35"
+        },
+        {
+          "name": "DEFAULT_NEAR_CLIP",
+          "index": 126773,
+          "token": "0x401ef36",
+          "stored_float": 0.10000000149011612,
+          "value_offset": 23435532
+        },
+        {
+          "name": "MULTIPLE_MULTI_CAMERA_NUM",
+          "index": 126774,
+          "token": "0x401ef37"
+        },
+        {
+          "name": "SIDE_FACE_UP_TARGET_KEY_INDEX",
+          "index": 126775,
+          "token": "0x401ef38"
+        },
+        {
+          "name": "SIDE_FACE_UP_CAMERA_LOOKAT_OFFSET_Y",
+          "index": 126776,
+          "token": "0x401ef39",
+          "stored_float": 0.05000000074505806,
+          "value_offset": 23435538
+        },
+        {
+          "name": "_targetCamera",
+          "index": 126777,
+          "token": "0x401ef3a"
+        },
+        {
+          "name": "_targetCameraTransform",
+          "index": 126778,
+          "token": "0x401ef3b"
+        },
+        {
+          "name": "MultiCameraArray",
+          "index": 126779,
+          "token": "0x401ef3c"
+        },
+        {
+          "name": "_fixToMultiCameraAngleInfoArray",
+          "index": 126780,
+          "token": "0x401ef3d"
+        },
+        {
+          "name": "_isSyncCourseCameraImageEffect",
+          "index": 126781,
+          "token": "0x401ef3e"
+        },
+        {
+          "name": "_isFlip",
+          "index": 126782,
+          "token": "0x401ef3f"
+        },
+        {
+          "name": "<LookAtPosition>k__BackingField",
+          "index": 126783,
+          "token": "0x401ef40"
+        },
+        {
+          "name": "<CameraPosition>k__BackingField",
+          "index": 126784,
+          "token": "0x401ef41"
+        },
+        {
+          "name": "<AudioListenerType>k__BackingField",
+          "index": 126785,
+          "token": "0x401ef42"
+        },
+        {
+          "name": "<AudioListenerRate>k__BackingField",
+          "index": 126786,
+          "token": "0x401ef43"
+        },
+        {
+          "name": "<AudioListenerOffset>k__BackingField",
+          "index": 126787,
+          "token": "0x401ef44"
+        },
+        {
+          "name": "_playTime",
+          "index": 126788,
+          "token": "0x401ef45"
+        },
+        {
+          "name": "_fixToCameraAngleInfo",
+          "index": 126789,
+          "token": "0x401ef46"
+        },
+        {
+          "name": "<IsSkillCutInMode>k__BackingField",
+          "index": 126790,
+          "token": "0x401ef47"
+        },
+        {
+          "name": "_conditionalType",
+          "index": 126791,
+          "token": "0x401ef48"
+        },
+        {
+          "name": "_cullingType",
+          "index": 126792,
+          "token": "0x401ef49"
+        },
+        {
+          "name": "_transformAddMultiDict",
+          "index": 126793,
+          "token": "0x401ef4a"
+        },
+        {
+          "name": "_pivotKeyList",
+          "index": 126794,
+          "token": "0x401ef4b"
+        },
+        {
+          "name": "_fovKeyList",
+          "index": 126795,
+          "token": "0x401ef4c"
+        },
+        {
+          "name": "_targetKeyList",
+          "index": 126796,
+          "token": "0x401ef4d"
+        },
+        {
+          "name": "_rollKeyList",
+          "index": 126797,
+          "token": "0x401ef4e"
+        },
+        {
+          "name": "_shakeKeyList",
+          "index": 126798,
+          "token": "0x401ef4f"
+        },
+        {
+          "name": "_characterFacialEyeList",
+          "index": 126799,
+          "token": "0x401ef50"
+        },
+        {
+          "name": "_characterFacialEyebrowList",
+          "index": 126800,
+          "token": "0x401ef51"
+        },
+        {
+          "name": "_characterFacialMouthList",
+          "index": 126801,
+          "token": "0x401ef52"
+        },
+        {
+          "name": "_characterFacialEarList",
+          "index": 126802,
+          "token": "0x401ef53"
+        },
+        {
+          "name": "_characterFacialEyeTrackList",
+          "index": 126803,
+          "token": "0x401ef54"
+        },
+        {
+          "name": "_characterFacialEffectList",
+          "index": 126804,
+          "token": "0x401ef55"
+        },
+        {
+          "name": "_characterNodeList",
+          "index": 126805,
+          "token": "0x401ef56"
+        },
+        {
+          "name": "_backGroundList",
+          "index": 126806,
+          "token": "0x401ef57"
+        },
+        {
+          "name": "_courseViewKeyList",
+          "index": 126807,
+          "token": "0x401ef58"
+        },
+        {
+          "name": "_multiCameraKeyList",
+          "index": 126808,
+          "token": "0x401ef59"
+        },
+        {
+          "name": "_bloomKeyList",
+          "index": 126809,
+          "token": "0x401ef5a"
+        },
+        {
+          "name": "_dofKeyList",
+          "index": 126810,
+          "token": "0x401ef5b"
+        },
+        {
+          "name": "_colorCorrectionKeyList",
+          "index": 126811,
+          "token": "0x401ef5c"
+        },
+        {
+          "name": "_postFilmKeyList",
+          "index": 126812,
+          "token": "0x401ef5d"
+        },
+        {
+          "name": "_postRadialBlurKeyList",
+          "index": 126813,
+          "token": "0x401ef5e"
+        },
+        {
+          "name": "_postSunShaftKeyList",
+          "index": 126814,
+          "token": "0x401ef5f"
+        },
+        {
+          "name": "_postLensDistortionKeyList",
+          "index": 126815,
+          "token": "0x401ef60"
+        },
+        {
+          "name": "_postFluctuarionKeyList",
+          "index": 126816,
+          "token": "0x401ef61"
+        },
+        {
+          "name": "_postChromaticAberrationKeyList",
+          "index": 126817,
+          "token": "0x401ef62"
+        },
+        {
+          "name": "_groundBlurList",
+          "index": 126818,
+          "token": "0x401ef63"
+        },
+        {
+          "name": "_audioListenerList",
+          "index": 126819,
+          "token": "0x401ef64"
+        },
+        {
+          "name": "_postToneCurveKeyList",
+          "index": 126820,
+          "token": "0x401ef65"
+        },
+        {
+          "name": "_postExposureKeyList",
+          "index": 126821,
+          "token": "0x401ef66"
+        },
+        {
+          "name": "_prefabList",
+          "index": 126822,
+          "token": "0x401ef67"
+        },
+        {
+          "name": "_prefabObjectList",
+          "index": 126823,
+          "token": "0x401ef68"
+        },
+        {
+          "name": "_prefabInstanceList",
+          "index": 126824,
+          "token": "0x401ef69"
+        },
+        {
+          "name": "_prefabTargetArray",
+          "index": 126825,
+          "token": "0x401ef6a"
+        },
+        {
+          "name": "_multiCameraMaskInfoArray",
+          "index": 126826,
+          "token": "0x401ef6b"
+        },
+        {
+          "name": "_isDither",
+          "index": 126827,
+          "token": "0x401ef6c"
+        },
+        {
+          "name": "<IsDrawInMask>k__BackingField",
+          "index": 126828,
+          "token": "0x401ef6d"
+        },
+        {
+          "name": "<IsHideSkillInfo>k__BackingField",
+          "index": 126829,
+          "token": "0x401ef6e"
+        },
+        {
+          "name": "<IsForceEnableMultiCamera>k__BackingField",
+          "index": 126830,
+          "token": "0x401ef6f"
+        },
+        {
+          "name": "<EventMainCameraDrawBackGroundInfo>k__BackingField",
+          "index": 126831,
+          "token": "0x401ef70"
+        },
+        {
+          "name": "<IsMultipleMultiCamera>k__BackingField",
+          "index": 126832,
+          "token": "0x401ef71"
+        },
+        {
+          "name": "_postFilmSet",
+          "index": 126833,
+          "token": "0x401ef72"
+        },
+        {
+          "name": "_targetPlayerInfoArray",
+          "index": 126834,
+          "token": "0x401ef73"
+        },
+        {
+          "name": "_targetRivalInfoArray",
+          "index": 126835,
+          "token": "0x401ef74"
+        },
+        {
+          "name": "<CurPlayerInfoIndex>k__BackingField",
+          "index": 126836,
+          "token": "0x401ef75"
+        },
+        {
+          "name": "<CurRivalInfoIndex>k__BackingField",
+          "index": 126837,
+          "token": "0x401ef76"
+        },
+        {
+          "name": "_updateFaceContext",
+          "index": 126838,
+          "token": "0x401ef77"
+        },
+        {
+          "name": "_lastCorrectionPosYOffset",
+          "index": 126839,
+          "token": "0x401ef78"
+        },
+        {
+          "name": "_prevTargetOriginPos",
+          "index": 126840,
+          "token": "0x401ef79"
+        },
+        {
+          "name": "_targetDiffYSum",
+          "index": 126841,
+          "token": "0x401ef7a"
+        },
+        {
+          "name": "NEED_FIX_LAYOUT_THRESHOLD",
+          "index": 126842,
+          "token": "0x401ef7b",
+          "stored_float": 0.10000000149011612,
+          "value_offset": 23435542
+        },
+        {
+          "name": "_lastColorCorrectionIndex",
+          "index": 126843,
+          "token": "0x401ef7c"
+        },
+        {
+          "name": "_imageEffect",
+          "index": 126844,
+          "token": "0x401ef7d"
+        }
+      ],
+      "methods": [
+        {
+          "name": "SetPlayerTargetObject",
+          "index": 161330,
+          "token": "0x6027633",
+          "parameters": [
+            "index",
+            "targetObject"
+          ]
+        },
+        {
+          "name": "SetRivalTargetObject",
+          "index": 161331,
+          "token": "0x6027634",
+          "parameters": [
+            "index",
+            "targetObject"
+          ]
+        },
+        {
+          "name": "ApplyTime",
+          "index": 161341,
+          "token": "0x602763e",
+          "parameters": [
+            "targetTime"
+          ]
+        },
+        {
+          "name": "ApplyPivot",
+          "index": 161344,
+          "token": "0x6027641",
+          "parameters": [
+            "targetTime"
+          ]
+        },
+        {
+          "name": "ApplyFov",
+          "index": 161345,
+          "token": "0x6027642",
+          "parameters": [
+            "targetTime"
+          ]
+        },
+        {
+          "name": "ApplyTarget",
+          "index": 161346,
+          "token": "0x6027643",
+          "parameters": [
+            "targetTime",
+            "isFixToCameraAngle"
+          ]
+        },
+        {
+          "name": "ApplyRoll",
+          "index": 161347,
+          "token": "0x6027644",
+          "parameters": [
+            "targetTime"
+          ]
+        },
+        {
+          "name": "ApplyShake",
+          "index": 161348,
+          "token": "0x6027645",
+          "parameters": [
+            "targetTime",
+            "shakePos",
+            "shakeTarget"
+          ]
+        },
+        {
+          "name": "ApplyShake",
+          "index": 161353,
+          "token": "0x602764a",
+          "parameters": [
+            "targetTime",
+            "keyList",
+            "targetCamera",
+            "shakePos",
+            "shakeTarget"
+          ]
+        },
+        {
+          "name": "ApplyRoll",
+          "index": 161354,
+          "token": "0x602764b",
+          "parameters": [
+            "targetTime",
+            "keyList"
+          ]
+        },
+        {
+          "name": "ApplyFov",
+          "index": 161355,
+          "token": "0x602764c",
+          "parameters": [
+            "targetTime",
+            "keyList"
+          ]
+        },
+        {
+          "name": "ApplyPivot",
+          "index": 161356,
+          "token": "0x602764d",
+          "parameters": [
+            "targetTime",
+            "keyList",
+            "info"
+          ]
+        },
+        {
+          "name": "GetCorrectionPosYOffset",
+          "index": 161358,
+          "token": "0x602764f",
+          "parameters": [
+            "targetPos",
+            "info",
+            "heightOffset"
+          ]
+        },
+        {
+          "name": "ApplyTarget",
+          "index": 161359,
+          "token": "0x6027650",
+          "parameters": [
+            "targetTime",
+            "keyList",
+            "info",
+            "isFixToCameraAngle"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.EventCamera",
+      "type_index": 14111,
+      "metadata_offset": 46920900,
+      "parent_name": "UnityEngine.MonoBehaviour",
+      "fields": [
+        {
+          "name": "_mainCamera",
+          "index": 77445,
+          "token": "0x4012e86"
+        },
+        {
+          "name": "_targetHorseIndex",
+          "index": 77446,
+          "token": "0x4012e87"
+        },
+        {
+          "name": "_rivalHorseIndexArray",
+          "index": 77447,
+          "token": "0x4012e88"
+        },
+        {
+          "name": "_continuousTargetHorseIndex",
+          "index": 77448,
+          "token": "0x4012e89"
+        },
+        {
+          "name": "_isPlaying",
+          "index": 77449,
+          "token": "0x4012e8a"
+        },
+        {
+          "name": "_totalTime",
+          "index": 77450,
+          "token": "0x4012e8b"
+        },
+        {
+          "name": "_playedTime",
+          "index": 77451,
+          "token": "0x4012e8c"
+        },
+        {
+          "name": "_keyframeCamera",
+          "index": 77452,
+          "token": "0x4012e8d"
+        },
+        {
+          "name": "_initialized",
+          "index": 77453,
+          "token": "0x4012e8e"
+        },
+        {
+          "name": "_cameraChanged",
+          "index": 77454,
+          "token": "0x4012e8f"
+        },
+        {
+          "name": "_masterCamera",
+          "index": 77455,
+          "token": "0x4012e90"
+        },
+        {
+          "name": "_unPlayableTempForce",
+          "index": 77456,
+          "token": "0x4012e91"
+        },
+        {
+          "name": "_unPlayableIrreversible",
+          "index": 77457,
+          "token": "0x4012e92"
+        },
+        {
+          "name": "_useCulling",
+          "index": 77458,
+          "token": "0x4012e93"
+        },
+        {
+          "name": "_isForcePlaying",
+          "index": 77459,
+          "token": "0x4012e94"
+        },
+        {
+          "name": "_mainCameraData",
+          "index": 77460,
+          "token": "0x4012e95"
+        },
+        {
+          "name": "_cullingSqrMagnitude",
+          "index": 77461,
+          "token": "0x4012e96"
+        },
+        {
+          "name": "_cameraNearClipPlane",
+          "index": 77462,
+          "token": "0x4012e97"
+        },
+        {
+          "name": "_multiCameraArray",
+          "index": 77463,
+          "token": "0x4012e98"
+        },
+        {
+          "name": "_cacheMultiCameraArray",
+          "index": 77464,
+          "token": "0x4012e99"
+        },
+        {
+          "name": "_multiCameraFrustumArray",
+          "index": 77465,
+          "token": "0x4012e9a"
+        },
+        {
+          "name": "_eventCameraTransform",
+          "index": 77466,
+          "token": "0x4012e9b"
+        },
+        {
+          "name": "_imageEffect",
+          "index": 77467,
+          "token": "0x4012e9c"
+        },
+        {
+          "name": "_cameraController",
+          "index": 77468,
+          "token": "0x4012e9d"
+        },
+        {
+          "name": "_onPlayEventCamera",
+          "index": 77469,
+          "token": "0x4012e9e"
+        },
+        {
+          "name": "_onStopEventCamera",
+          "index": 77470,
+          "token": "0x4012e9f"
+        },
+        {
+          "name": "_isCameraEnable",
+          "index": 77471,
+          "token": "0x4012ea0"
+        },
+        {
+          "name": "_isMultiCameraActiveArray",
+          "index": 77472,
+          "token": "0x4012ea1"
+        },
+        {
+          "name": "_mainCameraDefaultBackGroundColor",
+          "index": 77473,
+          "token": "0x4012ea2"
+        },
+        {
+          "name": "_isContinuous",
+          "index": 77474,
+          "token": "0x4012ea3"
+        },
+        {
+          "name": "_continuousCameraList",
+          "index": 77475,
+          "token": "0x4012ea4"
+        },
+        {
+          "name": "_continuousType",
+          "index": 77476,
+          "token": "0x4012ea5"
+        },
+        {
+          "name": "_continuousCameraIndex",
+          "index": 77477,
+          "token": "0x4012ea6"
+        },
+        {
+          "name": "_lastPlayedContinuousCamera",
+          "index": 77478,
+          "token": "0x4012ea7"
+        },
+        {
+          "name": "<EventCameraPlayInterval>k__BackingField",
+          "index": 77479,
+          "token": "0x4012ea8"
+        },
+        {
+          "name": "_isReqCameraBus",
+          "index": 77480,
+          "token": "0x4012ea9"
+        },
+        {
+          "name": "_isApplyTimeOneceOnPause",
+          "index": 77481,
+          "token": "0x4012eaa"
+        }
+      ],
+      "methods": [
+        {
+          "name": "PlayByCameraId",
+          "index": 92784,
+          "token": "0x6016a71",
+          "parameters": [
+            "horseIndex",
+            "rivalHorseIndexArray",
+            "cameraId",
+            "isForceInPlaying",
+            "isForceUnPlayableArea"
+          ]
+        },
+        {
+          "name": "GetCameraKeyContainer",
+          "index": 92823,
+          "token": "0x6016a98",
+          "parameters": [
+            "assetName"
+          ]
+        }
+      ]
+    },
+    {
+      "class": "Gallop.DynamicCamera",
+      "type_index": 14053,
+      "metadata_offset": 46915796,
+      "parent_name": "UnityEngine.MonoBehaviour",
+      "fields": [
+        {
+          "name": "_mainCamera",
+          "index": 77181,
+          "token": "0x4012d7e"
+        },
+        {
+          "name": "_targetHorseIndex",
+          "index": 77182,
+          "token": "0x4012d7f"
+        },
+        {
+          "name": "_continuousTargetHorseIndex",
+          "index": 77183,
+          "token": "0x4012d80"
+        },
+        {
+          "name": "_isPlaying",
+          "index": 77184,
+          "token": "0x4012d81"
+        },
+        {
+          "name": "_playedTime",
+          "index": 77185,
+          "token": "0x4012d82"
+        },
+        {
+          "name": "_keyframeCamera",
+          "index": 77186,
+          "token": "0x4012d83"
+        },
+        {
+          "name": "_initialized",
+          "index": 77187,
+          "token": "0x4012d84"
+        },
+        {
+          "name": "_cameraChanged",
+          "index": 77188,
+          "token": "0x4012d85"
+        },
+        {
+          "name": "_masterCamera",
+          "index": 77189,
+          "token": "0x4012d86"
+        },
+        {
+          "name": "_unPlayable",
+          "index": 77190,
+          "token": "0x4012d87"
+        },
+        {
+          "name": "_useCulling",
+          "index": 77191,
+          "token": "0x4012d88"
+        },
+        {
+          "name": "_mainCameraData",
+          "index": 77192,
+          "token": "0x4012d89"
+        },
+        {
+          "name": "_cullingSqrMagnitude",
+          "index": 77193,
+          "token": "0x4012d8a"
+        },
+        {
+          "name": "_cameraNearClipPlane",
+          "index": 77194,
+          "token": "0x4012d8b"
+        },
+        {
+          "name": "_overrideOwnOutlineParameter",
+          "index": 77195,
+          "token": "0x4012d8c"
+        },
+        {
+          "name": "_bankRotDeltaThreshold",
+          "index": 77196,
+          "token": "0x4012d8d"
+        },
+        {
+          "name": "_bankRotMoveAverageNum",
+          "index": 77197,
+          "token": "0x4012d8e"
+        },
+        {
+          "name": "_bankRotMultiply",
+          "index": 77198,
+          "token": "0x4012d8f"
+        },
+        {
+          "name": "_overrideOwnDirectionalLightLocalAngleArray",
+          "index": 77199,
+          "token": "0x4012d90"
+        },
+        {
+          "name": "_dynamicCameraTransform",
+          "index": 77200,
+          "token": "0x4012d91"
+        },
+        {
+          "name": "_imageEffect",
+          "index": 77201,
+          "token": "0x4012d92"
+        },
+        {
+          "name": "_cameraController",
+          "index": 77202,
+          "token": "0x4012d93"
+        },
+        {
+          "name": "_raceEnvAnimator",
+          "index": 77203,
+          "token": "0x4012d94"
+        },
+        {
+          "name": "_onPlayDynamicCamera",
+          "index": 77204,
+          "token": "0x4012d95"
+        },
+        {
+          "name": "_onStopDynamicCamera",
+          "index": 77205,
+          "token": "0x4012d96"
+        },
+        {
+          "name": "_isReqCameraBus",
+          "index": 77206,
+          "token": "0x4012d97"
+        },
+        {
+          "name": "_isApplyTimeOneceOnPause",
+          "index": 77207,
+          "token": "0x4012d98"
+        }
+      ],
+      "methods": [
+        {
+          "name": "PlayByCameraId",
+          "index": 92669,
+          "token": "0x60169fe",
+          "parameters": [
+            "horseIndex",
+            "cameraId"
+          ]
+        },
+        {
+          "name": "CorrectDynamicCameraRotation",
+          "index": 92694,
+          "token": "0x6016a17",
+          "parameters": []
+        }
+      ]
+    },
+    {
+      "class": "Gallop.RaceCameraManager",
+      "type_index": 14146,
+      "metadata_offset": 46923980,
+      "parent_name": null,
+      "fields": [
+        {
+          "name": "LANDSCALE_CAMERA_DEPTH",
+          "index": 77661,
+          "token": "0x4012f5e"
+        },
+        {
+          "name": "AUDIO_LISTENER_FOV_MIN",
+          "index": 77662,
+          "token": "0x4012f5f",
+          "stored_float": 0.0,
+          "value_offset": 23357330
+        },
+        {
+          "name": "AUDIO_LISTENER_FOV_MAX",
+          "index": 77663,
+          "token": "0x4012f60",
+          "stored_float": 30.0,
+          "value_offset": 23357334
+        },
+        {
+          "name": "MIN_NEARCLIP_CHANGE_FOV",
+          "index": 77664,
+          "token": "0x4012f61",
+          "stored_float": 5.0,
+          "value_offset": 23357338
+        },
+        {
+          "name": "MIN_NEARCLIP_VALUE",
+          "index": 77665,
+          "token": "0x4012f62",
+          "stored_float": 3.0,
+          "value_offset": 23357342
+        },
+        {
+          "name": "DEFAULT_FARCLIP",
+          "index": 77666,
+          "token": "0x4012f63",
+          "stored_float": 1500.0,
+          "value_offset": 23357346
+        },
+        {
+          "name": "DEFAULT_NEARCLIP",
+          "index": 77667,
+          "token": "0x4012f64",
+          "stored_float": 0.30000001192092896,
+          "value_offset": 23357350
+        },
+        {
+          "name": "OVERRUN_NEARCLIP",
+          "index": 77668,
+          "token": "0x4012f65",
+          "stored_float": 0.10000000149011612,
+          "value_offset": 23357354
+        },
+        {
+          "name": "RADIUS_FARCLIP",
+          "index": 77669,
+          "token": "0x4012f66",
+          "stored_float": 900.0,
+          "value_offset": 23357358
+        },
+        {
+          "name": "RADIUS_FARCLIP_WITHOUT_SKYDOME",
+          "index": 77670,
+          "token": "0x4012f67",
+          "stored_float": 700.0,
+          "value_offset": 23357362
+        },
+        {
+          "name": "NEARCLIP_FOV_MAX",
+          "index": 77671,
+          "token": "0x4012f68",
+          "stored_float": 40.0,
+          "value_offset": 23357366
+        },
+        {
+          "name": "NEARCLIP_FOV_SCALE_MIN",
+          "index": 77672,
+          "token": "0x4012f69",
+          "stored_float": 0.10000000149011612,
+          "value_offset": 23357370
+        },
+        {
+          "name": "NEARCLIP_FOV_SCALE_MAX",
+          "index": 77673,
+          "token": "0x4012f6a",
+          "stored_float": 0.05000000074505806,
+          "value_offset": 23357374
+        },
+        {
+          "name": "DEFAULT_FOV",
+          "index": 77674,
+          "token": "0x4012f6b",
+          "stored_float": 10.0,
+          "value_offset": 23357378
+        },
+        {
+          "name": "FADE_CAMERA_DEPTH",
+          "index": 77675,
+          "token": "0x4012f6c"
+        },
+        {
+          "name": "MONITOR_CAMERA_DEPTH",
+          "index": 77676,
+          "token": "0x4012f6d"
+        },
+        {
+          "name": "MAIN_CAMERA_DEPTH",
+          "index": 77677,
+          "token": "0x4012f6e"
+        },
+        {
+          "name": "GOAL_CAMERA_DEPTH",
+          "index": 77678,
+          "token": "0x4012f6f"
+        },
+        {
+          "name": "RACE_ENV_LANDSCAPE_FOV",
+          "index": 77679,
+          "token": "0x4012f70",
+          "stored_float": 30.0,
+          "value_offset": 23357386
+        },
+        {
+          "name": "_raceManager",
+          "index": 77680,
+          "token": "0x4012f71"
+        },
+        {
+          "name": "_rootTransform",
+          "index": 77681,
+          "token": "0x4012f72"
+        },
+        {
+          "name": "_isPauseRace",
+          "index": 77682,
+          "token": "0x4012f73"
+        },
+        {
+          "name": "IsMarkerRender",
+          "index": 77683,
+          "token": "0x4012f74"
+        },
+        {
+          "name": "_multiEnvRender",
+          "index": 77684,
+          "token": "0x4012f75"
+        },
+        {
+          "name": "_multiOverlayRender",
+          "index": 77685,
+          "token": "0x4012f76"
+        },
+        {
+          "name": "_frameBuffer",
+          "index": 77686,
+          "token": "0x4012f77"
+        },
+        {
+          "name": "_bgBlurParam",
+          "index": 77687,
+          "token": "0x4012f78"
+        },
+        {
+          "name": "_skillCutinBeltBlurMaterial",
+          "index": 77688,
+          "token": "0x4012f79"
+        },
+        {
+          "name": "_skillCutinSimpleCopyMaterial",
+          "index": 77689,
+          "token": "0x4012f7a"
+        },
+        {
+          "name": "_toLandscapeModeSkillCutinBelftRenderTexture",
+          "index": 77690,
+          "token": "0x4012f7b"
+        },
+        {
+          "name": "_landscapeModeSkillCutInUICamera",
+          "index": 77691,
+          "token": "0x4012f7c"
+        },
+        {
+          "name": "_lowResolutionCameraFrameBufferList",
+          "index": 77692,
+          "token": "0x4012f7d"
+        },
+        {
+          "name": "_lowResolutionCameraList",
+          "index": 77693,
+          "token": "0x4012f7e"
+        },
+        {
+          "name": "_cameraMode",
+          "index": 77694,
+          "token": "0x4012f7f"
+        },
+        {
+          "name": "_isStoryRace",
+          "index": 77695,
+          "token": "0x4012f80"
+        },
+        {
+          "name": "_isRaceLandscape",
+          "index": 77696,
+          "token": "0x4012f81"
+        },
+        {
+          "name": "_isDrawInMaskMultiCamera",
+          "index": 77697,
+          "token": "0x4012f82"
+        },
+        {
+          "name": "IsChangedStencil",
+          "index": 77698,
+          "token": "0x4012f83"
+        },
+        {
+          "name": "_cameraTablePrefab",
+          "index": 77699,
+          "token": "0x4012f84"
+        },
+        {
+          "name": "_cameraTableObject",
+          "index": 77700,
+          "token": "0x4012f85"
+        },
+        {
+          "name": "_raceCaptureTexture",
+          "index": 77701,
+          "token": "0x4012f86"
+        },
+        {
+          "name": "_multiFrameTexture",
+          "index": 77702,
+          "token": "0x4012f87"
+        },
+        {
+          "name": "_raceCameraEventBase",
+          "index": 77703,
+          "token": "0x4012f88"
+        },
+        {
+          "name": "_isSetExternalGroundBlurRate",
+          "index": 77704,
+          "token": "0x4012f89"
+        },
+        {
+          "name": "_externalGroundBlurRate",
+          "index": 77705,
+          "token": "0x4012f8a"
+        },
+        {
+          "name": "_envCameraCullingMask",
+          "index": 77706,
+          "token": "0x4012f8b"
+        },
+        {
+          "name": "_isEnableCutIn",
+          "index": 77707,
+          "token": "0x4012f8c"
+        },
+        {
+          "name": "_isRestoreTitleCameraEnabled",
+          "index": 77708,
+          "token": "0x4012f8d"
+        },
+        {
+          "name": "_isRestoreMainCameraEnabled",
+          "index": 77709,
+          "token": "0x4012f8e"
+        },
+        {
+          "name": "_isRestoreMainMultiCameraEnabled",
+          "index": 77710,
+          "token": "0x4012f8f"
+        },
+        {
+          "name": "_isRestoreEventMultiCameraEnabledArray",
+          "index": 77711,
+          "token": "0x4012f90"
+        },
+        {
+          "name": "_isRestoreUseImageEffect",
+          "index": 77712,
+          "token": "0x4012f91"
+        },
+        {
+          "name": "_tmpSkipCrossFadeCaptureTexture",
+          "index": 77713,
+          "token": "0x4012f92"
+        },
+        {
+          "name": "_transparentScreenCRPId",
+          "index": 77714,
+          "token": "0x4012f93"
+        },
+        {
+          "name": "_afterImageEffectRenderingCRPId",
+          "index": 77715,
+          "token": "0x4012f94"
+        },
+        {
+          "name": "_multiMarkerCRPId",
+          "index": 77716,
+          "token": "0x4012f95"
+        },
+        {
+          "name": "_multiRaceEnvEffectCRPId",
+          "index": 77717,
+          "token": "0x4012f96"
+        },
+        {
+          "name": "_mainCameraMarkerCRPId",
+          "index": 77718,
+          "token": "0x4012f97"
+        },
+        {
+          "name": "_eventCameraMarkerCRPId",
+          "index": 77719,
+          "token": "0x4012f98"
+        },
+        {
+          "name": "_dynamicCameraMarkerCRPId",
+          "index": 77720,
+          "token": "0x4012f99"
+        },
+        {
+          "name": "_overlayMarkerCRPId",
+          "index": 77721,
+          "token": "0x4012f9a"
+        },
+        {
+          "name": "_fovFactor",
+          "index": 77722,
+          "token": "0x4012f9b"
+        },
+        {
+          "name": "_isEnableLinearDepthForRaceResult",
+          "index": 77723,
+          "token": "0x4012f9c"
+        },
+        {
+          "name": "_isEnableLinearDepthForRace",
+          "index": 77724,
+          "token": "0x4012f9d"
+        },
+        {
+          "name": "_cameraSkipToDistance",
+          "index": 77725,
+          "token": "0x4012f9e"
+        },
+        {
+          "name": "_gateCamera",
+          "index": 77726,
+          "token": "0x4012f9f"
+        },
+        {
+          "name": "_eventCamera",
+          "index": 77727,
+          "token": "0x4012fa0"
+        },
+        {
+          "name": "_dynamicCamera",
+          "index": 77728,
+          "token": "0x4012fa1"
+        },
+        {
+          "name": "_markerRender",
+          "index": 77729,
+          "token": "0x4012fa2"
+        },
+        {
+          "name": "_raceEnvCamera",
+          "index": 77730,
+          "token": "0x4012fa3"
+        },
+        {
+          "name": "_imageEffect",
+          "index": 77731,
+          "token": "0x4012fa4"
+        },
+        {
+          "name": "_courseCamera",
+          "index": 77732,
+          "token": "0x4012fa5"
+        },
+        {
+          "name": "_currentMainMultiCamera",
+          "index": 77733,
+          "token": "0x4012fa6"
+        },
+        {
+          "name": "_mainMultiCamera",
+          "index": 77734,
+          "token": "0x4012fa7"
+        },
+        {
+          "name": "_multiCameraFrustum",
+          "index": 77735,
+          "token": "0x4012fa8"
+        },
+        {
+          "name": "_hasMultiCameraFrustum",
+          "index": 77736,
+          "token": "0x4012fa9"
+        },
+        {
+          "name": "_mainCamera",
+          "index": 77737,
+          "token": "0x4012faa"
+        },
+        {
+          "name": "_mainCameraData",
+          "index": 77738,
+          "token": "0x4012fab"
+        },
+        {
+          "name": "_currentCamera",
+          "index": 77739,
+          "token": "0x4012fac"
+        },
+        {
+          "name": "_currentCameraTransform",
+          "index": 77740,
+          "token": "0x4012fad"
+        },
+        {
+          "name": "_currentCameraFrustum",
+          "index": 77741,
+          "token": "0x4012fae"
+        },
+        {
+          "name": "_mainCameraTransform",
+          "index": 77742,
+          "token": "0x4012faf"
+        },
+        {
+          "name": "_isSetMainCameraClipPlane",
+          "index": 77743,
+          "token": "0x4012fb0"
+        },
+        {
+          "name": "_playableGraph",
+          "index": 77744,
+          "token": "0x4012fb1"
+        },
+        {
+          "name": "_animationPlayableOutput",
+          "index": 77745,
+          "token": "0x4012fb2"
+        },
+        {
+          "name": "_animationClipPlayable",
+          "index": 77746,
+          "token": "0x4012fb3"
+        },
+        {
+          "name": "_animator",
+          "index": 77747,
+          "token": "0x4012fb4"
+        },
+        {
+          "name": "_mainCameraMotionObject",
+          "index": 77748,
+          "token": "0x4012fb5"
+        },
+        {
+          "name": "_mainCameraMotionTransform",
+          "index": 77749,
+          "token": "0x4012fb6"
+        },
+        {
+          "name": "_isEnabledMainCameraMotion",
+          "index": 77750,
+          "token": "0x4012fb7"
+        },
+        {
+          "name": "<MainCameraMotionPositionOffset>k__BackingField",
+          "index": 77751,
+          "token": "0x4012fb8"
+        },
+        {
+          "name": "<MainCameraMotionRotationOffset>k__BackingField",
+          "index": 77752,
+          "token": "0x4012fb9"
+        },
+        {
+          "name": "<MainCameraMotionNearClipPlane>k__BackingField",
+          "index": 77753,
+          "token": "0x4012fba"
+        },
+        {
+          "name": "<MainCameraMotionFarClipPlane>k__BackingField",
+          "index": 77754,
+          "token": "0x4012fbb"
+        },
+        {
+          "name": "<MainCameraMotionFov>k__BackingField",
+          "index": 77755,
+          "token": "0x4012fbc"
+        },
+        {
+          "name": "<MainCameraMotionValidFov>k__BackingField",
+          "index": 77756,
+          "token": "0x4012fbd"
+        },
+        {
+          "name": "<MainCameraMotionAddFov>k__BackingField",
+          "index": 77757,
+          "token": "0x4012fbe"
+        },
+        {
+          "name": "StoryRaceMultiCamera",
+          "index": 77758,
+          "token": "0x4012fbf"
+        },
+        {
+          "name": "IsEnableMainCameraDepthForEffectCamera",
+          "index": 77759,
+          "token": "0x4012fc0"
+        },
+        {
+          "name": "IsDrawAfterAAEffectCamera",
+          "index": 77760,
+          "token": "0x4012fc1"
+        },
+        {
+          "name": "IsUseDepthMultiCamera",
+          "index": 77761,
+          "token": "0x4012fc2"
+        },
+        {
+          "name": "IsStencilLightMode",
+          "index": 77762,
+          "token": "0x4012fc3"
+        },
+        {
+          "name": "UseDepthMultiCameraArray",
+          "index": 77763,
+          "token": "0x4012fc4"
+        },
+        {
+          "name": "_effectCamera",
+          "index": 77764,
+          "token": "0x4012fc5"
+        },
+        {
+          "name": "_effectCameraData",
+          "index": 77765,
+          "token": "0x4012fc6"
+        },
+        {
+          "name": "EffectCameraOrtho",
+          "index": 77766,
+          "token": "0x4012fc7"
+        },
+        {
+          "name": "OrthoSize",
+          "index": 77767,
+          "token": "0x4012fc8"
+        },
+        {
+          "name": "_fadeCamera",
+          "index": 77768,
+          "token": "0x4012fc9"
+        },
+        {
+          "name": "_fadeCameraTransform",
+          "index": 77769,
+          "token": "0x4012fca"
+        },
+        {
+          "name": "_fadeCameraParameter",
+          "index": 77770,
+          "token": "0x4012fcb"
+        },
+        {
+          "name": "_fadeCameraFrustum",
+          "index": 77771,
+          "token": "0x4012fcc"
+        },
+        {
+          "name": "_monitorCamera",
+          "index": 77772,
+          "token": "0x4012fcd"
+        },
+        {
+          "name": "_monitorCameraData",
+          "index": 77773,
+          "token": "0x4012fce"
+        },
+        {
+          "name": "_monitorCameraTransform",
+          "index": 77774,
+          "token": "0x4012fcf"
+        },
+        {
+          "name": "_monitorCameraParameter",
+          "index": 77775,
+          "token": "0x4012fd0"
+        },
+        {
+          "name": "_monitorCameraFrustum",
+          "index": 77776,
+          "token": "0x4012fd1"
+        },
+        {
+          "name": "_monitorCameraInvisibleModelList",
+          "index": 77777,
+          "token": "0x4012fd2"
+        },
+        {
+          "name": "_monitorCameraInvisibleObjList",
+          "index": 77778,
+          "token": "0x4012fd3"
+        },
+        {
+          "name": "_goalCamera",
+          "index": 77779,
+          "token": "0x4012fd4"
+        },
+        {
+          "name": "_isEnabledTransparent",
+          "index": 77780,
+          "token": "0x4012fd5"
+        },
+        {
+          "name": "_isEnableTransparentScreen",
+          "index": 77781,
+          "token": "0x4012fd6"
+        },
+        {
+          "name": "_transparentScreen",
+          "index": 77782,
+          "token": "0x4012fd7"
+        },
+        {
+          "name": "_afterImageEffectRender",
+          "index": 77783,
+          "token": "0x4012fd8"
+        },
+        {
+          "name": "_fadeRender",
+          "index": 77784,
+          "token": "0x4012fd9"
+        },
+        {
+          "name": "_fadeValue",
+          "index": 77785,
+          "token": "0x4012fda"
+        },
+        {
+          "name": "_transparentAlphaArray",
+          "index": 77786,
+          "token": "0x4012fdb"
+        },
+        {
+          "name": "_transparentParamArray",
+          "index": 77787,
+          "token": "0x4012fdc"
+        },
+        {
+          "name": "_transparentSplitScreenVerticalNum",
+          "index": 77788,
+          "token": "0x4012fdd"
+        },
+        {
+          "name": "_transparentSplitScreenHorizontalNum",
+          "index": 77789,
+          "token": "0x4012fde"
+        },
+        {
+          "name": "_cameraChangeCallback",
+          "index": 77790,
+          "token": "0x4012fdf"
+        },
+        {
+          "name": "_cameraChangedParamCallback",
+          "index": 77791,
+          "token": "0x4012fe0"
+        },
+        {
+          "name": "AudioListenerCameraPosition",
+          "index": 77792,
+          "token": "0x4012fe1"
+        },
+        {
+          "name": "AudioListenerTargetPosition",
+          "index": 77793,
+          "token": "0x4012fe2"
+        },
+        {
+          "name": "<AudioListenerPosition>k__BackingField",
+          "index": 77794,
+          "token": "0x4012fe3"
+        },
+        {
+          "name": "_audioListner",
+          "index": 77795,
+          "token": "0x4012fe4"
+        },
+        {
+          "name": "_raceSoundParamData",
+          "index": 77796,
+          "token": "0x4012fe5"
+        },
+        {
+          "name": "_raceTitleCamera",
+          "index": 77797,
+          "token": "0x4012fe6"
+        },
+        {
+          "name": "_storyRaceEditorCameraEvent",
+          "index": 77798,
+          "token": "0x4012fe7"
+        },
+        {
+          "name": "_depthCopyRender",
+          "index": 77799,
+          "token": "0x4012fe8"
+        },
+        {
+          "name": "_isRequestBusSetting",
+          "index": 77800,
+          "token": "0x4012fe9"
+        },
+        {
+          "name": "_postFilmParamSet",
+          "index": 77801,
+          "token": "0x4012fea"
+        },
+        {
+          "name": "<DrawDirection>k__BackingField",
+          "index": 77802,
+          "token": "0x4012feb"
+        },
+        {
+          "name": "OnChangeOriantationLandscapeCallback",
+          "index": 77803,
+          "token": "0x4012fec"
+        },
+        {
+          "name": "OnChangeOriantationPortraitCallback",
+          "index": 77804,
+          "token": "0x4012fed"
+        },
+        {
+          "name": "<StillCamera>k__BackingField",
+          "index": 77805,
+          "token": "0x4012fee"
+        },
+        {
+          "name": "_stillCameraTransform",
+          "index": 77806,
+          "token": "0x4012fef"
+        },
+        {
+          "name": "_stillBackGroundColor",
+          "index": 77807,
+          "token": "0x4012ff0"
+        },
+        {
+          "name": "<RaceCameraBase>k__BackingField",
+          "index": 77808,
+          "token": "0x4012ff1"
+        }
+      ],
+      "methods": [
+        {
+          "name": "ChangeCameraMode",
+          "index": 93173,
+          "token": "0x6016bf6",
+          "parameters": [
+            "mode",
+            "isSkip"
+          ]
+        },
+        {
+          "name": "PlayEventCamera",
+          "index": 93218,
+          "token": "0x6016c23",
+          "parameters": [
+            "targetHorseIndex",
+            "rivalHorseIndexArray",
+            "cameraId",
+            "isForceInPlaying",
+            "isForceUnPlayableArea"
+          ]
+        },
+        {
+          "name": "PlayEventCamera",
+          "index": 93219,
+          "token": "0x6016c24",
+          "parameters": [
+            "targetHorseIndex",
+            "rivalHorseIndexArray",
+            "prefabName",
+            "isForceInPlaying",
+            "isForceUnPlayableArea"
+          ]
+        },
+        {
+          "name": "PlayDynamicCamera",
+          "index": 93228,
+          "token": "0x6016c2d",
+          "parameters": []
+        },
+        {
+          "name": "CalcNearClipPlane",
+          "index": 93280,
+          "token": "0x6016c61",
+          "parameters": [
+            "camera",
+            "cameraTransform",
+            "targetPosition"
+          ]
+        },
+        {
+          "name": "UpdateCameraViewRange",
+          "index": 93282,
+          "token": "0x6016c63",
+          "parameters": []
+        }
+      ]
+    }
+  ],
+  "project_code_review": {
+    "date": "2026-10-18",
+    "runtime_validation": false,
+    "files": [
+      {
+        "path": "Assets/Scripts/Game/Race/Camera/Sys_RaceCamera.cs",
+        "sha256": "6cbdca94d82b0b90b89959d84e1114340ddcb5d89510e7b72f317e3bb41bdbc8"
+      },
+      {
+        "path": "Assets/Scripts/Game/Race/Runner/RaceRunnerView.cs",
+        "sha256": "687a5bd756f9f5a6a5064f94b786e489c46ed3514759a95c51bcd7bacb12f07a"
+      }
+    ]
+  },
+  "original_research_directory": "C:\\Users\\ParkJongYoun\\.codex\\visualizations\\2026\\10\\17\\01a14816-9a88-7cb3-a6f7-000455cd1f21\\umamusume_research"
+}

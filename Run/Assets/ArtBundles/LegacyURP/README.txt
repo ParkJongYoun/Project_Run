@@ -40,9 +40,9 @@ URP 표시에는 이 라이브러리의 M_ 프리팹을 사용한다.
 재질이 없는 일부 기존 파티클은 표시를 껐다. 일부 캐릭터 / 장비 부품은 정지 자세를 복구했으며
 (복구 기록 70건), 움직이려면 해당 부품의 원래 본 계층에 연결해야 한다.
 전체 프리팹 참조 검사, 대표 6종 달리기 변형 검사, 미리보기 Play 모드 확인 결과는
-프로젝트 루트 DataBundles/LegacyURP/ConversionReport.txt 및 Validation.json에 기록했다.
+프로젝트 루트 DataBundles/기존에셋_URP변환/ConversionReport.txt 및 Validation.json에 기록했다.
 에디터 검증 완료와 모바일 브라우저 검증은 별개다. WebGL 모듈 미설치로 웹 빌드는 실행하지 않았다.
 
 변환 도구: Tools > Project Run > Legacy URP
 Build missing converted assets는 없는 변환 파일을 생성한다. 기존 변환 재질을 강제로 덮어쓰지 않는다.
-ReadyToDrag 이름 / 조립 목록은 DataBundles/LegacyURP/QuickAccessCatalog.tsv를 참고한다.
+ReadyToDrag 이름 / 조립 목록은 DataBundles/기존에셋_URP변환/QuickAccessCatalog.tsv를 참고한다.

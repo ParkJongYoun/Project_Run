@@ -609,7 +609,7 @@ NPC 폴더 표: 총 518개 프리팹(일반 폴더 417개, unused 폴더 101개)
 
 ### NPC·캐릭터 확인 자료
 
-- 직업 목록: `Run/DataBundles/LegacyURP/QuickAccessCatalog.tsv`의 `Characters/Classes` 58개
+- 직업 목록: `Run/DataBundles/기존에셋_URP변환/QuickAccessCatalog.tsv`의 `Characters/Classes` 58개
 - 기본 캐릭터: 같은 카탈로그의 `Characters` 2개
 - NPC 원본: `Run/Assets/OldAsset/Characters/NPCs/prefabs`
 - 이번 추가는 문서 작성만 수행했으며 게임 코드·프리팹·에셋은 수정하지 않았다.

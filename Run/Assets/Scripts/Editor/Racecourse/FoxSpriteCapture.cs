@@ -13,7 +13,7 @@ namespace ProjectRun.Editor
     /// <summary>Captures live playable poses through the existing race camera, with a shared crop for both feet.</summary>
     public static class FoxSpriteCapture
     {
-        public const string Output = "DataBundles/FoxImpostor";
+        public const string Output = "DataBundles/구미호_스프라이트_캡처";
         [Serializable] public sealed class CaptureInfo
         {
             public string Shot;
