@@ -1,0 +1,86 @@
+{
+  "originalJobKey": "matyr_cheer",
+  "generation": {
+    "engine": "ComfyUI local MiniMax H3 INT8",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstLastSameAnchor": true,
+    "resolution": [
+      1024,
+      1024
+    ],
+    "idleRequestedSeconds": 3,
+    "cheerRequestedSeconds": 4,
+    "actualClipCanvases": {
+      "banner_idle": [
+        238,
+        285
+      ],
+      "leaves_idle": [
+        856,
+        256
+      ],
+      "matyr_cheer": [
+        1024,
+        1024
+      ],
+      "matyr_idle": [
+        1024,
+        1024
+      ],
+      "runners_idle": [
+        768,
+        768
+      ]
+    },
+    "resolutionFieldMeaning": "Initial hero input size; actual processed per-clip canvas sizes are recorded in actualClipCanvases."
+  },
+  "settings": {
+    "repair_settings.json": {
+      "sourceMetadata": "extracted/frames.json",
+      "outputDirectory": "matte_v1",
+      "matte": {
+        "backgroundSampleBorder": 8,
+        "warmPinkSearchRects": [],
+        "pinkRedBlueDifference": 40,
+        "pinkMinimumGreen": 35,
+        "trustedMaximumExcess": 18,
+        "isolatedHazeDistance": 5,
+        "isolatedHazeAlpha": 0.25,
+        "coverageFloor": 0.035,
+        "componentAlpha": 0.35,
+        "mainComponentMinimumPixels": 150,
+        "nearBodySupportPixels": 3,
+        "contourSigma": 0.65,
+        "contourCoverageRange": [
+          0.12,
+          0.88
+        ],
+        "spillRepairBand": 2.5,
+        "inkContourBand": [
+          1.3,
+          1.05
+        ],
+        "inkReferenceGain": 0.65,
+        "inkMinimumRgb": [
+          20,
+          16,
+          16
+        ],
+        "inkMaximumRgb": [
+          58,
+          43,
+          41
+        ],
+        "interiorVerificationDistance": 3,
+        "outputAlphaFloor": 0.025
+      }
+    }
+  },
+  "historicalPathStrings": "설정에 남은 원래 경로는 제작 당시의 출처이며 현재 필요한 파일은 이 폴더의 생성원본/생성입력과 최종 frames.json에 기록됨.",
+  "finalSource": "제작기록/마타_특수/생성원본.mp4",
+  "sourceSha256": "6fc5e698e5225a015601b4ea819d9359c36af9da87a1623486816347f6b272d0",
+  "input": "제작기록/마타_특수/생성입력.png",
+  "inputSha256": "480a7133b52c4a2b2cead375841be4d306b7e7061f09728298c8fa3d0aa4c702"
+}

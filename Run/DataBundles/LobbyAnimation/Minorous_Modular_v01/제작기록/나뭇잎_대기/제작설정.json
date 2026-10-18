@@ -1,0 +1,70 @@
+{
+  "originalJobKey": "leaves_idle",
+  "generation": {
+    "engine": "ComfyUI local MiniMax H3 INT8",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstLastSameAnchor": true,
+    "resolution": [
+      1024,
+      1024
+    ],
+    "idleRequestedSeconds": 3,
+    "cheerRequestedSeconds": 4,
+    "cheerResolution": [
+      1152,
+      1152
+    ],
+    "cheerRetryReason": "초안의 도끼 위쪽 잘림과 키색 변화로 재생성. 원본 그림 축소 없이 여백 확장.",
+    "actualClipCanvases": {
+      "lantern_idle": [
+        160,
+        200
+      ],
+      "leaves_idle": [
+        664,
+        376
+      ],
+      "minorous_cheer": [
+        1152,
+        1152
+      ],
+      "minorous_idle": [
+        1152,
+        1152
+      ],
+      "villager_idle": [
+        576,
+        1024
+      ]
+    },
+    "resolutionFieldMeaning": "Initial hero input size; actual processed per-clip canvas sizes are recorded in actualClipCanvases."
+  },
+  "settings": {
+    "motion_settings.json": {
+      "input": "D:\\Project_Run\\Run\\DataBundles\\LobbyAnimation\\Minorous_Modular_v01\\environment\\leaves_anchor.png",
+      "size": [
+        664,
+        376
+      ],
+      "sceneOrigin": [
+        -24,
+        -24
+      ],
+      "scenePixelsPerVideoPixel": 1,
+      "animationMethod": "deterministic isolated-alpha deformation",
+      "kind": "foliage",
+      "parameters": {
+        "amplitudePixels": 4,
+        "periodFrames": 73,
+        "fixedBranch": true
+      }
+    }
+  },
+  "historicalPathStrings": "설정에 남은 원래 경로는 제작 당시의 출처이며 현재 필요한 파일은 이 폴더의 생성원본/생성입력과 최종 frames.json에 기록됨.",
+  "finalSource": "제작기록/나뭇잎_대기/생성원본.png",
+  "sourceSha256": "8971f514ab680c630c074e22349539f281fa2ed5b83e2bd8b3e982a81031ae79",
+  "input": "제작기록/나뭇잎_대기/생성입력.png",
+  "inputSha256": "8971f514ab680c630c074e22349539f281fa2ed5b83e2bd8b3e982a81031ae79"
+}

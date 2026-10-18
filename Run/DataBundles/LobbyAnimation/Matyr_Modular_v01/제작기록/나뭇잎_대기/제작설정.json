@@ -1,0 +1,65 @@
+{
+  "originalJobKey": "leaves_idle",
+  "generation": {
+    "engine": "ComfyUI local MiniMax H3 INT8",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstLastSameAnchor": true,
+    "resolution": [
+      1024,
+      1024
+    ],
+    "idleRequestedSeconds": 3,
+    "cheerRequestedSeconds": 4,
+    "actualClipCanvases": {
+      "banner_idle": [
+        238,
+        285
+      ],
+      "leaves_idle": [
+        856,
+        256
+      ],
+      "matyr_cheer": [
+        1024,
+        1024
+      ],
+      "matyr_idle": [
+        1024,
+        1024
+      ],
+      "runners_idle": [
+        768,
+        768
+      ]
+    },
+    "resolutionFieldMeaning": "Initial hero input size; actual processed per-clip canvas sizes are recorded in actualClipCanvases."
+  },
+  "settings": {
+    "motion_settings.json": {
+      "input": "D:\\Project_Run\\Run\\DataBundles\\LobbyAnimation\\Matyr_Modular_v01\\environment\\leaves_anchor.png",
+      "size": [
+        856,
+        256
+      ],
+      "sceneOrigin": [
+        596,
+        -24
+      ],
+      "scenePixelsPerVideoPixel": 1,
+      "animationMethod": "deterministic isolated-alpha deformation",
+      "kind": "foliage",
+      "parameters": {
+        "amplitudePixels": 4.5,
+        "periodFrames": 73,
+        "fixedBranch": false
+      }
+    }
+  },
+  "historicalPathStrings": "설정에 남은 원래 경로는 제작 당시의 출처이며 현재 필요한 파일은 이 폴더의 생성원본/생성입력과 최종 frames.json에 기록됨.",
+  "finalSource": "제작기록/나뭇잎_대기/생성원본.png",
+  "sourceSha256": "1b634f16b0837a8c97f0057f68ff6a1d79a54c2e119f44b65fc068731c9e0fbb",
+  "input": "제작기록/나뭇잎_대기/생성입력.png",
+  "inputSha256": "1b634f16b0837a8c97f0057f68ff6a1d79a54c2e119f44b65fc068731c9e0fbb"
+}

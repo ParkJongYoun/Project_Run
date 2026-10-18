@@ -1,0 +1,540 @@
+{
+  "recordedDate": "2026-10-17",
+  "purpose": "로비 3종 제작을 위한 SGL 설정 참고 기록. 실행용 워크플로/슬롯 패킷이 아님.",
+  "status": "wild_rose_idle_brush_1024_v01_generated_motion_requirements_partially_unmet",
+  "generationRun": true,
+  "alphaProcessingRun": true,
+  "unityApplied": true,
+  "browserMeasured": false,
+  "sources": [
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-video-generation\\SKILL.md",
+      "sha256": "82cb5b466216d40363578a1d45f304bf23a0d92ef88324443f19afabdefc940e"
+    },
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-video-generation\\references\\comfy-workflow.md",
+      "sha256": "88bf625b512dbddba0130a2f5bc875b76c0cac29220fd82b1b6a53c89d51e37e"
+    },
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-video-generation\\assets\\h3-i2v.json",
+      "sha256": "ea653c4cb4cb52b5311fccf245d2beadcb5372e61c9d4b8dcf5c7e246f12dc31"
+    },
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-video-generation\\scripts\\prepare_video.py",
+      "sha256": "3f628bb14d44f71ea21f47bb1ddd33cd649e419d66aa38074b6a52599f79aba3"
+    },
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-character-animation\\SKILL.md",
+      "sha256": "d5c962ccb65134afb5fa57e157c8e1a30c6735d3d676c5566032a22afa0de4f1"
+    },
+    {
+      "path": "D:\\Project_SGL\\ProjectSupport\\Skills\\sgl-character-animation\\references\\video-processing.md",
+      "sha256": "4310a7c2476fc03d2cc919e5ba2d75dcdea30c7ad6ed1f9cf59a9920bac7351a"
+    }
+  ],
+  "generationBaseline": {
+    "environment": "local_comfyui",
+    "model": "MiniMax H3 fl2va UNet INT8",
+    "unet": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "textEncoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "videoVae": "minimax_h3_video_vae_int8_convrot.safetensors",
+    "audioVae": "minimax_h3_audio_vae_fp32.safetensors",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstImageCount": 1,
+    "resolutionSelectorMultipleReference": 32,
+    "resolutionSelectorMegapixelDivisorReference": 1048576,
+    "frameCountFormula": "n = max(5, round(seconds * 24)); frames = n + (5 - n % 17) % 17",
+    "preserveOriginalMp4": true,
+    "preserveSourceComposition": true
+  },
+  "sglOriginalValuesNotAppliedToLobby": {
+    "outputWidth": 800,
+    "outputHeight": 800,
+    "aspectRatio": "1:1 (Square)",
+    "megapixels": 0.6103515625,
+    "backgroundColor": "#FF00FF",
+    "characterDurationExamplesSeconds": [
+      2,
+      3
+    ],
+    "outputCellSize": 800,
+    "outputAnchor": [
+      400,
+      600
+    ],
+    "pivot": [
+      0.5,
+      0.25
+    ],
+    "columns": 5,
+    "maxTextureSizeDraft": 4096,
+    "magentaMatteDraft": {
+      "keepExcess": 30,
+      "clearExcess": 210,
+      "unmix": 1.0,
+      "edgeCorrectionMaxPixels": 3
+    }
+  },
+  "lobbyDecisions": {
+    "sceneCount": 3,
+    "pipeline": [
+      "ComfyUI video",
+      "sprite extraction and preparation",
+      "Unity sprite playback"
+    ],
+    "generationResolution": null,
+    "generationAspectRatio": null,
+    "generationMegapixels": null,
+    "spriteCellDimensions": null,
+    "renderMode": "masked_animated_room_background_plus_grouped_character_sprites",
+    "alphaMethod": "local_foreground_color_projection_edge_recovery_and_internal_gap_keying",
+    "alphaEnabled": true,
+    "generationDurationSeconds": null,
+    "seed": null,
+    "selectedFrames": null,
+    "frameDurations": null,
+    "loopRange": null,
+    "atlasPages": null,
+    "atlasMaxSize": null,
+    "gpuTextureFormat": null,
+    "transitionDurationSeconds": null,
+    "sceneHoldDurationSeconds": null,
+    "resolutionPolicy": "800x800 미적용. 분리시험1024x768, 전체먹이기1536x864, 최신대기·쓰다듬기연결검증512x288. 최종규격미확정.",
+    "decisionBasis": "2026-10-17 사용자: v02 분리 스프라이트의 경계와 배경 휘어짐을 거부하고 전체 고양이 장면 영상, 케이크 먹이기, 다양한 표정과 자연스러운 반복 요청.",
+    "styleMaster": "심사데모_플레이콘티.pptx의 와일드 로즈 원본",
+    "firstInstalledScene": "Scene_Lobby / WildRose_v01",
+    "currentAppliedScene": "Scene_Lobby / WildRose_v02",
+    "latestRequestedRenderMode": "full_scene_mp4",
+    "existingRenderModeScope": "renderMode and alpha fields describe the existing v02 Unity scene; user rejected its visual quality. New full-scene video is not applied to Unity yet.",
+    "currentVideoTest": "512x288 idle and brushing clips; review continuity before game integration."
+  },
+  "scenesFromStoryboard": [
+    {
+      "name": "마이너 우로스",
+      "description": "도끼로 장작을 내리찍기",
+      "groupingRecommendation": "우로스·도끼·장작·받침 통나무. 접촉 그림자는 실제 동작에 맞춰 별도 검수"
+    },
+    {
+      "name": "와일드 로즈",
+      "description": "우아한 실내에서 빗질 받기",
+      "groupingRecommendation": "집사·메이드·고양이·빗·쟁반·음식 한 묶음"
+    },
+    {
+      "name": "마타",
+      "description": "하품 후 수면, 후경 훈련 지속",
+      "groupingRecommendation": "전경 마타와 후경 훈련 주자를 별도 묶음"
+    }
+  ],
+  "adaptationRequired": [
+    "prepare_video.py rejects non-square input and hardcodes 800x800; adapt an isolated working copy before lobby video generation.",
+    "Use lobby-specific motion prompts and the selected magenta plate; video duration, seed and resolution remain test decisions.",
+    "Record actual output dimensions; do not infer resolution from disconnected inner widgets.",
+    "Do not inherit character foot anchor, pivot, 800 cell size, or single-PNG builder assumptions.",
+    "Apply per-frame protection masks for the pink bow/Poring; verify temporal edges and contact shadows after actual video generation."
+  ],
+  "testResults": [
+    {
+      "date": "2026-10-17",
+      "type": "static_artwork_magenta_matte_only",
+      "settings": {
+        "keepExcess": 30,
+        "clearExcess": 210,
+        "unmix": 1.0
+      },
+      "edgeCorrectionMaxPixels": 3,
+      "visualChecks": [
+        "black background",
+        "white background",
+        "clean background composite"
+      ],
+      "protectedPinkPixelsRemainOpaque": true,
+      "finalResolutionSelected": false,
+      "videoGenerated": false,
+      "browserMeasured": false,
+      "limitations": [
+        "Generated layer extraction is a redraw, not a pixel-identical segmentation of the reference.",
+        "Contact shadows and bed occlusion must be checked with actual motion.",
+        "Pink protection masks are still-image masks; video requires per-frame tracked masks.",
+        "No mobile browser or runtime memory measurement has been performed."
+      ],
+      "manifest": "화풍통일_v1/후처리_v1/후처리검수.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_comfy_video_sprite_unity_editor",
+      "generationResolution": [
+        1024,
+        768
+      ],
+      "frameCount": 73,
+      "actualDurationSeconds": 3.0416666666666665,
+      "spriteCellSize": [
+        896,
+        646
+      ],
+      "atlasPages": 4,
+      "frameTextureBytes": 170820000,
+      "finalResolutionSelected": false,
+      "unityApplied": true,
+      "browserMeasured": false,
+      "record": "../../LobbyAnimation/WildRose_v01/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_v02_alpha_environment_repair",
+      "generationResolution": [
+        1024,
+        768
+      ],
+      "sourceVideoRegenerated": false,
+      "spriteCellSize": [
+        899,
+        648
+      ],
+      "frameCount": 73,
+      "atlasPages": 4,
+      "frameTextureBytes": 171916752,
+      "environment": "curtains20px,flowers8px,leaves14px in original illustration",
+      "unityApplied": true,
+      "browserMeasured": false,
+      "record": "../../LobbyAnimation/WildRose_v02/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_fullscene_cake_feeding_video",
+      "generationResolution": [
+        1536,
+        864
+      ],
+      "fps": 24,
+      "frameCount": 192,
+      "actualDurationSeconds": 8,
+      "seed": 2026101703,
+      "steps": 25,
+      "turbo": false,
+      "sameFirstAndLastReference": true,
+      "silentMp4Bytes": 2028460,
+      "originalMp4Bytes": 2169966,
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "environmentObserved": "Visible left curtain; gentle central curtain; weak flowers; nearly static foreground leaves.",
+      "record": "../../LobbyAnimation/WildRose_FullScene_v01/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_idle_brush_512_continuity_test",
+      "generationResolution": [
+        512,
+        288
+      ],
+      "fps": 24,
+      "frameCountPerClip": 107,
+      "actualDurationSecondsPerClip": 4.458333333333333,
+      "clipCount": 2,
+      "steps": 25,
+      "turbo": false,
+      "seeds": [
+        2026101704,
+        2026101705
+      ],
+      "sameFirstAndLastReference": true,
+      "rawMp4Bytes": [
+        330077,
+        381840
+      ],
+      "serverExecutionSeconds": [
+        117.35,
+        106.3
+      ],
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "videoConcatenated": true,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "result": "Test completed; tail motion too large in idle and boundary differences remain. Seamless continuity not accepted.",
+      "record": "../../LobbyAnimation/WildRose_IdleBrush_512_v01/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_short_idle_brush_512_v02",
+      "generationResolution": [
+        512,
+        288
+      ],
+      "fps": 24,
+      "frameCounts": [
+        56,
+        73
+      ],
+      "actualDurationsSeconds": [
+        2.3333333333333335,
+        3.0416666666666665
+      ],
+      "clipCount": 2,
+      "steps": 25,
+      "turbo": false,
+      "seeds": [
+        2026101706,
+        2026101707
+      ],
+      "sameFirstAndLastReference": true,
+      "rawMp4Bytes": [
+        173668,
+        281015
+      ],
+      "serverExecutionSeconds": [
+        163.16,
+        102.72
+      ],
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "videoConcatenated": true,
+      "previewDurationSeconds": 12.375,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "result": "Generated two shorter clips and a sequence preview. Idle tail remains too conspicuous and butler idle too weak. One corrective idle generation awaiting user choice.",
+      "record": "../../LobbyAnimation/WildRose_IdleBrush_512_v02/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_idle_correction_512_v03",
+      "generationResolution": [
+        512,
+        288
+      ],
+      "fps": 24,
+      "generatedClipCount": 1,
+      "reusedClipCount": 1,
+      "generatedIdleFrames": 56,
+      "generatedIdleDurationSeconds": 2.3333333333333335,
+      "reusedBrushVersion": "WildRose_IdleBrush_512_v02",
+      "steps": 25,
+      "turbo": false,
+      "seed": 2026101708,
+      "sameFirstAndLastReference": true,
+      "rawIdleBytes": 190282,
+      "serverExecutionSeconds": 108.28,
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "videoConcatenated": true,
+      "previewDurationSeconds": 12.375,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "result": "Butler movement more visible and individual finger movement appears reduced. Tail still changes curl angle; stable-tail criterion not fully met. Generated once on explicit user request, presented for review.",
+      "record": "../../LobbyAnimation/WildRose_IdleBrush_512_v03/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_shared_ambient_idle_brush_512_v04",
+      "generationResolution": [
+        512,
+        288
+      ],
+      "fps": 24,
+      "generatedClipCount": 2,
+      "frameCounts": [
+        56,
+        73
+      ],
+      "actualDurationsSeconds": [
+        2.3333333333333335,
+        3.0416666666666665
+      ],
+      "steps": 25,
+      "turbo": false,
+      "seeds": [
+        2026101709,
+        2026101710
+      ],
+      "sameFirstAndLastReference": true,
+      "identicalAmbientPromptBlock": true,
+      "rawMp4Bytes": [
+        178157,
+        266613
+      ],
+      "serverExecutionSeconds": [
+        242.34,
+        176.01
+      ],
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "videoConcatenated": true,
+      "previewDurationSeconds": 12.375,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "result": "Shoulder bobbing reduced and similar restrained male ambient motion in both clips. Special left curtain visibly moves, idle curtain does not read clearly; conspicuous idle tail remains. Shared ambient-motion target not achieved.",
+      "record": "../../LobbyAnimation/WildRose_IdleBrush_512_v04/run_record.json"
+    },
+    {
+      "date": "2026-10-17",
+      "type": "wild_rose_idle_brush_1024_v01",
+      "generationResolution": [
+        1024,
+        576
+      ],
+      "fps": 24,
+      "generatedClipCount": 2,
+      "frameCounts": [
+        56,
+        73
+      ],
+      "actualDurationsSeconds": [
+        2.3333333333333335,
+        3.0416666666666665
+      ],
+      "steps": 25,
+      "turbo": false,
+      "seeds": [
+        2026101709,
+        2026101710
+      ],
+      "sameFirstAndLastReference": true,
+      "identicalAmbientPromptBlock": true,
+      "rawMp4Bytes": [
+        371683,
+        534835
+      ],
+      "serverExecutionSeconds": [
+        314.91,
+        251.11
+      ],
+      "alphaProcessing": false,
+      "spriteConversion": false,
+      "videoConcatenated": true,
+      "previewDurationSeconds": 12.375,
+      "unityApplied": false,
+      "browserMeasured": false,
+      "finalResolutionSelected": false,
+      "result": "Idle curtains now move and tail stays more compact, but idle brush movement and male mouth opening remain. Special curtains nearly stop and male movement differs. Matching ambient motion/quiet idle not achieved.",
+      "record": "../../LobbyAnimation/WildRose_IdleBrush_1024_v01/run_record.json"
+    }
+  ],
+  "generationRunScope": "Two 1024x576 test generations complete; same duration/model/steps/seeds as 512 v04, prompt pixel-amplitude wording scaled proportionally. Original two clips and stream-copy review sequence delivered; no Unity integration.",
+  "artGenerationRun": true,
+  "alphaProcessingScope": "Still artwork plus all73 video frames; v02 alpha and edge colors reprocessed from original RGB.",
+  "videoAlphaProcessingRun": true,
+  "artPreparation": {
+    "tool": "built_in_imagegen",
+    "directory": "화풍통일_v1",
+    "generatedSceneSize": [
+      1672,
+      941
+    ],
+    "styleMasterOriginalSize": [
+      1920,
+      1080
+    ],
+    "doesNotSetVideoResolution": true,
+    "styleSceneCount": 2,
+    "cleanBackgroundCount": 3,
+    "mainGroupCount": 3,
+    "supportingGroupCount": 1,
+    "prompts": "화풍통일_v1/생성프롬프트.json",
+    "staticMatteManifest": "화풍통일_v1/후처리_v1/후처리검수.json",
+    "mainGroupCropSizes": {
+      "우로스": [
+        1056,
+        1056
+      ],
+      "와일드로즈": [
+        1376,
+        1088
+      ],
+      "마타": [
+        1056,
+        832
+      ]
+    }
+  },
+  "latestVideoTrial": {
+    "date": "2026-10-17",
+    "type": "wild_rose_idle_brush_1024_v01",
+    "generationResolution": [
+      1024,
+      576
+    ],
+    "fps": 24,
+    "generatedClipCount": 2,
+    "frameCounts": [
+      56,
+      73
+    ],
+    "actualDurationsSeconds": [
+      2.3333333333333335,
+      3.0416666666666665
+    ],
+    "steps": 25,
+    "turbo": false,
+    "seeds": [
+      2026101709,
+      2026101710
+    ],
+    "sameFirstAndLastReference": true,
+    "identicalAmbientPromptBlock": true,
+    "rawMp4Bytes": [
+      371683,
+      534835
+    ],
+    "serverExecutionSeconds": [
+      314.91,
+      251.11
+    ],
+    "alphaProcessing": false,
+    "spriteConversion": false,
+    "videoConcatenated": true,
+    "previewDurationSeconds": 12.375,
+    "unityApplied": false,
+    "browserMeasured": false,
+    "finalResolutionSelected": false,
+    "result": "Idle curtains now move and tail stays more compact, but idle brush movement and male mouth opening remain. Special curtains nearly stop and male movement differs. Matching ambient motion/quiet idle not achieved.",
+    "record": "../../LobbyAnimation/WildRose_IdleBrush_1024_v01/run_record.json"
+  },
+  "previousGeneratedVideoDeletion": {
+    "deletedAtUtc": "2026-10-17T10:37:38.439036+00:00",
+    "reason": "User rejected previous generated lobby videos and explicitly requested their deletion.",
+    "scope": "Previous generated MP4 originals, fetched copies, concatenated previews and scene preview only. Source artwork and PPT reference media are retained.",
+    "deletedVideoFileCount": 33,
+    "totalDeletedBytes": 24936818,
+    "manifestDirectory": "D:\\Project_Run\\Run\\DataBundles\\LobbyAnimation\\WildRose_IdleBrush_1024_v01\\_work",
+    "newTrial": "WildRose_IdleBrush_1024_v01"
+  },
+  "latestStillSpriteRepair": {
+    "date": "2026-10-17",
+    "subject": "Wild Rose butler + maid + cat",
+    "operation": "ImageGen contour reconstruction, then original-layout registration and existing 1280x1024 crop packing",
+    "file": "../../LobbyAnimation/WildRose_ContourCleanup_v01/와일드로즈_윤곽정리_투명.png",
+    "record": "../../LobbyAnimation/WildRose_ContourCleanup_v01/run_record.json",
+    "animationFramesModified": false,
+    "unityApplied": false,
+    "sourcePreserved": true,
+    "interiorPixelsIdentical": false
+  },
+  "latestAnimatedSpriteRepair": {
+    "date": "2026-10-17",
+    "record": "../../LobbyAnimation/WildRose_AnimationContour_v03/run_record.json",
+    "frames": 73,
+    "fps": 24,
+    "duration": 3.0416666666666665,
+    "sourceSize": [
+      1024,
+      768
+    ],
+    "cellSize": [
+      898,
+      646
+    ],
+    "originalFramesPreserved": true,
+    "unityApplied": true,
+    "unityClip": "Assets/Resources/UI/Lobby/WildRose_Idle_Contour_v03.asset",
+    "source": "Retained raw video frames, not regenerated motion"
+  }
+}

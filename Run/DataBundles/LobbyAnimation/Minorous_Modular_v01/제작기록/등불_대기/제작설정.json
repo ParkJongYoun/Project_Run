@@ -1,0 +1,73 @@
+{
+  "originalJobKey": "lantern_idle",
+  "generation": {
+    "engine": "ComfyUI local MiniMax H3 INT8",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstLastSameAnchor": true,
+    "resolution": [
+      1024,
+      1024
+    ],
+    "idleRequestedSeconds": 3,
+    "cheerRequestedSeconds": 4,
+    "cheerResolution": [
+      1152,
+      1152
+    ],
+    "cheerRetryReason": "초안의 도끼 위쪽 잘림과 키색 변화로 재생성. 원본 그림 축소 없이 여백 확장.",
+    "actualClipCanvases": {
+      "lantern_idle": [
+        160,
+        200
+      ],
+      "leaves_idle": [
+        664,
+        376
+      ],
+      "minorous_cheer": [
+        1152,
+        1152
+      ],
+      "minorous_idle": [
+        1152,
+        1152
+      ],
+      "villager_idle": [
+        576,
+        1024
+      ]
+    },
+    "resolutionFieldMeaning": "Initial hero input size; actual processed per-clip canvas sizes are recorded in actualClipCanvases."
+  },
+  "settings": {
+    "motion_settings.json": {
+      "input": "D:\\Project_Run\\Run\\DataBundles\\LobbyAnimation\\Minorous_Modular_v01\\environment\\lantern_anchor_v2.png",
+      "size": [
+        160,
+        200
+      ],
+      "sceneOrigin": [
+        1376,
+        56
+      ],
+      "scenePixelsPerVideoPixel": 1,
+      "animationMethod": "deterministic isolated-alpha deformation",
+      "kind": "pendulum",
+      "parameters": {
+        "angleDegrees": 1.2,
+        "pivot": [
+          79,
+          31
+        ],
+        "periodFrames": 73
+      }
+    }
+  },
+  "historicalPathStrings": "설정에 남은 원래 경로는 제작 당시의 출처이며 현재 필요한 파일은 이 폴더의 생성원본/생성입력과 최종 frames.json에 기록됨.",
+  "finalSource": "제작기록/등불_대기/생성원본.png",
+  "sourceSha256": "f20165768da3d39e3c4794eb81c1e5c20dfe18058933280b204fc4fc28b6004a",
+  "input": "제작기록/등불_대기/생성입력.png",
+  "inputSha256": "f20165768da3d39e3c4794eb81c1e5c20dfe18058933280b204fc4fc28b6004a"
+}

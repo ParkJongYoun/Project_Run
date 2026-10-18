@@ -1,0 +1,91 @@
+{
+  "originalJobKey": "minorous_idle",
+  "generation": {
+    "engine": "ComfyUI local MiniMax H3 INT8",
+    "fps": 24,
+    "steps": 25,
+    "turbo": false,
+    "firstLastSameAnchor": true,
+    "resolution": [
+      1024,
+      1024
+    ],
+    "idleRequestedSeconds": 3,
+    "cheerRequestedSeconds": 4,
+    "cheerResolution": [
+      1152,
+      1152
+    ],
+    "cheerRetryReason": "초안의 도끼 위쪽 잘림과 키색 변화로 재생성. 원본 그림 축소 없이 여백 확장.",
+    "actualClipCanvases": {
+      "lantern_idle": [
+        160,
+        200
+      ],
+      "leaves_idle": [
+        664,
+        376
+      ],
+      "minorous_cheer": [
+        1152,
+        1152
+      ],
+      "minorous_idle": [
+        1152,
+        1152
+      ],
+      "villager_idle": [
+        576,
+        1024
+      ]
+    },
+    "resolutionFieldMeaning": "Initial hero input size; actual processed per-clip canvas sizes are recorded in actualClipCanvases."
+  },
+  "settings": {
+    "repair_settings.json": {
+      "sourceMetadata": "extracted/frames.json",
+      "outputDirectory": "matte_v1",
+      "matte": {
+        "backgroundSampleBorder": 8,
+        "warmPinkSearchRects": [],
+        "pinkRedBlueDifference": 40,
+        "pinkMinimumGreen": 35,
+        "trustedMaximumExcess": 10,
+        "isolatedHazeDistance": 5,
+        "isolatedHazeAlpha": 0.25,
+        "coverageFloor": 0.035,
+        "componentAlpha": 0.35,
+        "mainComponentMinimumPixels": 150,
+        "nearBodySupportPixels": 3,
+        "contourSigma": 0.65,
+        "contourCoverageRange": [
+          0.12,
+          0.88
+        ],
+        "spillRepairBand": 2.5,
+        "inkContourBand": [
+          1.5,
+          1.05
+        ],
+        "inkReferenceGain": 0.55,
+        "inkMinimumRgb": [
+          25,
+          18,
+          14
+        ],
+        "inkMaximumRgb": [
+          84,
+          61,
+          46
+        ],
+        "interiorVerificationDistance": 3,
+        "outputAlphaFloor": 0.025
+      }
+    }
+  },
+  "historicalPathStrings": "설정에 남은 원래 경로는 제작 당시의 출처이며 현재 필요한 파일은 이 폴더의 생성원본/생성입력과 최종 frames.json에 기록됨.",
+  "finalSource": "제작기록/우로스_대기/생성원본.mp4",
+  "sourceSha256": "63ee6914ba8e05a334cd74f9d93f4d15a8523ffd09bc2b2a38f5e9fe2bc16098",
+  "input": "제작기록/우로스_대기/생성입력.png",
+  "inputSha256": "aabbf8a7aca1956a0343d85af205c4241959ca39c26843931dd69ffef5ee5ce7"
+}
