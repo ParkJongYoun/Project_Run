@@ -61,6 +61,8 @@ namespace ProjectRun.Ranch
             animatorPosition = TargetAnimator.transform.localPosition;
             animatorRotation = TargetAnimator.transform.localRotation;
             TargetAnimator.applyRootMotion = false;
+            // 원본 전투용 클립 이벤트는 장식용 목장 활동에서 호출하지 않는다.
+            TargetAnimator.fireEvents = false;
             TargetAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             graph = PlayableGraph.Create("RanchResident_" + name);
             graph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
