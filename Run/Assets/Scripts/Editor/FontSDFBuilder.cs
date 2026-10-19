@@ -36,6 +36,12 @@ namespace ProjectRun.EditorTools
         private static void Build(bool force)
         {
             if (!AssetDatabase.IsValidFolder(FontFolder)) return;
+            // TMP 필수 리소스를 사용하지 않는 uGUI 프로젝트에서는 자동 생성을 생략한다.
+            if (TMP_Settings.instance == null)
+            {
+                if (force) Debug.LogWarning("SDF 폰트를 생성하려면 TextMeshPro 필수 리소스를 먼저 가져와야 합니다.");
+                return;
+            }
             if (!AssetDatabase.IsValidFolder(SdfFolder)) AssetDatabase.CreateFolder(FontFolder, "SDF");
 
             foreach (var file in FontFiles)
