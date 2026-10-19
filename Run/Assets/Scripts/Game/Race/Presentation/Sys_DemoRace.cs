@@ -15,7 +15,10 @@ namespace ProjectRun.Race
         private int generation=-1;
         public static void ConfigureRace(Sys_Race target)
         {
-            if(Mgr_Game.Instance==null||!Mgr_Game.Instance.IsDemoRace)return;
+            if(Mgr_Game.Instance==null)return;
+            // Prepare before Sys_Race creates its simulation, including direct Play from either demo arena.
+            Mgr_Game.Instance.PrepareDirectDemoRace(target.gameObject.scene.name);
+            if(!Mgr_Game.Instance.IsDemoRace)return;
             int selected=Mgr_User.Data.SelectedMonster;
             if(selected<0)return;
             ConfigureSetups(target,selected);

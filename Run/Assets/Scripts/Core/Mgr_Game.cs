@@ -40,6 +40,23 @@ namespace ProjectRun.Race
             Mgr_User.Data.LastMode = scene; Mgr_User.Data.RaceInProgress = true; Mgr_User.Save();
             IsDemoRace = true; Go(scene);
         }
+        public void PrepareDirectDemoRace(string scene)
+        {
+            if (IsDemoRace || (scene != Define_Scene.OvalToon && scene != Define_Scene.Sprite2D)) return;
+            // Direct Play has no lobby entry step. Use the selected monster, or Poring by default,
+            // with the demo's entry-ready growth. Normal lobby entry already sets IsDemoRace.
+            int selected = Mgr_User.Data.SelectedMonster;
+            if (selected < 0) selected = 0;
+            Mgr_User.Data.SelectedMonster = selected;
+            var monster = Mgr_User.Data.Monsters[selected];
+            monster.Level = Mgr_Table.Demo.RequiredLevel;
+            monster.SpeedBonus = Mgr_Table.Demo.TrainingSpeed;
+            monster.Experience = Mathf.Max(monster.Experience, Mgr_Table.Demo.TrainingExperience);
+            monster.Trained = true;
+            monster.EndurancePassive = true;
+            demoSessionStarted = true;
+            IsDemoRace = true;
+        }
         public void Go(string scene)
         {
             if (!IsTransitioning && !Mgr_Scene.IsLoading) StartCoroutine(Transition(scene));
