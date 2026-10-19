@@ -68,7 +68,19 @@ namespace ProjectRun.Race
     {
         public const double StepSeconds = 1.0 / 60.0;
         public const float Radius = 68.5f;
-        public static readonly float Length = 360 + 2 * Mathf.PI * Radius;
+        /// <summary>Half length of each straight of the original oval (straights span x -90..90).</summary>
+        public const float BaseHalfStraight = 90;
+        /// <summary>Start/finish line X on the home straight. Kept fixed when straights are extended.</summary>
+        public const float FinishX = 49;
+        /// <summary>Meters added to each end of both straights (set per scene by Sys_Race). 0 = original course.</summary>
+        public static float StraightExtension { get; set; }
+        public static float HalfStraight => BaseHalfStraight + Mathf.Max(0, StraightExtension);
+        /// <summary>Speed (m/s) every runner already has the instant the race begins (set per scene by Sys_Race). 0 = standing start.</summary>
+        public static float StartLaunchSpeed { get; set; }
+        /// <summary>Acceleration (m/s²) during the first <see cref="StartBoostSeconds"/> (set per scene by Sys_Race).</summary>
+        public static float StartAcceleration { get; set; } = 6f;
+        public const float StartBoostSeconds = 3f;
+        public static float Length => 4 * HalfStraight + 2 * Mathf.PI * Radius;
         public readonly Data_RaceCourse Course;
         public readonly int LapCount;
         public float LapLength => Course != null ? Course.Length : Length;
@@ -117,7 +129,34 @@ namespace ProjectRun.Race
         {
             if (Phase != E_RacePhase.Preparing) return;
             Phase = E_RacePhase.Running;
+            for (int i = 0; i < Runners.Length; i++)
+                Runners[i].Speed = Mathf.Min(Mathf.Max(0f, StartLaunchSpeed), Mathf.Max(0f, setups[i].BaseSpeed));
             Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Start, 0, 0));
+        }
+
+        /// <summary>True after Result while runners are still coasting (see <see cref="CoolDownStep"/>).</summary>
+        public bool CoolingDown { get; private set; }
+
+        /// <summary>
+        /// Presentation only: after Result, runners keep running past the line and slow to a stop.
+        /// Ranks, finish times and events are not touched.
+        /// </summary>
+        public void CoolDownStep(float deceleration)
+        {
+            if (Phase != E_RacePhase.Result || !CoolingDown) return;
+            Time += StepSeconds;
+            bool moving = false;
+            foreach (var runner in Runners)
+            {
+                runner.PreviousDistance = runner.Distance;
+                runner.PreviousLane = runner.Lane;
+                runner.LaneVelocity = 0;
+                runner.Speed = Mathf.MoveTowards(runner.Speed, 0, Mathf.Max(0.1f, deceleration) * (float)StepSeconds);
+                if (runner.Speed <= 0) continue;
+                moving = true;
+                runner.Distance += runner.Speed / Metric((float)runner.Distance, runner.Lane) * StepSeconds;
+            }
+            CoolingDown = moving;
         }
 
         public void Step()
@@ -145,7 +184,7 @@ namespace ProjectRun.Race
                 float target = DesiredSpeed(i);
                 if (runner.Finished) target = Mathf.Max(1.8f, runner.Speed - 4.5f * (float)StepSeconds);
                 if (laneContest != null) target = laneContest.AdvanceLaneAndLimitSpeed(i,this,target);
-                runner.Speed = Mathf.MoveTowards(runner.Speed, target, (float)StepSeconds * (t < 3 ? 6 : 2.4f));
+                runner.Speed = Mathf.MoveTowards(runner.Speed, target, (float)StepSeconds * (t < StartBoostSeconds ? Mathf.Max(0.1f, StartAcceleration) : 2.4f));
                 runner.Stamina = Mathf.Clamp01(1 - t * (0.0069f + i * 0.0003f) * Mathf.Max(.1f, setup.StaminaDrainMultiplier));
                 if (laneContest == null) runner.Lane = setup.Lane + Mathf.Sin(t * 0.3f + i) * 0.07f;
                 float metric = Metric((float)runner.Distance, runner.Lane);
@@ -187,6 +226,7 @@ namespace ProjectRun.Race
             if (allFinished && Time - firstFinish > 4)
             {
                 Phase = E_RacePhase.Result;
+                CoolingDown = true;
                 Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Result, Order[0], t));
             }
         }
@@ -232,23 +272,26 @@ namespace ProjectRun.Race
 
         public static float CourseMetric(float distance, float lane)
         {
-            float s = Mathf.Repeat(distance + 139, Length);
-            bool curved = (s >= 180 && s < 180 + Mathf.PI * Radius) || s >= 360 + Mathf.PI * Radius;
+            float h = HalfStraight, straight = 2 * h;
+            float s = Mathf.Repeat(distance + h + FinishX, Length);
+            bool curved = (s >= straight && s < straight + Mathf.PI * Radius) || s >= 2 * straight + Mathf.PI * Radius;
             return curved ? (Radius + lane) / Radius : 1;
         }
 
         public static Vector3 CoursePoint(float distance, float lane = 0)
         {
-            float s = Mathf.Repeat(distance + 139, Length);
+            float h = HalfStraight, straight = 2 * h;
+            // distance 0 = start/finish line at FinishX on the home straight
+            float s = Mathf.Repeat(distance + h + FinishX, Length);
             float r = Radius + lane;
-            if (s < 180) return new Vector3(-90 + s, 0.14f, -r);
-            s -= 180;
-            if (s < Mathf.PI * Radius) { float a = s / Radius - Mathf.PI * 0.5f; return new Vector3(90 + Mathf.Cos(a) * r, 0.14f, Mathf.Sin(a) * r); }
+            if (s < straight) return new Vector3(-h + s, 0.14f, -r);
+            s -= straight;
+            if (s < Mathf.PI * Radius) { float a = s / Radius - Mathf.PI * 0.5f; return new Vector3(h + Mathf.Cos(a) * r, 0.14f, Mathf.Sin(a) * r); }
             s -= Mathf.PI * Radius;
-            if (s < 180) return new Vector3(90 - s, 0.14f, r);
-            s -= 180;
+            if (s < straight) return new Vector3(h - s, 0.14f, r);
+            s -= straight;
             float angle = s / Radius + Mathf.PI * 0.5f;
-            return new Vector3(-90 + Mathf.Cos(angle) * r, 0.14f, Mathf.Sin(angle) * r);
+            return new Vector3(-h + Mathf.Cos(angle) * r, 0.14f, Mathf.Sin(angle) * r);
         }
 
         public static Vector3 CourseForward(float distance) => (CoursePoint(distance + 0.15f) - CoursePoint(distance - 0.15f)).normalized;

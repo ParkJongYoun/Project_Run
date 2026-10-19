@@ -81,7 +81,7 @@ namespace ProjectRun.Race
             speedLabel.text=race.PlaybackSpeed>1?"2×":"1×";
             pauseLabel.text=race.Paused?"재개":"정지";
             stamina.fillAmount=hero.Stamina;
-            countdown.text=race.Countdown>0?Mathf.CeilToInt(race.Countdown).ToString():sim.Time<1?"START!":"";
+            countdown.text=CameraRig.RaceStartIntro.Playing?"":race.Countdown>0?Mathf.CeilToInt(race.Countdown).ToString():sim.Time<1?"START!":"";
             string ranks="";for(int i=0;i<sim.Order.Length;i++){int id=sim.Order[i];ranks+=(id==Hero?"<color=#FFE99A>":"")+(i+1)+"  "+race.Entrants[id].Name+(id==Hero?" ◀</color>":"")+"\n";}standings.text=ranks;
             if (commentaryFeed == null) commentary.text=race.Paused?"잠시 쉬어가기":(float)sim.Time<latestUntil?latest:hero.SkillUsed?"결승선까지, 한 걸음 더!":sim.Time<8?Monster.Tactic+" 전술로 대열을 잡습니다":hero.BlockedBy>=0?"앞 주자를 피해 빈틈을 찾고 있어요":"힘을 아끼며 기회를 기다립니다";
             if(comicAge>=0&&!race.Paused)
@@ -89,7 +89,7 @@ namespace ProjectRun.Race
                 comicAge+=Mathf.Min(Time.unscaledDeltaTime,.1f);AnimateComic();
                 if(comicAge>=(minorousComic!=null?UIItem_MinorousComic.Duration:heroComic!=null?UIItem_DemoHeroComic.Duration:0))CancelComic();
             }
-            if(sim.Phase==E_RacePhase.Result&&!result.gameObject.activeSelf)ShowResult();
+            if(sim.Phase==E_RacePhase.Result&&!CameraRig.RaceFinishOutro.Showing&&!result.gameObject.activeSelf)ShowResult();
         }
         private void FitRuntimePanel()
         {

@@ -182,8 +182,9 @@ namespace ProjectRun.Race
             float interpolation = Mathf.Clamp01(race.Interpolation);
             float distance = Mathf.Lerp((float)s.PreviousDistance, (float)s.Distance, interpolation);
             float lane = race.Simulation.UsesLaneContests ? Mathf.Lerp(s.PreviousLane, s.Lane, interpolation) : s.Lane;
-            bool moving = race.Simulation.Phase == E_RacePhase.Running || race.Simulation.Phase == E_RacePhase.Finishing;
-            if (race.Simulation.Phase == E_RacePhase.Result) { distance = (float)s.Distance; lane = s.Lane; }
+            bool coasting = race.Simulation.Phase == E_RacePhase.Result && race.Simulation.CoolingDown && race.CoolDownAfterFinish;
+            bool moving = race.Simulation.Phase == E_RacePhase.Running || race.Simulation.Phase == E_RacePhase.Finishing || coasting;
+            if (race.Simulation.Phase == E_RacePhase.Result && !coasting) { distance = (float)s.Distance; lane = s.Lane; }
             Vector3 position = race.Simulation.Point(distance, lane);
             if (generation != race.Generation)
             {
