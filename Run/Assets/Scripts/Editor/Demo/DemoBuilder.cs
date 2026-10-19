@@ -60,27 +60,6 @@ namespace ProjectRun.Race.Editor
             importer.ClearPlatformTextureSettings("WebGL");importer.ClearPlatformTextureSettings("Standalone");
             var settings=new TextureImporterSettings();importer.ReadTextureSettings(settings);settings.spriteMeshType=SpriteMeshType.FullRect;importer.SetTextureSettings(settings);
         }
-        public static void ImportComics()
-        {
-            var art=AssetDatabase.LoadAssetAtPath<Data_DemoArt>("Assets/Resources/UI/Demo/Data_DemoArt.asset");
-            var entries=art.Images.Where(x=>!x.Key.Contains("_comic_")).ToList();
-            string[] ids={"Poring","Minorous","Eddga"},names={"포링","미노타우로스","에드가"};
-            for(int i=0;i<3;i++)
-            {
-                string target="Assets/ArtBundles/UI/Demo/"+ids[i]+"_comic.png";
-                File.Copy("DataBundles/아트/심사데모_스킬연출/"+names[i]+"_만화4컷.png",target,true);
-                AssetDatabase.ImportAsset(target,ImportAssetOptions.ForceSynchronousImport);
-                var importer=(TextureImporter)AssetImporter.GetAtPath(target);Configure(importer,2048);
-                importer.GetSourceTextureWidthAndHeight(out int width,out int height);
-                importer.spriteImportMode=SpriteImportMode.Multiple;
-#pragma warning disable CS0618
-                importer.spritesheet=Enumerable.Range(0,4).Select(n=>new SpriteMetaData{name="cut_"+n,rect=new Rect((n%2)*width/2f+5,(1-n/2)*height/2f+5,width/2f-10,height/2f-10),alignment=(int)SpriteAlignment.Center,pivot=new Vector2(.5f,.5f)}).ToArray();
-#pragma warning restore CS0618
-                importer.SaveAndReimport();
-                foreach(var sprite in AssetDatabase.LoadAllAssetsAtPath(target).OfType<Sprite>())entries.Add(new Data_DemoSprite{Key=ids[i]+"_comic_"+sprite.name.Substring(4),Sprite=sprite});
-            }
-            art.Images=entries.ToArray();EditorUtility.SetDirty(art);AssetDatabase.SaveAssets();
-        }
         public static void ImportLobby(int index)
         {
             string source="DataBundles/LobbyAnimation/"+lobbyFolders[index];string id=lobbyIds[index];
@@ -162,11 +141,13 @@ namespace ProjectRun.Race.Editor
         {
             if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop play mode first.");
             if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Preserve unsaved scene edits before installing.");
-            InstallScene(Define_Scene.Title,true);InstallScene(Define_Scene.Lobby,false);
+            ValidateRanchLobby();
+            InstallTitle();
             // Keep the designer-authored race HUD when reinstalling the demo scenes.
             DemoRacePrefabBuilder.EnsurePrefab();
-            var scenes=EditorBuildSettings.scenes.ToList();
-            foreach(string name in new[]{Define_Scene.Title,Define_Scene.Lobby,Define_Scene.OvalToon,Define_Scene.Sprite2D})
+            var scenes=EditorBuildSettings.scenes.Where(s=>s.path!="Assets/Scenes/Scene_Lobby.unity")
+                .Select(s=>new EditorBuildSettingsScene(s.path,false)).ToList();
+            foreach(string name in new[]{Define_Scene.Title,Define_Scene.Lobby,Define_Scene.OvalToon})
             {
                 string path=Define_Scene.Path(name);int index=scenes.FindIndex(s=>s.path==path);
                 if(index>=0)scenes[index]=new EditorBuildSettingsScene(path,true);else scenes.Add(new EditorBuildSettingsScene(path,true));
@@ -174,16 +155,27 @@ namespace ProjectRun.Race.Editor
             EditorBuildSettings.scenes=scenes.OrderBy(s=>s.path==Define_Scene.Path(Define_Scene.Title)?0:1).ToArray();
             EditorSceneManager.OpenScene(Define_Scene.Path(Define_Scene.Title));AssetDatabase.SaveAssets();Debug.Log("DEMO_SCENES_OK");
         }
-        private static void InstallScene(string name,bool title)
+        private static void ValidateRanchLobby()
         {
-            var scene=EditorSceneManager.OpenScene(Define_Scene.Path(name));
-            // The user requested replacement of these two screens. Keep cameras, lighting and managers.
+            var scene=EditorSceneManager.OpenPreviewScene(Define_Scene.Path(Define_Scene.Lobby));
+            try
+            {
+                var ui=scene.GetRootGameObjects().SelectMany(root=>root.GetComponentsInChildren<ProjectRun.Ranch.Sys_RanchUI>(true)).SingleOrDefault();
+                if(ui==null||ui.Manager==null||ui.Panel==null||ui.MonsterPanel==null||ui.TrainingPanel==null||ui.ArenaPanel==null)
+                    throw new InvalidOperationException("The authored ranch lobby must contain its linked UI panels.");
+            }
+            finally {EditorSceneManager.ClosePreviewScene(scene);}
+        }
+        private static void InstallTitle()
+        {
+            var scene=EditorSceneManager.OpenScene(Define_Scene.Path(Define_Scene.Title));
+            // Only the title is rebuilt. The authored ranch scene is preserved.
             foreach(var root in scene.GetRootGameObjects())if(root.name=="UICanvas_Root")UnityEngine.Object.DestroyImmediate(root);
             var ui=new GameObject("UICanvas_Root",typeof(RectTransform));
             var canvas=DemoUI.Canvas(ui.transform,"Canvas_Panel",(int)E_CanvasLayer.Panel);
-            var panel=DemoUI.Fill(canvas.transform,title?"UIPanel_DemoTitle":"UIPanel_DemoLobby");panel.gameObject.SetActive(false);
-            if(title)panel.gameObject.AddComponent<UIPanel_DemoTitle>().Build();else panel.gameObject.AddComponent<UIPanel_DemoLobby>().Build();
-            string path="Assets/Resources/Prefabs/UI/Panel/"+(title?"UIPanel_DemoTitle":"UIPanel_DemoLobby")+".prefab";
+            var panel=DemoUI.Fill(canvas.transform,"UIPanel_DemoTitle");panel.gameObject.SetActive(false);
+            panel.gameObject.AddComponent<UIPanel_DemoTitle>().Build();
+            string path="Assets/Resources/Prefabs/UI/Panel/UIPanel_DemoTitle.prefab";
             PrefabUtility.SaveAsPrefabAsset(panel.gameObject,path);
             // Save the enabled scene instance. Runtime OnOpen reconnects non-persistent callbacks.
             panel.gameObject.SetActive(true);

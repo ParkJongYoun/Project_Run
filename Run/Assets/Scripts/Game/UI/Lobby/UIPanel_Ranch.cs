@@ -15,6 +15,8 @@ namespace ProjectRun.Race
         public RectTransform Drawer;
         public RectTransform Actions;
         public RectTransform Navigation;
+        public Mgr_UI CollectionManager;
+        private CanvasGroup collectionVisibility;
         public Text PlacementLabel;
         public Text Toast;
         public Button ConfirmButton;
@@ -187,6 +189,7 @@ namespace ProjectRun.Race
 
         private void ShowMonsters()
         {
+            if (CollectionManager != null) { OpenCollection(E_PanelType.RanchMonsters); return; }
             var panel = OpenModal("목장의 몬스터");
             for (int i = 0; i < Mgr_Table.Demo.Monsters.Length; i++)
             {
@@ -203,19 +206,57 @@ namespace ProjectRun.Race
 
         private void ShowTraining()
         {
+            if (CollectionManager != null) { OpenCollection(E_PanelType.RanchTraining); return; }
             var panel = OpenModal("몬스터 훈련장");
             var image = Icon(panel, "img_training", "training", -305, 10, 260, 215);
             var definition = Placement.Catalog.Find("training"); if (definition.Portrait != null) image.sprite = definition.Portrait;
-            Label(panel, "txt_body", "달리기 · 장애물 · 근력 훈련\n\n포링의 탄성 점프, 우로스의 힘, 에드가의 질주를 위한 공간\n\n현재 데모 훈련: Lv.5 · 스피드 +30 · 체력 소모 감소\n이 목장에서는 훈련장의 설치와 배치를 먼저 체험합니다", 135, 18, 615, 240, 22);
+            Label(panel, "txt_body", "달리기 · 장애물 · 근력 훈련\n\n포링의 탄성 점프, 미노타우르스의 힘, 페코페코의 질주\n\n훈련 완료: Lv.5 · 스피드 +30 · 체력 소모 감소", 135, 18, 615, 240, 22);
             PlainButton(panel, "btn_place_training", "훈련장 배치하기", 0, -196, 286, 55, () => { CloseModal(); Placement.BeginNew("training"); });
         }
 
         private void ShowArena()
         {
+            if (CollectionManager != null) { OpenCollection(E_PanelType.RanchArena); return; }
             var panel = OpenModal("프론테라컵 경기장");
             Icon(panel, "img_arena", "arena", -305, 20, 228, 200);
-            Label(panel, "txt_body", "몬스터 1마리 출전 · 자동 레이스\n\n출전 조건  Lv.5 / 스피드 260\n카툰 경기장 · 초원 경기장 2D\n\n정식 출전과 전술 선택은 기존 로비에서 진행합니다", 135, 17, 615, 252, 23);
+            Label(panel, "txt_body", "몬스터 1마리 출전 · 자동 레이스\n\n출전 조건  Lv.5 / 스피드 260\n카툰 경기장\n\n훈련을 마친 친구와 함께 출전해 보세요", 135, 17, 615, 252, 23);
             PlainButton(panel, "btn_dismiss", "목장으로", 0, -195, 240, 52, CloseModal);
+        }
+
+        private void OpenCollection(E_PanelType type)
+        {
+            CloseModal();
+            Placement.SetBuildMode(false);
+            Placement.Cancel();
+            Placement.InputBlocked = true;
+            collectionVisibility = GetComponent<CanvasGroup>();
+            if (collectionVisibility == null) collectionVisibility = gameObject.AddComponent<CanvasGroup>();
+            collectionVisibility.alpha = 0;
+            collectionVisibility.interactable = false;
+            collectionVisibility.blocksRaycasts = false;
+            CollectionManager.Open(type);
+        }
+
+        public void CloseCollection()
+        {
+            if (CollectionManager != null)
+            {
+                CollectionManager.Close(E_PanelType.RanchMonsters);
+                CollectionManager.Close(E_PanelType.RanchTraining);
+                CollectionManager.Close(E_PanelType.RanchArena);
+            }
+            if (collectionVisibility != null)
+            {
+                collectionVisibility.alpha = 1;
+                collectionVisibility.interactable = collectionVisibility.blocksRaycasts = true;
+            }
+            CloseModal();
+        }
+
+        public void ShowTrainingFromArena()
+        {
+            CloseCollection();
+            ShowTraining();
         }
 
         private void ShowNotebook()

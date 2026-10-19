@@ -26,9 +26,8 @@ namespace ProjectRun.Race
             AudioListener.volume = Mgr_User.Data.Volume;
             var ui=FindFirstObjectByType<Mgr_UI>();
             var title=FindFirstObjectByType<UIPanel_DemoTitle>();if(ui!=null&&title!=null)ui.Register(E_PanelType.DemoTitle,title);
-            var lobby=FindFirstObjectByType<UIPanel_DemoLobby>();if(ui!=null&&lobby!=null)ui.Register(E_PanelType.DemoLobby,lobby);
             if (scene.name == Define_Scene.Title || scene.name == Define_Scene.Lobby) IsDemoRace = false;
-            if (IsDemoRace && (scene.name == Define_Scene.OvalToon || scene.name == Define_Scene.Sprite2D))
+            if (IsDemoRace && scene.name == Define_Scene.OvalToon)
             {
                 var systems = GameObject.Find("[Systems]") ?? new GameObject("[Systems]");
                 systems.AddComponent<Sys_DemoRace>();
@@ -36,13 +35,13 @@ namespace ProjectRun.Race
         }
         public void EnterRace(string scene)
         {
-            if (!Mgr_User.CanEnter(Mgr_User.Data.SelectedMonster) || (scene != Define_Scene.OvalToon && scene != Define_Scene.Sprite2D)) return;
+            if (!Mgr_User.CanEnter(Mgr_User.Data.SelectedMonster) || scene != Define_Scene.OvalToon) return;
             Mgr_User.Data.LastMode = scene; Mgr_User.Data.RaceInProgress = true; Mgr_User.Save();
             IsDemoRace = true; Go(scene);
         }
         public void PrepareDirectDemoRace(string scene)
         {
-            if (IsDemoRace || (scene != Define_Scene.OvalToon && scene != Define_Scene.Sprite2D)) return;
+            if (IsDemoRace || scene != Define_Scene.OvalToon) return;
             // Direct Play has no lobby entry step. Use the selected monster, or Poring by default,
             // with the demo's entry-ready growth. Normal lobby entry already sets IsDemoRace.
             int selected = Mgr_User.Data.SelectedMonster;
@@ -69,7 +68,7 @@ namespace ProjectRun.Race
         }
         public void EnsureDemoSession()
         {
-            // Direct Play from Scene_Lobby starts the same fresh demo as GAME START.
+            // Direct Play from the ranch starts the same fresh demo as GAME START.
             if (!demoSessionStarted) BeginDemoSession();
         }
         private void BeginDemoSession()
@@ -93,11 +92,13 @@ namespace ProjectRun.Race
                 while (Mgr_Scene.IsLoading) yield return null;
                 if (scene == Define_Scene.Lobby)
                 {
-                    var lobby = FindFirstObjectByType<UIPanel_DemoLobby>();
+                    var lobby = FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchUI>();
                     if (lobby != null)
                     {
-                        while (!lobby.IsPresentationReady && !lobby.HasPreparationFailed) yield return null;
-                        loaded = !lobby.HasPreparationFailed;
+                        float deadline = Time.realtimeSinceStartup + 15;
+                        while (!lobby.IsPresentationReady && !lobby.HasPreparationFailed && Time.realtimeSinceStartup < deadline)
+                            yield return null;
+                        loaded = lobby.IsPresentationReady && !lobby.HasPreparationFailed;
                     }
                     else loaded = false;
                 }
