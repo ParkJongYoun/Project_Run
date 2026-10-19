@@ -18,6 +18,8 @@ namespace ProjectRun.Race
         {
             public UnityEngine.UI.Text Label;
             public Color Tint;
+            public string Message;      // 꾸미기 전 원래 문구
+            public int AlphaStep = -1;  // 마지막으로 그린 투명도 단계 (바뀔 때만 다시 그림)
             public float Age, Retirement, Alpha;
             public bool Retiring;
         }
@@ -95,6 +97,30 @@ namespace ProjectRun.Race
                 case E_RaceEvent.Result: ResetFeed(); generation = Race.Generation; break;
             }
         }
+        // 강조 색과 크기 (모크업의 "출발!" 하늘색 강조)
+        private const string HighlightRgb = "4FE6FF";
+        private const int HighlightSize = 22;
+
+        /// <summary>문구의 첫 키워드를 하늘색+크게 꾸민다.
+        /// 규칙 ① "출발! …"처럼 첫 단어가 !로 끝나면 그 단어 ② "이름 · …" 형식이면 이름 부분.</summary>
+        private static string Highlight(string message, float alpha)
+        {
+            if (string.IsNullOrEmpty(message)) return "";
+            int end = -1;
+            int space = message.IndexOf(' ');
+            string first = space < 0 ? message : message.Substring(0, space);
+            if (first.EndsWith("!")) end = first.Length;                 // 규칙 ①
+            else
+            {
+                int dot = message.IndexOf(" · ");
+                if (dot > 0) end = dot;                                  // 규칙 ②
+            }
+            if (end <= 0) return message;                                // 강조할 게 없으면 그대로
+            string a = Mathf.RoundToInt(Mathf.Clamp01(alpha) * 255).ToString("X2"); // 투명도 → 16진수 2자리
+            return "<b><size=" + HighlightSize + "><color=#" + HighlightRgb + a + ">" + message.Substring(0, end)
+                + "</color></size></b>" + message.Substring(end);
+        }
+
         private void Update()
         {
             if (Race == null || Race.Simulation == null || Lines == null || Lines.Length != 3) return;
@@ -136,7 +162,8 @@ namespace ProjectRun.Race
                 {
                     if (visible.Contains(row)) continue;
                     row.Age = row.Retirement = row.Alpha = 0; row.Retiring = false;
-                    row.Label.text = pending.Dequeue(); row.Label.rectTransform.anchoredPosition = lineOrigin;
+                    row.Message = pending.Dequeue(); row.AlphaStep = -1; row.Label.text = "";
+                    row.Label.rectTransform.anchoredPosition = lineOrigin;
                     visible.Add(row); insertCooldown = .3f; break;
                 }
             }
@@ -150,6 +177,9 @@ namespace ProjectRun.Race
                 // Retirement reaches transparent before the label is reused, even during a burst of events.
                 row.Alpha = row.Retiring || row.Age > HoldSeconds ? Mathf.Min(row.Alpha, targetAlpha) : Mathf.MoveTowards(row.Alpha, targetAlpha, delta * 5);
                 var tint = row.Tint; tint.a *= row.Alpha; row.Label.color = tint;
+                // 강조 단어는 <color> 태그라 위 투명도가 안 먹으므로, 태그에 투명도를 직접 넣어 다시 그림
+                int step = Mathf.RoundToInt(row.Alpha * 20);
+                if (step != row.AlphaStep) { row.AlphaStep = step; row.Label.text = Highlight(row.Message, step / 20f); }
                 var point = row.Label.rectTransform.anchoredPosition;
                 point.y = Mathf.Lerp(point.y, lineOrigin.y + depth * LineSpacing, 1 - Mathf.Exp(-14 * delta));
                 row.Label.rectTransform.anchoredPosition = point;

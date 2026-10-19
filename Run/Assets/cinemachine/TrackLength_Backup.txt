@@ -1,0 +1,112 @@
+================================================================================
+PROJECT RUN - TRACK LENGTH & RUNNER ROTATION BACKUP SPECIFICATION
+================================================================================
+작성 시점: 2026-10-19
+목적: 트랙 길이/러너 회전 공식이 변경되거나 업데이트로 인해 캐릭터가 트랙보다 짧게 돌 때,
+      비교 및 즉각 복구를 위한 원본 로직 및 설정 스냅샷
+
+--------------------------------------------------------------------------------
+1. 트랙 지오메트리 규격 (Scene_OvalToon / P_Racecourse_All3D)
+--------------------------------------------------------------------------------
+- 실제 3D 경기장 메쉬 (02_TurfCourse 등):
+  * X축 범위: -245m ~ +245m (총 가로 폭 490m)
+  * Z축 범위: -77m ~ +77m (총 세로 폭 154m)
+  * 코너 곡선 반경 (Radius): 68.5m (터프 내경 60m ~ 외경 77m의 중간 지점)
+  * 직선 반구간 (HalfStraight): 245m - 77m = 168m
+  * 기준 직선 반구간 (BaseHalfStraight): 90m
+  * 직선 연장 길이 (StraightExtension): 168m - 90m = 78m
+  * 총 1바퀴 길이 (Length): 4 * 168m + 2 * PI * 68.5m = 672m + 430.3982m = 1102.3982m
+
+※ 주의: StraightExtension이 0이 되면 HalfStraight가 90m(총 길이 790.3982m)로 줄어들어,
+        캐릭터가 실제 트랙 메쉬보다 78m 앞쪽에서 코너를 돌게 되어 트랙을 가로지르며 짧게 돕니다!
+
+--------------------------------------------------------------------------------
+2. Scene_OvalToon 씬 설정 값 ([Systems]/Sys_Race)
+--------------------------------------------------------------------------------
+- StraightExtension: 78
+- LapCount: 1
+- StartLaunchSpeed: 7
+- StartAcceleration: 18
+- CoolDownAfterFinish: true
+- CoolDownDeceleration: 2.5
+
+--------------------------------------------------------------------------------
+3. Data_RaceSimulation.cs 핵심 복구 코드
+--------------------------------------------------------------------------------
+```csharp
+namespace ProjectRun.Race
+{
+    public sealed class Data_RaceSimulation
+    {
+        public const double StepSeconds = 1.0 / 60.0;
+        public const float Radius = 68.5f;
+        public const float BaseHalfStraight = 90;
+        public const float FinishX = 49;
+        public static float StraightExtension { get; set; }
+        public static float HalfStraight => BaseHalfStraight + Mathf.Max(0, StraightExtension);
+        public static float StartLaunchSpeed { get; set; }
+        public static float StartAcceleration { get; set; } = 6f;
+        public const float StartBoostSeconds = 3f;
+        public static float Length => 4 * HalfStraight + 2 * Mathf.PI * Radius;
+        public readonly Data_RaceCourse Course;
+        public readonly int LapCount;
+        public float LapLength => Course != null ? Course.Length : Length;
+        public float CourseLength => LapLength * LapCount;
+        public int CurrentLap(double distance) => Mathf.Clamp((int)(System.Math.Max(0, distance) / LapLength) + 1, 1, LapCount);
+        public Vector3 Point(float distance, float lane = 0) => Course != null ? Course.Point(distance, lane) : CoursePoint(distance, lane);
+        public Vector3 Forward(float distance) => Course != null ? Course.Forward(distance) : CourseForward(distance);
+        public float Metric(float distance, float lane) => Course != null ? Course.Metric(distance, lane) : CourseMetric(distance, lane);
+
+        public static float CourseMetric(float distance, float lane)
+        {
+            float h = HalfStraight, straight = 2 * h;
+            float s = Mathf.Repeat(distance + h + FinishX, Length);
+            bool curved = (s >= straight && s < straight + Mathf.PI * Radius) || s >= 2 * straight + Mathf.PI * Radius;
+            return curved ? (Radius + lane) / Radius : 1;
+        }
+
+        public static Vector3 CoursePoint(float distance, float lane = 0)
+        {
+            float h = HalfStraight, straight = 2 * h;
+            float s = Mathf.Repeat(distance + h + FinishX, Length);
+            float r = Radius + lane;
+            if (s < straight) return new Vector3(-h + s, 0.14f, -r);
+            s -= straight;
+            if (s < Mathf.PI * Radius) { float a = s / Radius - Mathf.PI * 0.5f; return new Vector3(h + Mathf.Cos(a) * r, 0.14f, Mathf.Sin(a) * r); }
+            s -= straight;
+            if (s < straight) return new Vector3(h - s, 0.14f, r);
+            s -= straight;
+            float angle = s / Radius + Mathf.PI * 0.5f;
+            return new Vector3(-h + Mathf.Cos(angle) * r, 0.14f, Mathf.Sin(angle) * r);
+        }
+
+        public static Vector3 CourseForward(float distance) => (CoursePoint(distance + 0.15f) - CoursePoint(distance - 0.15f)).normalized;
+    }
+}
+```
+
+--------------------------------------------------------------------------------
+4. Sys_Race.cs 핵심 연동 코드
+--------------------------------------------------------------------------------
+```csharp
+public float StraightExtension;
+
+private void Awake() 
+{ 
+    Application.runInBackground = true; 
+    Data_RaceSimulation.StraightExtension = StraightExtension; 
+    Sys_DemoRace.ConfigureRace(this); 
+    RestartRace(); 
+}
+
+public void RestartRace()
+{
+    Data_RaceSimulation.StraightExtension = StraightExtension;
+    Data_RaceSimulation.StartLaunchSpeed = StartLaunchSpeed;
+    Data_RaceSimulation.StartAcceleration = StartAcceleration;
+    if (Simulation != null) Simulation.Changed -= Publish;
+    Simulation = new Data_RaceSimulation(Entrants, Course, EnableLaneContests, LapCount);
+    ...
+}
+```
+================================================================================
