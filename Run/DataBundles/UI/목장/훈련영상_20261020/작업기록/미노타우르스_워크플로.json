@@ -1,0 +1,147 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "미노타우르스_저항질주_훈련장면.png"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_int8_convrot.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "Animate the supplied image as a polished fantasy ranch training movie, 6.6 seconds. Preserve the exact character identity, face, costume, bright warm anime illustration, clean outlines, colorful flowers, wood fences, blue-roof cottage and fountain. Genuine fluid character animation with changing poses, not camera motion on a still painting. Use a smooth side-tracking camera that keeps the complete subject and training equipment visible with generous margins, no cuts or close-ups. Fountain water flows, small leaves sway gently, warm sunlight stays stable. Maintain crisp details and grounded contact shadows. One character only, no new characters, no text, logos, interface, extra limbs, body transformations or abrupt changes in style. End with a readable successful training movement and a calm settling pose. The muscular golden-brown minotaur has curled ivory horns, dark mane, a gold nose ring, leather bracers, leather waist armor and dark cloven hooves. He pulls the existing wooden sled loaded with three logs using taut ropes attached at his waist and hands as depicted. A strenuous resistance sprint with heavy alternating hoof contacts, clear pumping shoulder movement, flexing muscles, powerful forward lean and swinging tail. The heavy sled follows continuously behind him and slides on the dirt, throwing small dust trails and shallow grooves. Ropes stay connected and under tension. Keep the whole minotaur AND sled visible. Slow heavy first strides accelerate into a confident steady rhythm; end with two deliberate slowing strides and the sled settling naturally, a determined proud expression.",
+      "width": 1024,
+      "height": 576,
+      "length": 158,
+      "first_frame": [
+        "1",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 20261020011
+    }
+  },
+  "7": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "8": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 25,
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "6",
+        0
+      ],
+      "guider": [
+        "9",
+        0
+      ],
+      "sampler": [
+        "7",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ],
+      "fps": 24
+    }
+  },
+  "13": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "12",
+        0
+      ],
+      "filename_prefix": "ProjectRunTraining20261020/Minorous_1024_v01",
+      "format": "mp4",
+      "format.codec": "h264"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "method": "내장 image_gen 도구, 제공 시안 참조",
+  "main": [
+    {
+      "key": "monster_background",
+      "transparent_background": false,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Deliver ONE square game environment background asset, not a UI mockup. Reference is a two-screen game UI. Extract/reconstruct ONLY the environment inside the top screen central monster portrait (blue-roof timber cottage left, lush flowers, timber fence, turquoise stone fountain right, rich close green foliage). Remove the pink Poring and reconstruct the ground behind it. Preserve the reference's close camera, richly saturated bright storybook anime painting, thick charming foliage and flower clusters, warm sunlit dirt with small stones. No character, no text, no UI frame, no border, no distant wide-open prairie, no empty sky horizon. Ground occupies bottom 40 percent; blue-roof building left and fountain right remain prominent. Fill edge-to-edge, square 1024x1024 composition. This will be the actual central background under a separate character sprite."
+    },
+    {
+      "key": "training_background",
+      "transparent_background": false,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Deliver ONE wide 16:9 game environment background asset, not a UI mockup. Faithfully reconstruct ONLY the large training illustration in the lower-left of the bottom screen of the reference. Blue-roof timber cottage on left, turquoise fountain and fence in middle distance, flower beds including pink blossom tree on right, rich dense foliage. Warm dirt obstacle lane with rustic short wooden hurdles, white and dark crossbars, one large hurdle in lower-left foreground and receding hurdles to right. Remove the pink Poring character, all motion streaks and dust; reconstruct background behind it. Keep the reference's vivid detailed polished storybook anime game painting and close eye-level perspective. No text, no UI, no border. Do not replace with distant mountains or a wide empty field. Leave the center above the main hurdle clear for a jumping character. 1536x864 landscape composition."
+    },
+    {
+      "key": "poring_body",
+      "transparent_background": true,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png"
+      ],
+      "prompt": "Use case: background-extraction. Create ONE transparent full-body game sprite of the pink Poring EXACTLY matching the top central character in the reference. Wide low pear-shaped squishy jelly, about 1.2 times wider than tall, puddled slightly flat base, curled droplet on upper right, two large black oval glossy eyes and cheek blush, tiny joyful open smiling mouth centered. Same pose and proportions as reference top central Poring, upright and grounded, not tilted, not a ball. Clean saturated candy-pink cel painted gradients, thick pink edge and white specular highlights. Isolate all character pixels only, no ground, no scenery, no UI, no text, no frame, no extra objects. True transparent alpha, large clean character with only 6 percent clear padding, 1024x1024 canvas."
+    },
+    {
+      "key": "peco_body",
+      "transparent_background": true,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png",
+        "D:/Project_Run/Run/Assets/ArtBundles/UI/CartoonRaceLineup/Pecopeco.png"
+      ],
+      "prompt": "Use case: style-transfer. Create ONE polished hand-painted 2D game full-body sprite of Pecopeco. Reference 1 defines the warm saturated thick-outlined storybook anime artwork style of monster cards, not layout. Reference 2 defines this exact bird's identity: golden-orange feathers, pale cream chest, huge powerful dark scaly bird feet with three toes, orange head with vivid turquoise/blue face and red cheeks, small wings, NO rider. Convert the low-poly rendering into expressive charming polished 2D anime game art that belongs beside the Poring and Minorous in reference 1. Three-quarter view facing a little left, lively friendly eyes, rounded body, proud but cute racing bird stance, both feet fully visible. Retain blue face markings, orange head feather crest and cream chest. No 3D polygons or rendered plastic, no costume additions, no text/UI/ground/background. Real transparent alpha. Large subject occupies 85 percent of 1024x1024 canvas."
+    }
+  ],
+  "supplement": [
+    {
+      "key": "title_frame",
+      "transparent_background": true,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Production game UI asset, just the EMPTY TITLE FRAME from the top screen of this reference. Faithfully recreate its chunky warm honey oak wooden framing, gently clipped rounded corners, short wide almost-rectangular shape (not an elongated hexagonal shield), riveted dark bronze corner brackets, a vertical wooden post on each side, and a small glowing hanging lantern at the bottom of each post. Two gold paw emblems on the inside left and right edges. REMOVE ALL LETTERING and remove the red-brown central panel fill, leaving a fully transparent central opening so a separate red-brown background and live text can be placed behind it in Unity. Entire outside is also true transparent. Keep the reference craft style, hand-painted richly detailed 2D game wood. One wide horizontal frame only, about 4.2:1 silhouette centered with empty padding on 1536x512 canvas. No UI screen, no characters, no scenery, no opaque center, no text, no extra objects."
+    },
+    {
+      "key": "speed_wing",
+      "transparent_background": true,
+      "referenced_image_paths": [
+        "D:/Project_Run/Run/DataBundles/UI/목장/몬스터와훈련_우드스타일_스크롤형.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Isolate and faithfully redraw only the SMALL BLUE WING ICON seen beside the speed stat on the right panel of the top reference screen. This is a simple curled white feather wing with sky-blue shadows and dark blue cartoon outline, three flowing feathers, tilted upper right. It is NOT a shoe, not a winged shoe, not an angel, not a whole bird. Polished cute 2D game icon matching reference, clean thick contour. One icon centered and filling 85 percent of a square transparent canvas, no background, text, circle, frame, or other object. True transparent alpha."
+    }
+  ]
+}

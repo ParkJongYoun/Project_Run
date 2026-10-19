@@ -1,0 +1,36 @@
+캐릭터별 훈련 이미지 — 2026-10-20
+
+각 캐릭터 폴더에는 아래 두 장이 있습니다.
+- 훈련장면.png: 현재 게임 훈련소에서 해당 캐릭터를 선택하면 표시하는 완성 일러스트.
+- 컨피_시작.png: Comfy 이미지→영상 입력용 출발 자세. UI·문구·테두리를 포함하지 않은 원본 PNG.
+
+포링: 탄성을 모아 낮은 나무 장애물을 뛰어넘는 점프 훈련.
+미노타우르스: 허리의 로프로 통나무 썰매를 끌며 가속하는 저항 질주 훈련.
+페코페코: 낮은 허들을 넘으며 긴 보폭과 균형을 익히는 질주 훈련.
+
+제작: 내장 image_gen 이미지 생성 도구. 캐릭터 원화와 기존 목장 스타일을 참조했으며,
+각 시작 프레임은 해당 훈련장면의 구도·배경을 기준으로 준비 자세를 편집했습니다.
+이미지 생성 프롬프트 전문은 ../훈련개별장면_작업기록_20261020/이미지생성_프롬프트.json.
+
+Comfy 연결
+기존 로비 제작 자료: DataBundles/기획/심사데모_제작자료/훈련영상_제작 및 훈련영상_워크플로.json.
+새 영상은 아직 생성하지 않았습니다. 캐릭터별 컨피_시작.png를 LoadImage 입력으로 사용하세요.
+아래 영문 문구는 새 영상 제작용 초안이며, 생성 결과를 확인한 뒤 확정합니다.
+카메라·배경·캐릭터 외형을 고정하고, 장면 전체를 영상으로 만들면 됩니다.
+
+포링 영상 프롬프트
+Animate the exact pink Poring in this image for about seven seconds. The fixed camera and painted village remain unchanged. Poring compresses softly against the ground, stretches upward into an elastic jump to the right, clears the low wooden hurdle, and lands with a gentle squash and a small dust puff. Keep both eyes, mouth and the curled antenna consistent. Preserve the translucent pink body, glossy highlights and the original illustration style. Exactly one Poring, no arms or legs. Keep the whole character inside the frame. No camera movement, no cuts, no text, no interface and no new objects.
+
+미노타우르스 영상 프롬프트
+Animate the exact muscular brown Minotaur in this image for about seven seconds. Keep the camera, village and training equipment fixed in design and perspective. He braces through both hooves, then drives into a short powerful resisted sprint toward the right, pulling the existing log sled behind him. The two ropes remain attached to his waist belt and tighten naturally; the sled slides along the dirt and produces a little dust. Preserve both horns, mane, nose ring, leather armor, bracers, hooves and anatomy. Keep the complete character and sled inside the frame. No weapon, no extra character, no camera movement, no cuts, no text and no interface.
+
+페코페코 영상 프롬프트
+Animate the exact golden-orange Pecopeco bird in this image for about seven seconds. Keep the camera and painted village stable. The bird leans forward, takes quick alternating steps and clears the nearby low wooden hurdle with a long light stride. Its small wings flutter slightly for balance, its crest and tail feathers react naturally, and it lands on its dark scaly feet. Preserve the blue face, orange beak, cream chest, red-and-cream cheek feathers, leg anatomy and original illustrated style. Exactly one bird, no rider or saddle. Keep the entire body and hurdle visible. No camera movement, no cuts, no text and no interface.
+
+Unity 연결 자리
+UIPanel_RanchTraining.TrainingClips 배열 순서: 포링 / 미노타우르스 / 페코페코.
+검수한 프레임을 기존 Data_LobbyAnimation 형식으로 넣거나
+Assets/Resources/UI/RanchCollection/Training/Poring.asset,
+Minorous.asset, Pecopeco.asset 경로에 두면 훈련 시작 때 기존 로비 프레임 플레이어가 재생합니다.
+각 영상은 새 일러스트와 같은 화면 전체 구도를 사용해야 합니다.
+영상이 없는 현재 상태에서는 새 훈련장면과 진행도를 표시하며, 예전 배경 영상이나 임시 전신 흔들기를 사용하지 않습니다.
