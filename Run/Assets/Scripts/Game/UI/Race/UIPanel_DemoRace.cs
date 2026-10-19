@@ -187,8 +187,7 @@ namespace ProjectRun.Race
             }
             var sim = race.Simulation;
             var hero = sim.Runners[Hero];
-            // 리치 텍스트로 "2위"는 크게(46)+하늘색, " / 6"은 작게(28)+기본색
-            RankLabel.text = "<b><size=46><color=#4FE6FF>" + hero.Rank + "위</color></size><size=28> / " + sim.Runners.Length + "</size></b>";
+            UpdateRankLabel(hero.Rank, sim.Runners.Length); // "2위 / 6" (크기·색은 Inspector "하단 순위 글자"에서 조절)
             RemainingLabel.text = "남은 거리  " + Mathf.CeilToInt(Mathf.Max(0, sim.CourseLength - (float)hero.Distance)) + "m";
             SpeedLabel.text = race.PlaybackSpeed > 1 ? "2×" : "1×";
             PauseLabel.text = race.Paused ? "재개" : "정지";

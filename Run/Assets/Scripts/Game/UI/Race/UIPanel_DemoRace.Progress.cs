@@ -25,6 +25,11 @@ namespace ProjectRun.Race
             new Color(.25f, .75f, .35f), // 초록
             new Color(1f, .78f, .15f),   // 노랑
         };
+        private static readonly Color DarkNumberColor = new Color(.2f, .22f, .25f); // 밝은 원 위 숫자색(검회색)
+
+        // 밝은 색인지 판단: 사람 눈 기준 밝기(녹색 비중이 큼)가 0.7 이상이면 밝은 색
+        private static bool IsLight(Color c) => .299f * c.r + .587f * c.g + .114f * c.b >= .7f;
+
         private static readonly Color HeroRingColor = new Color(1f, .24f, .52f); // 내 캐릭터 테두리(핑크)
 
         // 마커 1개 = 흰 링 + 색 점 + 번호
@@ -84,6 +89,13 @@ namespace ProjectRun.Race
                     Number = root.Find("txt_num")?.GetComponent<Text>(),
                 });
             }
+            // 채움 라인은 항상 "왼쪽 → 오른쪽 가로 채움"으로 고정 (원형 채움이면 대각선으로 찢어져 보임)
+            if (trackFill != null)
+            {
+                trackFill.type = Image.Type.Filled;
+                trackFill.fillMethod = Image.FillMethod.Horizontal;
+                trackFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            }
             progressReady = progressMarkers.Count > 0;
         }
 
@@ -135,7 +147,15 @@ namespace ProjectRun.Race
                 Color color = setup != null && setup.Color != Color.white ? setup.Color : MarkerPalette[id % MarkerPalette.Length];
                 if (marker.Dot != null) marker.Dot.color = color;
                 if (marker.Ring != null) marker.Ring.color = hero ? HeroRingColor : Color.white;
-                if (marker.Number != null) marker.Number.text = (id + 1).ToString();
+                if (marker.Number != null)
+                {
+                    marker.Number.text = (id + 1).ToString(); // 원 안 숫자 = 주자 번호
+                    // 원이 흰색/밝은 회색이면 흰 글자가 안 보이므로 검회색 글자 + 테두리 없음
+                    bool light = IsLight(color);
+                    marker.Number.color = light ? DarkNumberColor : Color.white;
+                    var outline = marker.Number.GetComponent<Outline>();
+                    if (outline != null) outline.enabled = !light;
+                }
 
                 marker.Root.localScale = Vector3.one * (hero ? 1.3f : 1f);
                 if (hero) marker.Root.SetAsLastSibling(); // 다른 마커에 가려지지 않게 맨 위로

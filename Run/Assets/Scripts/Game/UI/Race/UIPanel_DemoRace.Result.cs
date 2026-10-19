@@ -15,6 +15,7 @@ namespace ProjectRun.Race
         [SerializeField] private Text ResultRank;
 
         private bool resultSkinReady; // 새 결과창으로 교체가 끝났는지
+        private int resultRankNumberSize = 132; // "1위"의 숫자 크기 (프리팹 txt_rank에 적힌 <size=N> 값을 그대로 따라감)
 
         // 새 결과창 프리팹으로 교체. 버튼 연결(BindButtons)보다 먼저 호출해야 함.
         private void InitResultSkin()
@@ -40,6 +41,12 @@ namespace ProjectRun.Race
             ResultTitle = item.Title;
             ResultHero = item.Hero;
             ResultRank = item.Rank;
+            // 프리팹에서 직접 바꾼 숫자 크기(<size=N>)를 읽어와서 실행 중에도 같은 크기로 표시
+            if (ResultRank != null)
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(ResultRank.text, @"<size=(\d+)>");
+                if (m.Success) resultRankNumberSize = int.Parse(m.Groups[1].Value);
+            }
             ResultName = item.Name;
             ResultSummary = item.Summary;
             ReplayButton = item.ReplayButton;
@@ -50,7 +57,7 @@ namespace ProjectRun.Race
         // 결과 텍스트 채우기 (ShowResult에서 호출)
         private void FillResultTexts(int rank, string finishTime, string speed)
         {
-            const string Gold = "#FFD84A";   // 강조 노랑 (우승!, 1위)
+            const string Gold = "#FFC928";   // 강조 금색 (우승!) — 모크업 색
             const string Cyan = "#4FE6FF";   // 강조 하늘색 (기록 라벨)
             string result = rank == 1 ? "우승!" : "완주!";
 
@@ -58,7 +65,8 @@ namespace ProjectRun.Race
             {
                 // 새 네온 결과창: 모크업처럼 색 강조
                 ResultTitle.text = "프론테라컵 <color=" + Gold + ">" + result + "</color>";
-                if (ResultRank != null) ResultRank.text = rank + "위";
+                // 숫자는 프리팹에 적힌 크기 그대로, "위"는 텍스트 기본 크기
+                if (ResultRank != null) ResultRank.text = "<size=" + resultRankNumberSize + ">" + rank + "</size>위";
                 ResultSummary.text =
                     "<color=" + Cyan + ">" + rank + "위</color>   ·  " + finishTime + "초\n"
                     + "<color=" + Cyan + ">Lv.5</color>   ·  스피드 " + speed + "\n"
