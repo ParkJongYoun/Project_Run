@@ -1,0 +1,55 @@
+FAILED
+PASS Poring correct movie mapping
+PASS Poring no comic UI
+PASS Poring one skill starts video
+PASS Poring actual decoded first frame
+PASS Poring actual 1080p seven-second media
+PASS Poring movie advances while all runners hold
+PASS Poring fade reaches full opacity
+PASS Poring camera reframes under opaque movie
+PASS Poring pause freezes media and race
+PASS Poring full playback and fade release hold, duplicate replay blocked
+PASS Poring fade returns to the selected runner
+PASS Poring visible character body remains inside the return frame
+PASS Poring one skill and deterministic result
+PASS Poring restart clears presentation
+PASS Poring result skip preserves skill and result
+PASS Minorous correct movie mapping
+PASS Minorous no comic UI
+PASS Minorous one skill starts video
+PASS Minorous actual decoded first frame
+PASS Minorous actual 1080p seven-second media
+PASS Minorous movie advances while all runners hold
+PASS Minorous fade reaches full opacity
+PASS Minorous camera reframes under opaque movie
+PASS Minorous full playback and fade release hold, duplicate replay blocked
+PASS Minorous fade returns to the selected runner
+PASS Minorous visible character body remains inside the return frame
+PASS Minorous one skill and deterministic result
+PASS Minorous restart clears presentation
+PASS Minorous result skip preserves skill and result
+PASS Pecopeco correct movie mapping
+PASS Pecopeco no comic UI
+PASS Pecopeco one skill starts video
+PASS Pecopeco actual decoded first frame
+PASS Pecopeco actual 1080p seven-second media
+PASS Pecopeco movie advances while all runners hold
+PASS Pecopeco fade reaches full opacity
+PASS Pecopeco camera reframes under opaque movie
+PASS Pecopeco full playback and fade release hold, duplicate replay blocked
+PASS Pecopeco fade returns to the selected runner
+PASS Pecopeco visible character body remains inside the return frame
+PASS Pecopeco one skill and deterministic result
+PASS Pecopeco restart clears presentation
+PASS Pecopeco result skip preserves skill and result
+PASS skip scenario has actual media
+PASS skip fades back and releases hold
+PASS skip preserves deterministic result
+PASS OFF scenario starts presentation
+PASS turning OFF immediately clears active presentation
+PASS OFF preserves one skill and deterministic result
+PASS restart scenario starts presentation
+System.InvalidOperationException: restart during video clears media and hold
+  at ProjectRun.Race.Editor.DemoSkillVideoValidation.Check (System.Boolean condition, System.String message) [0x00029] in D:\Project_Run\Run\Assets\Scripts\Editor\Demo\DemoSkillVideoValidation.cs:107 
+  at ProjectRun.Race.Editor.DemoSkillVideoValidation+<Steps>d__28.MoveNext () [0x00ba7] in D:\Project_Run\Run\Assets\Scripts\Editor\Demo\DemoSkillVideoValidation.cs:207 
+  at ProjectRun.Race.Editor.DemoSkillVideoValidation.Tick () [0x0002c] in D:\Project_Run\Run\Assets\Scripts\Editor\Demo\DemoSkillVideoValidation.cs:90 
