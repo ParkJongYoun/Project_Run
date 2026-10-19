@@ -201,8 +201,12 @@ namespace ProjectRun.Race
                 + Mathf.Clamp01(race.Interpolation) * Data_RaceSimulation.StepSeconds);
             double delta = System.Math.Max(0, clock - previousClock);
             previousClock = clock;
-            float poseDelta = race.Paused || race.PresentationHeld ? 0 : (race.Countdown > 0 || race.Simulation.Phase == E_RacePhase.Result
-                ? Time.unscaledDeltaTime * race.PlaybackSpeed : (float)delta);
+            // Start intro timeline holds the race before the start: keep the idle pose alive.
+            // Mid-race holds (skill video / comic) still freeze the pose.
+            bool preStartHold = race.PresentationHeld && race.Simulation.Phase == E_RacePhase.Preparing;
+            float poseDelta = race.Paused || (race.PresentationHeld && !preStartHold) ? 0
+                : (preStartHold || race.Countdown > 0 || race.Simulation.Phase == E_RacePhase.Result
+                    ? Time.unscaledDeltaTime * race.PlaybackSpeed : (float)delta);
             idleClock += poseDelta;
             // Tune cadence at BaseSpeed, then preserve that relationship through acceleration and slowdown.
             float travel = moving && delta > 0 ? Vector3.Distance(previousPosition, position) : 0;
