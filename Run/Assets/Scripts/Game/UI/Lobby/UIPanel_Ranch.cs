@@ -34,12 +34,13 @@ namespace ProjectRun.Race
             Bind("btn_home", Home);
             Bind("btn_monsters", ShowMonsters);
             Bind("btn_build", () => { CloseModal(); Placement.SetBuildMode(!Placement.IsBuilding); });
+            Bind("btn_close_build", () => Placement.SetBuildMode(false));
             Bind("btn_training", ShowTraining);
             Bind("btn_arena", ShowArena);
             Bind("btn_settings", ShowSettings);
             Bind("btn_notebook", ShowNotebook);
-            Bind("btn_gold", () => Notify("이번 목장은 자유 배치 체험입니다"));
-            Bind("btn_gems", () => Notify("재화 구매는 준비 중입니다"));
+            Bind("btn_zoom_in", RanchCamera.ZoomIn);
+            Bind("btn_zoom_out", RanchCamera.ZoomOut);
             Bind("btn_rotate", Placement.Rotate);
             Bind("btn_confirm", () => Placement.Confirm());
             Bind("btn_cancel", Placement.Cancel);
@@ -86,12 +87,14 @@ namespace ProjectRun.Race
             Icon(info, "img_ranch", "home", -132, 4, 76, 68);
             Label(info, "txt_name", "나의 목장", -18, 1, 160, 42, 27);
             Label(info, "txt_level", "Lv. 1", 114, 1, 75, 42, 24, new Color(1,.92f,.73f));
-            Currency("gold", "12,800", 255, 326, 178);
-            Currency("gems", "120", 426, 326, 163);
             var notebook = IconButton(SafeArea, "btn_notebook", "notebook", 549, 326, 52, 57);
             Icon(notebook.transform, "img_alert", "alert", 19, 23, 14, 14);
             var settings = Pair(SafeArea, "btn_settings", "round", 603, 326, 57, 60);
             Click(settings, null); Icon(settings, "img_settings", "settings", 0, 1, 41, 41);
+            var zoomIn=Pair(SafeArea,"btn_zoom_in","round",435,326,51,54);
+            Click(zoomIn,null);Label(zoomIn,"txt_symbol","+",0,1,43,46,36,new Color(1,.94f,.78f));
+            var zoomOut=Pair(SafeArea,"btn_zoom_out","round",492,326,51,54);
+            Click(zoomOut,null);Label(zoomOut,"txt_symbol","−",0,1,43,46,36,new Color(1,.94f,.78f));
             var bottom = Pair(SafeArea, "group_navigation_base", "bottom", 0, -324, 1200, 81);
             Navigation = bottom;
             string[] names = { "home", "monsters", "build", "training", "arena" };
@@ -102,13 +105,21 @@ namespace ProjectRun.Race
                 Click(button, null); Icon(button, "img_icon", names[i], -60, 6, 77, 74);
                 Label(button, "txt_label", titles[i], 34, 0, 110, 49, 25);
             }
-            Drawer = Pair(SafeArea, "group_construction", "panel", 0, -188, 1150, 165);
-            Label(Drawer, "txt_heading", "시설 배치", -479, 58, 170, 28, 20);
-            Label(Drawer, "txt_help", "시설 선택 → 바닥을 눌러 이동 → 배치 확정", 0, 58, 650, 30, 17);
-            PlainButton(Drawer, "btn_previous", "◀", -539, -15, 34, 50, null);
-            PlainButton(Drawer, "btn_next", "▶", 539, -15, 34, 50, null);
-            DemoUI.Rect(Drawer, "group_cards", 0, -13, 1030, 113);
-            Actions = Pair(SafeArea, "group_placement_actions", "panel", 0, -65, 660, 66);
+            Drawer = Pair(SafeArea, "group_construction", "bottom", 0, -261, 1260, 190);
+            var activeBuild=Pair(Drawer,"group_build_selected","menu",-520,42,184,72);
+            activeBuild.Find("bg_surface").GetComponent<Image>().color=new Color(1,.78f,.25f);
+            Icon(activeBuild,"img_icon","build",-53,2,63,63);
+            Label(activeBuild,"txt_label","건설",30,0,104,55,29);
+            var closeBuild=Pair(Drawer,"btn_close_build","menu",-520,-40,184,65);
+            Click(closeBuild,null);Label(closeBuild,"txt_cross","×",-56,0,45,54,42);
+            Label(closeBuild,"txt_label","닫기",25,0,110,52,27);
+            var catalog=Pair(Drawer,"group_catalog","panel",96,0,1036,170);
+            Label(catalog, "txt_heading", "시설 배치", -420, 61, 140, 28, 22);
+            Label(catalog, "txt_help", "시설 선택 → 바닥을 눌러 이동 → 배치 확정", 72, 61, 720, 30, 18);
+            PlainButton(catalog, "btn_previous", "◀", -490, -15, 32, 43, null);
+            PlainButton(catalog, "btn_next", "▶", 490, -15, 32, 43, null);
+            DemoUI.Rect(catalog, "group_cards", 0, -16, 922, 125);
+            Actions = Pair(SafeArea, "group_placement_actions", "panel", 0, -126, 660, 66);
             PlacementLabel = Label(Actions, "txt_placement", "", -146, 0, 320, 54, 18);
             PlainButton(Actions, "btn_rotate", "회전", 63, 0, 74, 43, null);
             ConfirmButton = PlainButton(Actions, "btn_confirm", "배치", 143, 0, 74, 43, null);
@@ -128,29 +139,22 @@ namespace ProjectRun.Race
             }
             Modal = DemoUI.Fill(SafeArea, "group_overlay"); Modal.gameObject.SetActive(false);
             Drawer.gameObject.SetActive(false); Actions.gameObject.SetActive(false);
-        }
-
-        private void Currency(string key, string value, float x, float y, float width)
-        {
-            var bar = Pair(SafeArea, "btn_" + key, "currency", x, y, width, 45); Click(bar, null);
-            Icon(bar, "img_currency", key, -width / 2 + 19, 0, 39, 39);
-            Label(bar, "txt_amount", value, 6, 0, width - 69, 34, 22);
-            Icon(bar, "img_add", "plus", width / 2 - 17, 0, 19, 19);
+            if(Placement!=null && Placement.Catalog!=null) BuildCards();
         }
 
         private void BuildCards()
         {
-            var holder = Drawer.Find("group_cards"); DemoUI.Clear(holder);
+            var holder = Drawer.Find("group_catalog/group_cards"); DemoUI.Clear(holder);
             int start = catalogPage * 6;
             for (int i = 0; i < 6 && start + i < Placement.Catalog.Facilities.Length; i++)
             {
                 var definition = Placement.Catalog.Facilities[start + i]; string id = definition.Id;
-                var card = Pair(holder, "btn_facility_" + id, "panel", (i - 2.5f) * 169, 0, 160, 108);
+                var card = Pair(holder, "btn_facility_" + id, "panel", (i - 2.5f) * 151, 0, 143, 125);
                 Click(card, () => Placement.BeginNew(id));
-                var portrait = Icon(card, "img_portrait", "", 0, 17, 64, 64);
+                var portrait = Icon(card, "img_portrait", "", 0, 17, 126, 88);
                 portrait.sprite = definition.Portrait != null ? definition.Portrait : Art.Get("build");
-                Label(card, "txt_name", definition.Name, 0, -27, 150, 23, 16);
-                Label(card, "txt_size", definition.Footprint.x + " × " + definition.Footprint.y, 0, -46, 145, 17, 12);
+                Label(card, "txt_name", definition.Name, 0, -33, 136, 24, 19);
+                Label(card, "txt_size", definition.Footprint.x + " × " + definition.Footprint.y, 0, -53, 135, 18, 15);
             }
         }
 
@@ -158,6 +162,7 @@ namespace ProjectRun.Race
         {
             if (Drawer == null) return;
             Drawer.gameObject.SetActive(Placement.IsBuilding && !Modal.gameObject.activeSelf);
+            Navigation.gameObject.SetActive(!Placement.IsBuilding && !Modal.gameObject.activeSelf);
             Actions.gameObject.SetActive(Placement.Preview != null && !Modal.gameObject.activeSelf);
             ConfirmButton.interactable = Placement.CanConfirm;
             RemoveButton.interactable = Placement.IsMoving;
@@ -216,18 +221,18 @@ namespace ProjectRun.Race
         private void ShowNotebook()
         {
             var panel = OpenModal("목장 수첩");
-            Label(panel, "txt_body", "건설 메뉴에서 시설을 고르고 바닥을 누르거나 끌어 배치하세요.\n회전 후 초록색 영역에서 배치를 확정할 수 있어요.\n배치한 시설도 건설 모드에서 눌러 이동하거나 회수할 수 있어요.\n\n마우스 우클릭·가운데 버튼으로 이동 / 휠로 확대·축소\n터치 화면에서는 두 손가락으로 이동·확대·축소\nR: 회전 / Enter: 배치 / Esc: 취소\n\n배치는 이 기기에 저장됩니다. 점선 밖 구역의 확장은 준비 중입니다.", 0, -16, 935, 335, 22);
+            Label(panel, "txt_body", "건설 메뉴에서 시설이나 흙길을 고르고 바닥을 탭하세요.\n초록색 영역에서 배치를 확정할 수 있어요.\n배치한 시설을 탭하면 이동하거나 회수할 수 있어요.\n몬스터는 서로 연결된 길을 따라 돌아다닙니다.\n\n좌클릭 드래그 / 한 손가락 스와이프: 화면 이동\n우클릭 드래그: 좌우 회전 / 우클릭: 원래 각도\n+/− 버튼·휠·두 손가락 벌리기: 5단계 확대·축소\nR: 시설 회전 / Enter: 배치 / Esc: 취소\n\n데모의 배치는 저장하지 않으며 새 실행에 기본 배치로 시작합니다.", 0, -16, 935, 335, 22);
         }
 
         private void ShowSettings()
         {
             var panel = OpenModal("목장 설정");
-            Label(panel, "txt_body", "현재 목장의 배치는 변경할 때 자동으로 저장됩니다.\n\n기본 배치로 돌리면 이 목장에서 변경한 시설 배치가 초기화됩니다.", 0, 65, 900, 135, 23);
+            Label(panel, "txt_body", "이번 데모에서는 시설과 길의 배치를 저장하지 않습니다.\n\n새 실행에는 가로지르는 길 하나와 축사·먹이창고로 시작합니다.", 0, 65, 900, 135, 23);
             PlainButton(panel, "btn_reset_view", "카메라 원위치", -205, -76, 310, 57, () => { RanchCamera.ResetView(); CloseModal(); });
             PlainButton(panel, "btn_reset_layout", "기본 배치로", 205, -76, 310, 57, () =>
             {
                 var confirmation = OpenModal("기본 배치로 돌아갈까요?");
-                Label(confirmation, "txt_warning", "지금 저장된 목장 배치가 기본 배치로 바뀝니다.", 0, 37, 900, 96, 25);
+                Label(confirmation, "txt_warning", "현재 배치한 시설과 길이 기본 배치로 바뀝니다.", 0, 37, 900, 96, 25);
                 PlainButton(confirmation, "btn_keep", "유지하기", -173, -98, 260, 58, ShowSettings);
                 PlainButton(confirmation, "btn_reset_confirm", "초기화", 173, -98, 260, 58, () => { Placement.ResetLayout(); CloseModal(); });
             });

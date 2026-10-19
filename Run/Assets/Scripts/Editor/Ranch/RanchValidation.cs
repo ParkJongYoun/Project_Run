@@ -26,8 +26,8 @@ namespace ProjectRun.Editor
             var catalog=Resources.Load<Data_RanchCatalog>("Prefabs/Ranch/Data_RanchCatalog");
             var system=UnityEngine.Object.FindFirstObjectByType<Sys_RanchPlacement>();
             Check(system!=null && system.gameObject.scene.path==RanchSceneBuilder.ScenePath,"Correct scene");
-            Check(catalog.Facilities.Length==11,"Eleven distinct facilities");
-            Check(catalog.Facilities.Select(f=>f.Id).Distinct().Count()==11,"Unique catalog IDs");
+            Check(catalog.Facilities.Length==12,"Twelve distinct facilities including roads");
+            Check(catalog.Facilities.Select(f=>f.Id).Distinct().Count()==12,"Unique catalog IDs");
             Check(catalog.Facilities.All(f=>f.Prefab!=null && f.Portrait!=null),"All model and portrait references assigned");
             Check(RanchGrid.Validate(catalog,system.InitialLayout,system.GridSize),"Default layout has no overlaps or out-of-bounds placements");
             var placed=new List<Data_RanchPlacement>{new Data_RanchPlacement{InstanceId="a",FacilityId="shelter",X=0,Y=0}};
@@ -63,18 +63,16 @@ namespace ProjectRun.Editor
             checks.Clear();
             var system=UnityEngine.Object.FindFirstObjectByType<Sys_RanchPlacement>();
             var panel=UnityEngine.Object.FindFirstObjectByType<UIPanel_Ranch>();
-            string before=JsonUtility.ToJson(system.Layout);bool hadSave=PlayerPrefs.HasKey(Sys_RanchPlacement.SaveKey);
-            string stored=PlayerPrefs.GetString(Sys_RanchPlacement.SaveKey,"");
+            string before=JsonUtility.ToJson(system.Layout);
             Action<string> click=name=>panel.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(b=>b.name==name).onClick.Invoke();
             try
             {
                 click("btn_build");Check(system.IsBuilding && panel.Drawer.gameObject.activeSelf,"Build menu callback opens grid and catalog");
                 click("btn_facility_feed_store");Check(system.Preview!=null,"Facility card starts preview");
-                system.MovePreview(12,3);Check(!system.CanConfirm && !panel.ConfirmButton.interactable,"Overlap disables confirm UI");
+                system.MovePreview(12,9);Check(!system.CanConfirm && !panel.ConfirmButton.interactable,"Overlap disables confirm UI");
                 int count=system.Layout.Facilities.Count;Check(!system.Confirm() && system.Layout.Facilities.Count==count,"Invalid confirm has no mutation");
-                system.MovePreview(12,6);Check(system.CanConfirm,"Empty valid cells accepted");
+                system.MovePreview(12,3);Check(system.CanConfirm,"Empty valid cells accepted");
                 string instanceId=system.Preview.InstanceId;click("btn_confirm");Check(system.Layout.Facilities.Count==count+1,"Confirm button places one instance");
-                Check(PlayerPrefs.GetString(Sys_RanchPlacement.SaveKey).Contains(instanceId),"Confirmed layout persisted");
                 system.BeginMove(instanceId);system.MovePreview(0,0);click("btn_cancel");
                 Check(system.Layout.Facilities.First(f=>f.InstanceId==instanceId).X==12,"Move cancel restores original position");
                 system.BeginMove(instanceId);click("btn_remove");Check(system.Layout.Facilities.Count==count,"Remove callback restores count");
@@ -92,8 +90,6 @@ namespace ProjectRun.Editor
             finally
             {
                 system.Cancel();system.SetBuildMode(false);
-                if(hadSave)PlayerPrefs.SetString(Sys_RanchPlacement.SaveKey,stored);else PlayerPrefs.DeleteKey(Sys_RanchPlacement.SaveKey);
-                PlayerPrefs.Save();
             }
             Directory.CreateDirectory(reportFolder);File.WriteAllLines(reportFolder+"/플레이_기능검증.txt",checks);
             return checks.Count+" Play checks passed";

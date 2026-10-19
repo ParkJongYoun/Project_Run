@@ -14,6 +14,7 @@ namespace ProjectRun.Ranch
         public GameObject Prefab;
         public Sprite Portrait;
         public string Category;
+        public bool IsRoad;
         public Vector2Int Size(int rotation) => (rotation & 1) == 0 ? Footprint : new Vector2Int(Footprint.y, Footprint.x);
     }
 
@@ -39,6 +40,60 @@ namespace ProjectRun.Ranch
     {
         public int Version = 1;
         public List<Data_RanchPlacement> Facilities = new List<Data_RanchPlacement>();
+    }
+
+    public static class RanchDemoLayout
+    {
+        public static Data_RanchSave Create()
+        {
+            var layout = new Data_RanchSave();
+            Add(layout, "house", 1, 12);
+            Add(layout, "shelter", 5, 12);
+            Add(layout, "feeding_station", 10, 12);
+            Add(layout, "windmill", 13, 13);
+            Add(layout, "waterfall", 17, 12);
+            Add(layout, "hot_spring", 1, 6);
+            Add(layout, "gazebo", 4, 6);
+            Add(layout, "race_track", 13, 6, 2);
+            Add(layout, "training", 1, 0, 2);
+            Add(layout, "feed_store", 6, 1);
+            Add(layout, "flower_cart", 15, 12);
+            Add(layout, "fountain", 9, 8);
+            Add(layout, "broadleaf", 0, 10);
+            Add(layout, "cherry_tree", 11, 6);
+            Add(layout, "flowerbed", 11, 8);
+            Add(layout, "rock", 12, 9);
+            Add(layout, "rock", 19, 8);
+            Add(layout, "flowerbed", 1, 9);
+            Add(layout, "flowerbed", 4, 9);
+            Add(layout, "flowerbed", 2, 15);
+            Add(layout, "flowerbed", 6, 15);
+            Add(layout, "flowerbed", 14, 15);
+            Add(layout, "flowerbed", 17, 15);
+            Add(layout, "lamp", 0, 4);
+            Add(layout, "lamp", 5, 0);
+            Add(layout, "lamp", 19, 4);
+            Add(layout, "lamp", 9, 12);
+            Add(layout, "lamp", 16, 13);
+            Add(layout, "lamp", 0, 12);
+            // Two-cell main roads allow passing; the southeast 9x4 cells remain available for building.
+            var roads = new HashSet<Vector2Int>();
+            for (int y = 0; y <= 7; y++) for(int x=9;x<=10;x++) roads.Add(new Vector2Int(x, y));
+            for (int x = 1; x <= 18; x++) for(int y=4;y<=5;y++) roads.Add(new Vector2Int(x, y));
+            for (int x = 2; x <= 18; x++) for(int y=10;y<=11;y++) roads.Add(new Vector2Int(x, y));
+            for (int y = 6; y <= 9; y++) for(int x=7;x<=8;x++) roads.Add(new Vector2Int(x, y));
+            for (int x = 6; x <= 10; x++) roads.Add(new Vector2Int(x, 0));
+            roads.Add(new Vector2Int(13, 12)); roads.Add(new Vector2Int(14, 12));
+            for (int y = 0; y < 16; y++) for (int x = 0; x < 20; x++)
+                if (roads.Contains(new Vector2Int(x, y))) Add(layout, "road", x, y);
+            return layout;
+        }
+
+        private static void Add(Data_RanchSave layout, string id, int x, int y, int rotation = 0)
+        {
+            layout.Facilities.Add(new Data_RanchPlacement
+            { InstanceId = "garden_" + id + "_" + x + "_" + y, FacilityId = id, X = x, Y = y, Rotation = rotation });
+        }
     }
 
     // Grid rules have no dependency on camera, frame rate or preview rendering.

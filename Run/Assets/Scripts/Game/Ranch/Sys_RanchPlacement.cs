@@ -8,7 +8,6 @@ namespace ProjectRun.Ranch
 {
     public sealed class Sys_RanchPlacement : MonoBehaviour
     {
-        public const string SaveKey = "ProjectRun.Ranch.LobbyTest.Layout.v1";
         public Data_RanchCatalog Catalog;
         public Camera WorldCamera;
         public Transform FacilitiesRoot;
@@ -33,23 +32,17 @@ namespace ProjectRun.Ranch
         private GameObject previewObject;
         private GameObject hiddenOriginal;
         private readonly Dictionary<string, GameObject> instances = new Dictionary<string, GameObject>();
-        private bool dragging;
-        private Vector2 dragOffset;
         private bool ready;
+
+        public RanchFacilitySpot FindActivitySpot(string instanceId)
+        {
+            return instances.TryGetValue(instanceId, out var instance) && instance != null
+                ? instance.GetComponent<RanchFacilitySpot>() : null;
+        }
 
         private void Start()
         {
             Layout = JsonUtility.FromJson<Data_RanchSave>(JsonUtility.ToJson(InitialLayout));
-            if (PlayerPrefs.HasKey(SaveKey))
-            {
-                try
-                {
-                    var saved = JsonUtility.FromJson<Data_RanchSave>(PlayerPrefs.GetString(SaveKey));
-                    if (RanchGrid.Validate(Catalog, saved, GridSize)) Layout = saved;
-                    else Message?.Invoke("저장된 배치를 읽지 못해 기본 목장을 표시합니다");
-                }
-                catch (Exception) { Message?.Invoke("저장된 배치를 읽지 못해 기본 목장을 표시합니다"); }
-            }
             Rebuild(); ready = true; SetBuildMode(false);
         }
 
@@ -106,6 +99,8 @@ namespace ProjectRun.Ranch
         private void CreatePreview()
         {
             previewObject = Create(Preview); previewObject.name = "obj_placement_preview";
+            if (Catalog.Find(Preview.FacilityId).IsRoad)
+                foreach (var renderer in previewObject.GetComponentsInChildren<Renderer>()) renderer.enabled = true;
             foreach (var collider in previewObject.GetComponentsInChildren<Collider>()) collider.enabled = false;
             UpdatePreview();
         }
@@ -139,12 +134,11 @@ namespace ProjectRun.Ranch
             var existing = Layout.Facilities.Find(item => item.InstanceId == Preview.InstanceId);
             if (existing != null) Layout.Facilities.Remove(existing);
             Layout.Facilities.Add(Preview.Copy());
-            Cancel(); Rebuild(); Save(); Changed?.Invoke(); return true;
+            Cancel(); Rebuild(); Changed?.Invoke(); return true;
         }
 
         public void Cancel()
         {
-            dragging = false;
             if (previewObject != null) { previewObject.SetActive(false); Destroy(previewObject); }
             if (hiddenOriginal != null) hiddenOriginal.SetActive(true);
             hiddenOriginal = null; previewObject = null; Preview = null;
@@ -156,19 +150,13 @@ namespace ProjectRun.Ranch
         {
             if (!IsMoving) return;
             string id = Preview.InstanceId; Cancel();
-            Layout.Facilities.RemoveAll(item => item.InstanceId == id); Rebuild(); Save(); Changed?.Invoke();
+            Layout.Facilities.RemoveAll(item => item.InstanceId == id); Rebuild(); Changed?.Invoke();
         }
 
         public void ResetLayout()
         {
             Cancel(); Layout = JsonUtility.FromJson<Data_RanchSave>(JsonUtility.ToJson(InitialLayout));
-            Rebuild(); Save(); Changed?.Invoke();
-        }
-
-        private void Save()
-        {
-            try { PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(Layout)); PlayerPrefs.Save(); Message?.Invoke("목장 배치를 저장했어요"); }
-            catch (Exception exception) { Debug.LogWarning("Ranch layout save: " + exception.Message); Message?.Invoke("저장 공간을 확인해 주세요. 현재 배치는 유지됩니다"); }
+            Rebuild(); Changed?.Invoke();
         }
 
         public static bool IsOverUI(Vector2 point)
@@ -181,51 +169,33 @@ namespace ProjectRun.Ranch
 
         private void Update()
         {
-            if (!ready || !IsBuilding || InputBlocked) { dragging = false; return; }
+            if (!ready || !IsBuilding || InputBlocked) return;
             if (Keyboard.current != null)
             {
                 if (Keyboard.current.escapeKey.wasPressedThisFrame) { Cancel(); return; }
                 if (Keyboard.current.rKey.wasPressedThisFrame) Rotate();
                 if (Keyboard.current.enterKey.wasPressedThisFrame) Confirm();
             }
-            var pointer = Pointer.current;
-            if (pointer == null) return;
-            var point = pointer.position.ReadValue();
-            if (Touchscreen.current != null)
+        }
+
+        // The camera owns pointer gestures, so a swipe never also selects or moves a facility.
+        public void HandleWorldTap(Vector2 point)
+        {
+            if (!ready || !IsBuilding || InputBlocked || IsOverUI(point)) return;
+            if (Preview == null)
             {
-                int touches = 0;
-                foreach (var touch in Touchscreen.current.touches) if (touch.press.isPressed) touches++;
-                if (touches > 1) { dragging = false; return; }
+                var ray = WorldCamera.ScreenPointToRay(point);
+                if (Physics.Raycast(ray, out var hit, 200))
+                    foreach (var pair in instances)
+                        if (hit.transform == pair.Value.transform || hit.transform.IsChildOf(pair.Value.transform))
+                        { BeginMove(pair.Key); break; }
+                return;
             }
-            if (pointer.press.wasPressedThisFrame && !IsOverUI(point))
+            if (GridPoint(point, out var local))
             {
-                bool selectingExisting = Preview == null;
-                if (Preview == null)
-                {
-                    var ray = WorldCamera.ScreenPointToRay(point);
-                    if (Physics.Raycast(ray, out var hit, 200))
-                        foreach (var pair in instances)
-                            if (hit.transform == pair.Value.transform || hit.transform.IsChildOf(pair.Value.transform))
-                            { BeginMove(pair.Key); break; }
-                }
-                dragging = Preview != null;
-                dragOffset = Vector2.zero;
-                if (selectingExisting && dragging && GridPoint(point, out var local))
-                {
-                    var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
-                    dragOffset = local - new Vector2(Preview.X + size.x * .5f, Preview.Y + size.y * .5f);
-                }
+                var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
+                MovePreview(Mathf.FloorToInt(local.x - size.x * .5f + .5f), Mathf.FloorToInt(local.y - size.y * .5f + .5f));
             }
-            if (dragging && pointer.press.isPressed && !IsOverUI(point) && Preview != null)
-            {
-                if (GridPoint(point, out var local))
-                {
-                    local -= dragOffset;
-                    var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
-                    MovePreview(Mathf.FloorToInt(local.x - size.x * .5f + .5f), Mathf.FloorToInt(local.y - size.y * .5f + .5f));
-                }
-            }
-            if (!pointer.press.isPressed) dragging = false;
         }
 
         private bool GridPoint(Vector2 point, out Vector2 local)

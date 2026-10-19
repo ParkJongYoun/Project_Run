@@ -47,9 +47,9 @@ namespace ProjectRun.Editor
             Environment(world.transform);
             var camera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault();
             if (camera == null) camera = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener)).GetComponent<Camera>();
-            camera.tag = "MainCamera"; camera.orthographic = true; camera.orthographicSize = 15.3f;
-            camera.transform.rotation = Quaternion.Euler(42, -32, 0);
-            camera.transform.position = new Vector3(0, 0, 1) - camera.transform.forward * 35;
+            camera.tag = "MainCamera"; camera.orthographic = true; camera.orthographicSize = 7;
+            camera.transform.rotation = Quaternion.Euler(41.84146f, 359.9193f, 0);
+            camera.transform.position = new Vector3(1.08389819f, 23.3474884f, -28.5533619f);
             var cameraData = camera.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>() ?? camera.gameObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
             cameraData.renderShadows = true;
             camera.nearClipPlane = .3f; camera.farClipPlane = 150; camera.backgroundColor = new Color(.56f,.70f,.58f);
@@ -83,6 +83,7 @@ namespace ProjectRun.Editor
             var cameraSystem = camera.GetComponent<Sys_RanchCamera>() ?? camera.gameObject.AddComponent<Sys_RanchCamera>();
             cameraSystem.WorldCamera = camera; cameraSystem.Placement = placement;
             cameraSystem.HomePosition = camera.transform.position; cameraSystem.HomeSize = camera.orthographicSize;
+            cameraSystem.HomeAngles = camera.transform.eulerAngles; cameraSystem.WheelZoomStep = .4f;
             var eventObject = new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));
             eventObject.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
             var ui = new GameObject("UICanvas_Root",typeof(RectTransform));
@@ -97,9 +98,11 @@ namespace ProjectRun.Editor
             // Registration is scoped to this scene and is performed again on Play by the bootstrap.
             var bootstrap = systems.AddComponent<Sys_RanchUI>(); bootstrap.Manager = manager; bootstrap.Panel = panel;
             AddResidents(world.transform);
+            if (RanchPaintedLook.IsAvailable) RanchPaintedLook.ApplyScene();
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets(); Selection.activeGameObject = world;
-            Debug.Log("Ranch ready: 11 placeable facilities, isolated layout save, locked expansion plots.");
+            RanchDemoSetup.Apply();
+            Debug.Log("Ranch ready: temporary demo layout, placeable roads, locked expansion plots.");
         }
 
         private static Data_DemoArt BuildArt()
@@ -142,7 +145,7 @@ namespace ProjectRun.Editor
             Add(list,"rock","바위","목장과 잠긴 지형을 꾸미는 바위",new Vector2Int(1,1),Rock(),"환경");
             var catalog = AssetDatabase.LoadAssetAtPath<Data_RanchCatalog>("Assets/Resources/Prefabs/Ranch/Data_RanchCatalog.asset");
             if (catalog == null) { catalog = ScriptableObject.CreateInstance<Data_RanchCatalog>(); AssetDatabase.CreateAsset(catalog,"Assets/Resources/Prefabs/Ranch/Data_RanchCatalog.asset"); }
-            catalog.Facilities = list.ToArray(); EditorUtility.SetDirty(catalog); return catalog;
+            catalog.Facilities = list.ToArray(); RanchDemoSetup.ConfigureCatalog(catalog); EditorUtility.SetDirty(catalog); return catalog;
         }
 
         private static void ImportPortraits()
@@ -451,6 +454,7 @@ namespace ProjectRun.Editor
                 if (child != null) UnityEngine.Object.DestroyImmediate(child.gameObject);
             }
             Ground(world.transform); Environment(world.transform);
+            if (RanchPaintedLook.IsAvailable) RanchPaintedLook.ApplyScene();
             EditorSceneManager.MarkSceneDirty(world.scene); EditorSceneManager.SaveScene(world.scene); AssetDatabase.SaveAssets();
         }
 
@@ -524,20 +528,14 @@ namespace ProjectRun.Editor
 
         private static Data_RanchSave InitialLayout()
         {
-            var save=new Data_RanchSave();
-            Action<string,int,int,int> add=(id,x,y,rotation)=>save.Facilities.Add(new Data_RanchPlacement { InstanceId="initial_"+save.Facilities.Count,FacilityId=id,X=x,Y=y,Rotation=rotation });
-            add("shelter",1,11,0);add("shelter",6,11,0);add("training",13,10,0);
-            add("feed_store",12,3,0);add("house",2,3,0);
-            add("broadleaf",0,7,0);add("pine",17,13,0);add("broadleaf",17,1,0);
-            add("flowerbed",2,1,0);add("flowerbed",5,1,0);add("lamp",11,2,0);add("lamp",6,5,0);
-            add("gate",9,0,0);return save;
+            return RanchDemoLayout.Create();
         }
 
         private static void AddResidents(Transform parent)
         {
             var root=new GameObject("group_monsters");root.transform.SetParent(parent,false);
             string[] ids={"GiantPoring","Minorous","Edgar"};
-            Vector3[] positions={new Vector3(-9,.05f,3),new Vector3(7,.05f,4),new Vector3(-2,.05f,3)};
+            Vector3[] positions={new Vector3(-9,.05f,3),new Vector3(6.75f,.05f,.6f),new Vector3(-2,.05f,3)};
             for(int i=0;i<ids.Length;i++)
             {
                 var source=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Resources/Prefabs/Race/CartoonMonsters/P_Runner_Cartoon_"+ids[i]+".prefab");
@@ -549,6 +547,7 @@ namespace ProjectRun.Editor
                 var bounds=renderers[0].bounds;foreach(var renderer in renderers)bounds.Encapsulate(renderer.bounds);
                 monster.transform.localScale*=2.2f/Mathf.Max(bounds.size.x,bounds.size.y,bounds.size.z);
                 monster.transform.localPosition=positions[i]; monster.transform.localRotation=Quaternion.Euler(0,160+i*30,0);
+                RanchSurfaceRepair.ConfigureResident(monster, ids[i], UnityEngine.Object.FindFirstObjectByType<Sys_RanchPlacement>(), i);
             }
         }
 

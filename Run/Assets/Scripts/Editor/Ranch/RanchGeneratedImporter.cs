@@ -56,6 +56,11 @@ namespace ProjectRun.Editor
                 if (textureImporter == null) continue;
                 textureImporter.maxTextureSize = 2048;
                 textureImporter.mipmapEnabled = true;
+                if (Path.GetFileNameWithoutExtension(path).Equals("Normal", StringComparison.OrdinalIgnoreCase))
+                {
+                    textureImporter.textureType = TextureImporterType.NormalMap;
+                    textureImporter.sRGBTexture = false;
+                }
                 textureImporter.SaveAndReimport();
             }
             importer.SaveAndReimport();
@@ -94,6 +99,10 @@ namespace ProjectRun.Editor
                             if (material == null) { material = new Material(Shader.Find("Universal Render Pipeline/Lit")); AssetDatabase.CreateAsset(material, materialPath); }
                             material.SetColor("_BaseColor", Color.white);
                             material.SetTexture("_BaseMap", color);
+                            var normal = AssetDatabase.LoadAssetAtPath<Texture2D>(textureFolder + "/Normal.png");
+                            material.SetTexture("_BumpMap", normal);
+                            material.SetFloat("_BumpScale", .8f);
+                            if (normal != null) material.EnableKeyword("_NORMALMAP");
                             material.SetFloat("_Metallic", 0);
                             material.SetFloat("_Smoothness", .08f);
                             material.SetFloat("_Cull", 2);
@@ -139,6 +148,7 @@ namespace ProjectRun.Editor
                 var report = new ModelReport { Id = id, ModelPath = modelPath, Meshes = meshes.Length, Materials = materials.Count,
                     Vertices = meshes.Sum(mesh => mesh.vertexCount), Triangles = meshes.Sum(mesh => mesh.triangles.Length / 3),
                     Yaw = yaw, Size = BoundsOf(renderers).size };
+                RanchPaintedLook.ApplyToRoot(root, id);
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
                 Directory.CreateDirectory(recordRoot);
                 File.WriteAllText(recordRoot + "/" + id + "_Unity검증.json", JsonUtility.ToJson(report, true));
@@ -218,7 +228,8 @@ namespace ProjectRun.Editor
                 if (prefab.transform.localScale != Vector3.one || prefab.transform.localPosition != Vector3.zero)
                     throw new InvalidOperationException("Non-default root transform: " + definition.Id);
                 var renderers = visual.GetComponentsInChildren<MeshRenderer>();
-                if (renderers.Any(r => r.sharedMaterials.Any(m => m == null || m.shader.name != "Universal Render Pipeline/Lit" || m.GetTexture("_BaseMap") == null)))
+                if (renderers.Any(r => r.sharedMaterials.Any(m => m == null ||
+                    (m.shader.name != "Universal Render Pipeline/Lit" && m.shader.name != "ProjectRun/Ranch/SoftPainted") || m.GetTexture("_BaseMap") == null)))
                     throw new InvalidOperationException("Invalid material: " + definition.Id);
                 var meshes = visual.GetComponentsInChildren<MeshFilter>().Select(f => f.sharedMesh).ToArray();
                 if (meshes.Any(m => m == null || m.vertexCount == 0 || m.uv.Length != m.vertexCount))
