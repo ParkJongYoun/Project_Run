@@ -1,0 +1,28 @@
+에드가 트리포 입력 원화 생성 기록
+날짜: 2026-10-19 (Asia/Seoul)
+요청: Project Run 에드가를 귀여운 카툰 3D에 어울리는 원화 한 장으로 제작. 후속 트리포 리깅과 달리기 애니메이션 시험 고려.
+생성 도구: built-in image_gen (CLI 사용 안 함)
+참고 원화: C:/Project_Run/Run/DataBundles/UI/몬스터와훈련/14_전신_에드가.png
+스타일 확인: C:/Project_Run/Run/DataBundles/UI/필살기영상/에드가/작업기록/에드가_3D_시작장면.png 및 카툰 에드가 기존 초상화
+결과: C:/Project_Run/Run/DataBundles/아트/트리포_에드가_리깅테스트/에드가_카툰3D_T포즈.png
+실제 크기: 1254 x 1254 PNG, RGB, 밝은 배경
+SHA256: 6F5A9ADAE45D86BCE3255A8BC8E106FE4F98D3AF92C63EA6F064F690B82EEA52
+저장 위치: 현재 환경의 프로젝트는 C:/Project_Run/Run이며 지침에 기록된 D:/Project_Run/Run은 존재하지 않아 현재 체크아웃의 DataBundles에 저장.
+확인: 캐릭터 1마리·정면 전신·모자와 손발 잘림 없음·양팔/다리 사이 공간·꼬리 실루엣·문자 없음. 원본 에셋 수정 없음.
+범위: 원화만 제작. Tripo 모델 생성, 리깅, 달리기 재생 또는 Unity 연결은 실행하지 않았음. 리깅/애니메이션 품질 검증 완료를 뜻하지 않음.
+
+후속 달리기 연출 방향(제안):
+두 발 달리기. 살짝 앞으로 기울어진 몸통, 팔의 교차 스윙, 발 접지와 뒤로 차는 동작, 과하지 않은 통통 튀는 상하 움직임, 꼬리의 부드러운 반동.
+시험 시 어깨/팔꿈치/무릎의 눌림, 발 미끄러짐, 배와 허벅지 관통, 꼬리 뿌리 변형, 모자 부착, 반복 구간 연결을 확인.
+공식 T포즈 안내: https://www.tripo3d.ai/help/features/is-it-possible-to-upload-my-existing-model-for-animation
+프로젝트 카툰 스킬은 기존 3D 재질 변환용이므로 이번 원화 제작에서는 승인된 스타일 참고만 사용.
+
+최종 이미지 생성 프롬프트:
+Use case: style-transfer.
+Asset type: one single-character reference PNG for Tripo image-to-3D generation, then biped automatic rigging and a running animation test for Project Run.
+Input image 1 is the existing Project Run Eddga tiger design, a character identity reference. Transform this character into an adorable polished cartoon 3D game character in a neutral T pose. This is a new modeling concept derived from the reference, not a texture atlas.
+Preserve recognizable identity: orange-gold tiger, clear dark brown-black broad tiger stripes, creamy white muzzle, thick white expressive eyebrows, white sculpted cheek ruff and chest/belly, little black top hat with a red band and a compact gold feather-shaped ornament, rounded striped tail. The whole character should feel charming, warmly confident, stout and cuddly with a subtle closed-mouth smile, large lively amber eyes, rounded ears, rounded cheeks, rounded paws, cute soft chunky volumes. Keep anatomically usable biped proportions: a generous head but enough torso length and clear upper and lower arm and leg segments for running. Rounded sturdy thighs with visible knee transitions, clear ankles, medium large feet. Not a baby with extremely short limbs, not an aggressive realistic muscular tiger.
+POSE AND CAMERA: precise neutral symmetric upright T pose, both arms extended horizontally sideways at shoulder height, elbows straight, hands in a relaxed neutral palm-down position, wrist straight. Simple sculpted paws with a distinct thumb and clearly grouped rounded fingers, no splayed needle fingers. Both legs straight and shoulder-width apart; clear open space between thighs, knees, feet, hands and torso. Both soles on same ground level, feet facing forward. Camera exactly from the front at body center height, orthographic-like, no perspective distortion or dramatic angle. Head looks directly forward. Entire body, both ears, hat, fingertips, feet, and tail fully in frame with generous margins. Tail extends from behind the pelvis in a broad gentle arc to one side and stays clearly separated from arms and legs, one simple thick tail with visible silhouette.
+STYLE: high-quality stylized cartoon 3D RPG character render, broad clean color shapes and restrained two-to-three-tone cel shading with soft transitions, a thin neat dark contour, matte painted game-model finish, simplified sculpted fur clumps rather than individual hairs, subtle ambient occlusion, bright neutral soft studio lighting. Strong silhouette, beautiful warm colors. Clean light plain off-white background, almost no ground shadow.
+Simplify the reference's hanging red fabric into a small compact bow attached to the hat; compact gold feather ornament. No floating parts, no long thin loose ribbons, no backpack, no saddle, no rider, no pipe, no smoke, no weapons, no stage, no base, no scenery, no motion trails, no running action pose. No text, no labels, no watermark, no border, no turnaround sheet, no inset views, no additional characters. ONE character, ONE view. Square image, character centered and occupies most of the frame.
+
