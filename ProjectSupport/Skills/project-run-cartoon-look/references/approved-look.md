@@ -12,7 +12,7 @@
 
 | 경로 | 용도 |
 |---|---|
-| `Assets/Scenes/Scene_MinorousLookDev.unity` | 미노 정적 근접 전시 |
+| `Assets/Scenes/Test/Scene_CartoonTest.unity` | 2026-10-19 미노 단독 전시를 이름 변경·확장한 카툰 비교 전시. 현재 몬스터·탈것 17종 |
 | `Assets/Scenes/Scene_MinorousRaceTest.unity` | 미노 한 마리 실제 주행·HUD |
 | `Assets/Scenes/Scene_OvalToon.unity` | 기존 경기장·카툰 6종 실제 주행·HUD |
 | `Assets/Scenes/Scene_PronteraToon.unity` | 신규 경기장·카툰 6종 실제 주행·HUD |
@@ -121,7 +121,13 @@
 
 `MonsterRaceLookDevBuilder.Build()`는 기존 대상 씬이 있거나 6종/슬롯 구성이 다르면 실패한다. 범용 변환기나 매번 실행하는 초기화 명령이 아니다. `RefreshPortraits()`와 `ConnectTitle()`도 지정된 씬·레이아웃에 묶여 있으므로 코드와 현재 상태를 먼저 읽는다.
 
-과거 비교 구성의 `Use Updated Look`은 연결된 캐릭터 재질과 윤곽선을 바꾸는 기능이었다. 현재 독립 6종 경기장에는 없다. 미노 단독 비교 씬은 기존 기능을 유지하며 환경·조명까지 비교하려면 원래 `Scene_All3D`를 사용한다.
+과거 비교 구성의 `Use Updated Look`은 연결된 캐릭터 재질과 윤곽선을 바꾸는 기능이었다. 현재 독립 6종 경기장에는 없다. 미노 단독 비교 씬은 2026-10-19 사용자 요청으로 `Assets/Scenes/Test/Scene_CartoonTest.unity`로 이름을 바꾸고 기존 카툰 8종과 신규 6종의 전시로 확장했다. 이전 씬 파일은 해당 작업의 `작업기록/변경전_미노외형씬.unity.bak`에 보존한다.
+
+2026-10-19 신규 비교 전시 대상은 일반 포링·페코페코·데비루치·바포메트·바포메트 주니어·탈것 여우다. 원본 UV를 기준으로 built-in image_gen에서 새 알베도를 생성하고 독립 Regular 프리팹·메시·아바타·대기/달리기 클립·재질로 복제했다. 무낙 원본은 찾지 못했으며 여우를 구미호 몬스터로 확정하지 않았다. 기존 경기 씬의 출전 구성은 이 작업으로 바꾸지 않았다. 생성 프롬프트·원본·파일 크기·검증 기록은 `DataBundles/아트/카툰몬스터_비교전시_20261019/작업기록`에 둔다.
+
+같은 날 추가 요청으로 전시에서 마타·오크·바포메트를 제외하고 알파카·청룡·말 001·집사 위스퍼·불꽃새·짐꾼 강아지 6종을 추가했다. 현재 전시는 기존 11종과 신규 탈것 6종, 총 17종이다. 제외한 에셋과 실제 경기 씬은 보존한다. 신규 ID는 `Alpaca`, `BlueDragon`, `Horse`, `ButlerWhisper`, `FlameBird`, `PorterPuppy`이며 원본 UV를 유지한 새 image_gen 알베도, 독립 Regular 프리팹과 전용 메시·아바타·클립·재질을 사용한다. 알파카의 원본 동작 이름은 `_stand`·`_run`으로 끝나므로 `_stand_01`·`_run_01`만 가정하지 않는다. 작업·검증 기록은 `DataBundles/아트/카툰탈것6종_전시확장_20261019`에 있다.
+
+이후 명시적인 비교 요청으로 `Scene_CartoonTest` 오른쪽 위에 `원본 ↔ 카툰` 버튼을 추가했다. 전시 씬에서만 LegacyURP의 원본 17종을 첫 전환 시 생성·재사용하며 카툰과 별도의 모델 묶음으로 표시한다. 원본의 메시·텍스처와 URP 호환 CharacterSimple 재질을 사용하고, 확대/회전/카메라/대기·달리기 재생 시점을 유지한다. 카툰 Regular 프리팹의 재질·텍스처·독립성 및 실제 경기 씬에는 영향을 주지 않는다. 기록: `DataBundles/검증/카툰테스트_원본전환_20261019`.
 
 ## 기록과 검증된 범위
 
