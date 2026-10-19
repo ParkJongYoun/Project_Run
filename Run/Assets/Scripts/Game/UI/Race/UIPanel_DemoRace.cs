@@ -1,150 +1,263 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ProjectRun.Race
 {
     public sealed partial class UIPanel_DemoRace : UIPanel_Base
     {
+        [Header("경기 HUD · 배치는 프리팹에서 편집")]
+        [SerializeField] private RectTransform SafeArea;
+        [SerializeField] private Text RankLabel;
+        [SerializeField] private Text RemainingLabel;
+        [SerializeField] private Text StandingsLabel;
+        [SerializeField] private Text HeroNameLabel;
+        [SerializeField] private Image HeroImage;
+        [SerializeField] private Image StaminaImage;
+        [SerializeField] private Text CountdownLabel;
+        [SerializeField] private Text CommentaryLabel;
+        [SerializeField] private UIItem_RaceCommentary CommentaryFeed;
+
+        [Header("경기 조작")]
+        [SerializeField] private Button SpeedButton;
+        [SerializeField] private Text SpeedLabel;
+        [SerializeField] private Button PauseButton;
+        [SerializeField] private Text PauseLabel;
+        [SerializeField] private Button ResultButton;
+        [SerializeField] private Button LobbyButton;
+        [SerializeField] private Button CutsceneButton;
+        [SerializeField] private Text CutsceneLabel;
+
+        [Header("만화 연출 · 콘텐츠만 실행 중 생성")]
+        [SerializeField] private RectTransform ComicRoot;
+        [SerializeField] private RectTransform ComicContent;
+        [SerializeField] private Button ComicSkipButton;
+
+        [Header("결과 화면")]
+        [SerializeField] private RectTransform ResultRoot;
+        [SerializeField] private Text ResultTitle;
+        [SerializeField] private Image ResultHero;
+        [SerializeField] private Text ResultName;
+        [SerializeField] private Text ResultSummary;
+        [SerializeField] private Button ReplayButton;
+        [SerializeField] private Button EndDemoButton;
+
         private Sys_Race race;
-        private RectTransform safe,comic,result;
-        private UnityEngine.UI.Text rank,remaining,commentary,countdown,standings,speedLabel,pauseLabel;
-        private UIItem_RaceCommentary commentaryFeed;
-        private UnityEngine.UI.Image stamina;
-        private float comicAge=-1;
+        private float comicAge = -1;
         private UIItem_MinorousComic minorousComic;
         private UIItem_DemoHeroComic heroComic;
-        private bool cutscenes=true;
-        private int generation=-1;
-        private string latest="선택한 친구의 첫 레이스를 응원해 주세요";
+        private bool cutscenes = true;
+        private bool opened;
+        private int generation = -1;
+        private string latest = "선택한 친구의 첫 레이스를 응원해 주세요";
         private float latestUntil;
-        public bool IsComicPlaying=>comicAge>=0;
-        public bool CutscenesEnabled {get=>cutscenes;set {cutscenes=value;if(!value)CancelSkillPresentation();}}
-        private int Hero=>Mgr_Game.Instance.HeroRunner;
-        private Data_DemoMonster Monster=>Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster];
-        public void Configure(Sys_Race target)=>race=target;
+        public bool IsComicPlaying => comicAge >= 0;
+        public bool CutscenesEnabled
+        {
+            get => cutscenes;
+            set
+            {
+                cutscenes = value;
+                if (CutsceneLabel != null) CutsceneLabel.text = value ? "연출 ON" : "연출 OFF";
+                if (!value) CancelSkillPresentation();
+            }
+        }
+        private int Hero => Mgr_Game.Instance.HeroRunner;
+        private Data_DemoMonster Monster => Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster];
+
+        public void Configure(Sys_Race target)
+        {
+            if (opened) OnClose();
+            race = target;
+            if (isActiveAndEnabled) OnOpen();
+        }
+
         public override void OnOpen()
         {
-            if(race==null)return;Build();Mgr_Event.RaceChanged+=Handle;Mgr_Event.Reset+=CancelComic;
+            if (!Application.isPlaying || race == null || opened) return;
+            if (SafeArea == null)
+            {
+                Debug.LogError("UIPanel_DemoRace의 프리팹 UI 참조가 없습니다.", this);
+                return;
+            }
+            opened = true;
+            generation = -1;
+            HeroImage.sprite = DemoUI.Art.Get(Monster.Id + "_face");
+            HeroNameLabel.text = Monster.Name;
+            VideoTitle.text = Monster.Skill;
+            CommentaryFeed.Race = race;
+            CommentaryFeed.enabled = FindFirstObjectByType<Sys_RacePresentation>() != null;
+            CommentaryFeed.gameObject.SetActive(CommentaryFeed.enabled);
+            CommentaryLabel.enabled = !CommentaryFeed.enabled;
+            CommentaryLabel.text = latest;
+            ComicRoot.gameObject.SetActive(false);
+            ResultRoot.gameObject.SetActive(false);
+            SetVideoOpacity(0);
+            CutscenesEnabled = cutscenes;
+            BindButtons();
+            Mgr_Event.RaceChanged += Handle;
+            Mgr_Event.Reset += CancelComic;
         }
-        public override void OnClose(){Mgr_Event.RaceChanged-=Handle;Mgr_Event.Reset-=CancelComic;CancelSkillPresentation();}
-        private void Build()
+
+        public override void OnClose()
         {
-            FitRuntimePanel();
-            DemoUI.Clear(transform);safe=DemoUI.Fill(transform,"obj_safe_area");
-            var header=DemoUI.Image(safe,"bg_header",null,0,315,1216,66);header.color=new Color(.04f,.14f,.12f,.88f);
-            DemoUI.Text(header.transform,"txt_cup","프론테라컵",-447,0,280,55,29,DemoUI.Paper,TextAnchor.MiddleLeft,true);
-            remaining=DemoUI.Text(header.transform,"txt_distance","",340,0,470,55,26,DemoUI.Paper,TextAnchor.MiddleRight);
-            var rankPanel=DemoUI.Image(safe,"bg_standings",null,-509,133,206,275);rankPanel.color=new Color(.04f,.14f,.12f,.78f);
-            standings=DemoUI.Text(rankPanel.transform,"txt_standings","",0,0,183,252,21,DemoUI.Paper,TextAnchor.MiddleLeft);
-            var footer=DemoUI.Image(safe,"bg_footer",null,0,-296,1216,106);footer.color=new Color(.04f,.14f,.12f,.9f);
-            DemoUI.Image(footer.transform,"img_hero",Monster.Id+"_face",-550,0,84,84,true);
-            rank=DemoUI.Text(footer.transform,"txt_rank","",-425,17,160,53,32,DemoUI.Paper);
-            DemoUI.Text(footer.transform,"txt_name",Monster.Name,-425,-29,190,35,18,DemoUI.Paper);
-            commentary=DemoUI.Text(footer.transform,"txt_commentary",latest,7,11,600,65,24,DemoUI.Paper);
-            if (FindFirstObjectByType<Sys_RacePresentation>() != null)
-                commentaryFeed = UIItem_RaceCommentary.Create(race, commentary);
-            var track=DemoUI.Image(footer.transform,"bg_stamina","gauge_bg",2,-34,456,13);
-            stamina=DemoUI.Image(footer.transform,"img_stamina","gauge_1",2,-34,456,11);stamina.type=UnityEngine.UI.Image.Type.Filled;stamina.fillMethod=UnityEngine.UI.Image.FillMethod.Horizontal;
-            speedLabel=DemoUI.Button(footer.transform,"btn_speed","1×",374,11,90,52,()=>race.PlaybackSpeed=race.PlaybackSpeed>1?1:2).GetComponentInChildren<UnityEngine.UI.Text>();
-            pauseLabel=DemoUI.Button(footer.transform,"btn_pause","정지",478,11,80,52,()=>race.Paused=!race.Paused).GetComponentInChildren<UnityEngine.UI.Text>();
-            DemoUI.Button(footer.transform,"btn_skip","결과",559,11,76,52,()=>{CancelComic();race.SkipToResult();});
-            DemoUI.Button(safe,"btn_lobby","로비",535,230,136,45,()=>{CancelComic();Mgr_User.Data.RaceInProgress=false;Mgr_User.Save();Mgr_Game.Instance.Go(Define_Scene.Lobby);},false);
-            DemoUI.Button(safe,"btn_cutscene","연출 ON",379,230,148,45,()=>{CutscenesEnabled=!CutscenesEnabled;safe.Find("btn_cutscene/txt_label").GetComponent<UnityEngine.UI.Text>().text=cutscenes?"연출 ON":"연출 OFF";},false);
-            countdown=DemoUI.Text(safe,"txt_countdown","",0,20,800,150,88,DemoUI.Paper,TextAnchor.MiddleCenter,true);
-            countdown.gameObject.AddComponent<UnityEngine.UI.Shadow>().effectDistance=new Vector2(3,-4);
-            comic=DemoUI.Fill(safe,"group_comic");comic.gameObject.SetActive(false);
-            BuildVideo();
-            result=DemoUI.Fill(safe,"group_result");result.gameObject.SetActive(false);
+            if (!opened) return;
+            opened = false;
+            Mgr_Event.RaceChanged -= Handle;
+            Mgr_Event.Reset -= CancelComic;
+            UnbindButtons();
+            CancelSkillPresentation();
         }
+
+        private void BindButtons()
+        {
+            SpeedButton.onClick.AddListener(ToggleSpeed);
+            PauseButton.onClick.AddListener(TogglePause);
+            ResultButton.onClick.AddListener(SkipToResult);
+            LobbyButton.onClick.AddListener(ReturnToLobby);
+            CutsceneButton.onClick.AddListener(ToggleCutscenes);
+            ComicSkipButton.onClick.AddListener(CancelComic);
+            ReplayButton.onClick.AddListener(Replay);
+            EndDemoButton.onClick.AddListener(EndDemo);
+            VideoSkipButton.onClick.AddListener(SkipVideo);
+            VideoPauseButton.onClick.AddListener(TogglePause);
+        }
+
+        private void UnbindButtons()
+        {
+            SpeedButton.onClick.RemoveListener(ToggleSpeed);
+            PauseButton.onClick.RemoveListener(TogglePause);
+            ResultButton.onClick.RemoveListener(SkipToResult);
+            LobbyButton.onClick.RemoveListener(ReturnToLobby);
+            CutsceneButton.onClick.RemoveListener(ToggleCutscenes);
+            ComicSkipButton.onClick.RemoveListener(CancelComic);
+            ReplayButton.onClick.RemoveListener(Replay);
+            EndDemoButton.onClick.RemoveListener(EndDemo);
+            VideoSkipButton.onClick.RemoveListener(SkipVideo);
+            VideoPauseButton.onClick.RemoveListener(TogglePause);
+        }
+
+        private void ToggleSpeed() => race.PlaybackSpeed = race.PlaybackSpeed > 1 ? 1 : 2;
+        private void TogglePause() => race.Paused = !race.Paused;
+        private void ToggleCutscenes() => CutscenesEnabled = !CutscenesEnabled;
+        private void SkipToResult() { CancelSkillPresentation(); race.SkipToResult(); }
+        private void ReturnToLobby()
+        {
+            CancelSkillPresentation();
+            Mgr_User.Data.RaceInProgress = false;
+            Mgr_User.Save();
+            Mgr_Game.Instance.Go(Define_Scene.Lobby);
+        }
+        private void Replay() => Mgr_Game.Instance.Replay();
+        private void EndDemo() => Mgr_Game.Instance.Go(Define_Scene.Title);
+
         private void Handle(Data_RaceEvent value)
         {
-            if(race==null||race.IsSkipping)return;
-            if(value.Kind==E_RaceEvent.Skill&&value.RunnerId==Hero)
+            if (race == null || race.IsSkipping) return;
+            if (value.Kind == E_RaceEvent.Skill && value.RunnerId == Hero)
             {
-                latest=Monster.Skill+"! 고유 능력 자동 발동";latestUntil=(float)race.Simulation.Time+5;
-                if(cutscenes)
+                latest = Monster.Skill + "! 고유 능력 자동 발동";
+                latestUntil = (float)race.Simulation.Time + 5;
+                if (cutscenes)
                 {
-                    bool second=race.Simulation.Runners[Hero].SkillActivationCount==2;
-                    if(second&&skillVideo!=null&&skillVideo.TryPlay())return;
+                    bool second = race.Simulation.Runners[Hero].SkillActivationCount == 2;
+                    if (second && skillVideo != null && skillVideo.TryPlay()) return;
                     PlayComicFallback();
                 }
             }
-            else if(value.Kind==E_RaceEvent.Overtake&&value.RunnerId==Hero){latest=Monster.Name+"! 앞 대열을 돌파합니다!";latestUntil=value.Time+3;}
+            else if (value.Kind == E_RaceEvent.Overtake && value.RunnerId == Hero)
+            {
+                latest = Monster.Name + "! 앞 대열을 돌파합니다!";
+                latestUntil = value.Time + 3;
+            }
         }
+
         private void LateUpdate()
         {
-            if(race==null||race.Simulation==null)return;FitRuntimePanel();DemoUI.SafeArea(safe);
+            if (!opened || race == null || race.Simulation == null) return;
+            DemoUI.SafeArea(SafeArea);
             UpdateVideoControls();
-            if(generation!=race.Generation){generation=race.Generation;CancelComic();result.gameObject.SetActive(false);}
-            var sim=race.Simulation;var hero=sim.Runners[Hero];
-            rank.text=hero.Rank+"위 / "+sim.Runners.Length;
-            remaining.text="남은 거리  "+Mathf.CeilToInt(Mathf.Max(0,sim.CourseLength-(float)hero.Distance))+"m";
-            speedLabel.text=race.PlaybackSpeed>1?"2×":"1×";
-            pauseLabel.text=race.Paused?"재개":"정지";
-            stamina.fillAmount=hero.Stamina;
-            countdown.text=race.Countdown>0?Mathf.CeilToInt(race.Countdown).ToString():sim.Time<1?"START!":"";
-            string ranks="";for(int i=0;i<sim.Order.Length;i++){int id=sim.Order[i];ranks+=(id==Hero?"<color=#FFE99A>":"")+(i+1)+"  "+race.Entrants[id].Name+(id==Hero?" ◀</color>":"")+"\n";}standings.text=ranks;
-            if (commentaryFeed == null) commentary.text=race.Paused?"잠시 쉬어가기":(float)sim.Time<latestUntil?latest:hero.SkillUsed?"결승선까지, 한 걸음 더!":sim.Time<8?Monster.Tactic+" 전술로 대열을 잡습니다":hero.BlockedBy>=0?"앞 주자를 피해 빈틈을 찾고 있어요":"힘을 아끼며 기회를 기다립니다";
-            if(comicAge>=0&&!race.Paused)
+            if (generation != race.Generation)
             {
-                comicAge+=Mathf.Min(Time.unscaledDeltaTime,.1f);AnimateComic();
-                if(comicAge>=(minorousComic!=null?UIItem_MinorousComic.Duration:heroComic!=null?UIItem_DemoHeroComic.Duration:0))CancelComic();
+                generation = race.Generation;
+                CancelComic();
+                ResultRoot.gameObject.SetActive(false);
             }
-            if(sim.Phase==E_RacePhase.Result&&!result.gameObject.activeSelf)ShowResult();
+            var sim = race.Simulation;
+            var hero = sim.Runners[Hero];
+            RankLabel.text = hero.Rank + "위 / " + sim.Runners.Length;
+            RemainingLabel.text = "남은 거리  " + Mathf.CeilToInt(Mathf.Max(0, sim.CourseLength - (float)hero.Distance)) + "m";
+            SpeedLabel.text = race.PlaybackSpeed > 1 ? "2×" : "1×";
+            PauseLabel.text = race.Paused ? "재개" : "정지";
+            StaminaImage.fillAmount = hero.Stamina;
+            CountdownLabel.text = race.Countdown > 0 ? Mathf.CeilToInt(race.Countdown).ToString() : sim.Time < 1 ? "START!" : "";
+            string ranks = "";
+            for (int i = 0; i < sim.Order.Length; i++)
+            {
+                int id = sim.Order[i];
+                ranks += (id == Hero ? "<color=#FFE99A>" : "") + (i + 1) + "  " + race.Entrants[id].Name + (id == Hero ? " ◀</color>" : "") + "\n";
+            }
+            StandingsLabel.text = ranks;
+            if (!CommentaryFeed.isActiveAndEnabled)
+                CommentaryLabel.text = race.Paused ? "잠시 쉬어가기" : (float)sim.Time < latestUntil ? latest : hero.SkillUsed ? "결승선까지, 한 걸음 더!" : sim.Time < 8 ? Monster.Tactic + " 전술로 대열을 잡습니다" : hero.BlockedBy >= 0 ? "앞 주자를 피해 빈틈을 찾고 있어요" : "힘을 아끼며 기회를 기다립니다";
+            if (comicAge >= 0 && !race.Paused)
+            {
+                comicAge += Mathf.Min(Time.unscaledDeltaTime, .1f);
+                AnimateComic();
+                if (comicAge >= (minorousComic != null ? UIItem_MinorousComic.Duration : heroComic != null ? UIItem_DemoHeroComic.Duration : 0)) CancelComic();
+            }
+            if (sim.Phase == E_RacePhase.Result && !ResultRoot.gameObject.activeSelf) ShowResult();
         }
-        private void FitRuntimePanel()
-        {
-            var canvas=GetComponentInParent<Canvas>();
-            if(canvas==null)return;
-            var rect=(RectTransform)transform;
-            rect.anchorMin=rect.anchorMax=new Vector2(.5f,.5f);
-            rect.anchoredPosition=Vector2.zero;
-            rect.sizeDelta=new Vector2(Screen.width,Screen.height)/Mathf.Max(.001f,canvas.scaleFactor);
-        }
+
         private void StartComic()
         {
-            DemoUI.Clear(comic);comic.gameObject.SetActive(true);comicAge=0;
-            minorousComic=null;
-            heroComic=null;
-            if(Monster.Id=="Minorous")
-                minorousComic=UIItem_MinorousComic.Create(comic);
-            else if(Monster.Id=="Poring"||Monster.Id=="Eddga")
-                heroComic=UIItem_DemoHeroComic.Create(comic,Monster.Id,Monster.Skill);
-            // Both demo arenas use only the approved character comics.
-            if(minorousComic==null&&heroComic==null)
+            // Only animated character content is transient; authored controls are never cleared.
+            DemoUI.Clear(ComicContent);
+            ComicRoot.gameObject.SetActive(true);
+            comicAge = 0;
+            minorousComic = null;
+            heroComic = null;
+            if (Monster.Id == "Minorous") minorousComic = UIItem_MinorousComic.Create(ComicContent);
+            else if (Monster.Id == "Poring" || Monster.Id == "Eddga")
+                heroComic = UIItem_DemoHeroComic.Create(ComicContent, Monster.Id, Monster.Skill);
+            if (minorousComic == null && heroComic == null)
             {
                 Debug.LogWarning("Demo comic resources are missing for " + Monster.Id, this);
                 CancelComic();
                 return;
             }
-            var skip=DemoUI.Button(comic,"btn_skip_comic","연출 건너뛰기",-145,31,245,46,CancelComic,false);
-            var skipRect=(RectTransform)skip.transform;skipRect.anchorMin=skipRect.anchorMax=new Vector2(1,0);
             Mgr_Sound.PlayAccent(true);
         }
+
         private void AnimateComic()
         {
-            if(minorousComic!=null)minorousComic.Evaluate(comicAge);
-            else if(heroComic!=null)heroComic.Evaluate(comicAge);
+            if (minorousComic != null) minorousComic.Evaluate(comicAge);
+            else if (heroComic != null) heroComic.Evaluate(comicAge);
         }
+
         public void CancelComic()
         {
-            comicAge=-1;if(comic!=null)comic.gameObject.SetActive(false);if(race!=null)race.ReleasePresentationHold(this);
+            comicAge = -1;
+            if (ComicRoot != null) ComicRoot.gameObject.SetActive(false);
+            if (race != null) race.ReleasePresentationHold(this);
         }
+
         public void PlayComicFallback()
         {
-            if(cutscenes&&isActiveAndEnabled&&!race.IsSkipping&&race.Simulation.Phase!=E_RacePhase.Result
-                &&race.AcquirePresentationHold(this))StartComic();
+            if (opened && cutscenes && isActiveAndEnabled && !race.IsSkipping && race.Simulation.Phase != E_RacePhase.Result
+                && race.AcquirePresentationHold(this)) StartComic();
         }
+
         private void ShowResult()
         {
-            CancelComic();DemoUI.Clear(result);result.gameObject.SetActive(true);
-            DemoUI.Shade(result,"bg_result_dim",new Color(.03f,.10f,.08f,.78f)).raycastTarget=true;
-            var panel=DemoUI.Panel(result,"group_result_card",1060,580);var hero=race.Simulation.Runners[Hero];
-            DemoUI.Text(panel,"txt_title",hero.Rank==1?"프론테라컵 우승!":"프론테라컵 완주!",0,224,940,75,45,DemoUI.Green,TextAnchor.MiddleCenter,true);
-            DemoUI.Image(panel,"img_winner",Monster.Id+"_body",-316,-5,305,350,true);
-            DemoUI.Text(panel,"txt_name",Monster.Name,164,123,550,65,38);
-            DemoUI.Text(panel,"txt_summary",hero.Rank+"위  ·  "+hero.FinishTime.ToString("0.00")+"초\nLv.5  ·  스피드 "+(Monster.Stats[0]+Mgr_User.Data.Monsters[Mgr_User.Data.SelectedMonster].SpeedBonus)+"\n전술  "+Monster.Tactic+"\n고유  "+Monster.Skill+"\n후천  지치지 않는 발",164,-26,560,224,25,DemoUI.Ink,TextAnchor.MiddleLeft);
-            DemoUI.Button(panel,"btn_new_session","처음부터 다시 체험",-197,-226,390,64,()=>Mgr_Game.Instance.Replay());
-            DemoUI.Button(panel,"btn_end_demo","데모 종료",248,-226,310,64,()=>Mgr_Game.Instance.Go(Define_Scene.Title),false);
+            CancelSkillPresentation();
+            var hero = race.Simulation.Runners[Hero];
+            ResultTitle.text = hero.Rank == 1 ? "프론테라컵 우승!" : "프론테라컵 완주!";
+            ResultHero.sprite = DemoUI.Art.Get(Monster.Id + "_body");
+            ResultName.text = Monster.Name;
+            ResultSummary.text = hero.Rank + "위  ·  " + hero.FinishTime.ToString("0.00") + "초\nLv.5  ·  스피드 "
+                + (Monster.Stats[0] + Mgr_User.Data.Monsters[Mgr_User.Data.SelectedMonster].SpeedBonus)
+                + "\n전술  " + Monster.Tactic + "\n고유  " + Monster.Skill + "\n후천  지치지 않는 발";
+            ResultRoot.gameObject.SetActive(true);
         }
     }
 }

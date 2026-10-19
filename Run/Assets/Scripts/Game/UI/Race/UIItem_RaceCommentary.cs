@@ -11,7 +11,9 @@ namespace ProjectRun.Race
         [SerializeField, Min(1)] private float HoldSeconds = 8;
         [SerializeField, Min(.1f)] private float FadeSeconds = 1.8f;
         [SerializeField, Min(.1f)] private float OverflowFadeSeconds = .45f;
-        private const float LineSpacing = 24;
+        [SerializeField, Min(1), Tooltip("중계 문구가 위로 이동할 때의 줄 간격")]
+        private float LineSpacing = 24;
+        private Vector2 lineOrigin;
         private sealed class Row
         {
             public UnityEngine.UI.Text Label;
@@ -29,6 +31,7 @@ namespace ProjectRun.Race
 
         public static UIItem_RaceCommentary Create(Sys_Race race, UnityEngine.UI.Text template)
         {
+            const float lineSpacing = 24;
             var source = template.rectTransform;
             var root = new GameObject("group_commentary_lines", typeof(RectTransform));
             var rect = (RectTransform)root.transform;
@@ -48,8 +51,8 @@ namespace ProjectRun.Race
                 label.text = "";
                 var line = label.rectTransform;
                 line.anchorMin = line.anchorMax = new Vector2(.5f, 0);
-                line.pivot = new Vector2(.5f, 0); line.sizeDelta = new Vector2(rect.rect.width, LineSpacing);
-                line.anchoredPosition = new Vector2(0, i * LineSpacing);
+                line.pivot = new Vector2(.5f, 0); line.sizeDelta = new Vector2(rect.rect.width, lineSpacing);
+                line.anchoredPosition = new Vector2(0, i * lineSpacing);
                 lines[i] = label;
             }
             template.enabled = false;
@@ -97,6 +100,7 @@ namespace ProjectRun.Race
             if (Race == null || Race.Simulation == null || Lines == null || Lines.Length != 3) return;
             if (pool == null)
             {
+                lineOrigin = Lines[0].rectTransform.anchoredPosition;
                 pool = new Row[Lines.Length];
                 for (int i = 0; i < pool.Length; i++) pool[i] = new Row { Label = Lines[i], Tint = Lines[i].color };
             }
@@ -132,7 +136,7 @@ namespace ProjectRun.Race
                 {
                     if (visible.Contains(row)) continue;
                     row.Age = row.Retirement = row.Alpha = 0; row.Retiring = false;
-                    row.Label.text = pending.Dequeue(); row.Label.rectTransform.anchoredPosition = Vector2.zero;
+                    row.Label.text = pending.Dequeue(); row.Label.rectTransform.anchoredPosition = lineOrigin;
                     visible.Add(row); insertCooldown = .3f; break;
                 }
             }
@@ -147,7 +151,7 @@ namespace ProjectRun.Race
                 row.Alpha = row.Retiring || row.Age > HoldSeconds ? Mathf.Min(row.Alpha, targetAlpha) : Mathf.MoveTowards(row.Alpha, targetAlpha, delta * 5);
                 var tint = row.Tint; tint.a *= row.Alpha; row.Label.color = tint;
                 var point = row.Label.rectTransform.anchoredPosition;
-                point.y = Mathf.Lerp(point.y, depth * LineSpacing, 1 - Mathf.Exp(-14 * delta));
+                point.y = Mathf.Lerp(point.y, lineOrigin.y + depth * LineSpacing, 1 - Mathf.Exp(-14 * delta));
                 row.Label.rectTransform.anchoredPosition = point;
             }
         }

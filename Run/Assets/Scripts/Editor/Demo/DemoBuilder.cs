@@ -163,8 +163,8 @@ namespace ProjectRun.Race.Editor
             if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop play mode first.");
             if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty)throw new InvalidOperationException("Preserve unsaved scene edits before installing.");
             InstallScene(Define_Scene.Title,true);InstallScene(Define_Scene.Lobby,false);
-            var racePanel=new GameObject("UIPanel_DemoRace",typeof(RectTransform));racePanel.SetActive(false);racePanel.AddComponent<UIPanel_DemoRace>();
-            PrefabUtility.SaveAsPrefabAsset(racePanel,"Assets/Resources/Prefabs/UI/Panel/UIPanel_DemoRace.prefab");UnityEngine.Object.DestroyImmediate(racePanel);
+            // Keep the designer-authored race HUD when reinstalling the demo scenes.
+            DemoRacePrefabBuilder.EnsurePrefab();
             var scenes=EditorBuildSettings.scenes.ToList();
             foreach(string name in new[]{Define_Scene.Title,Define_Scene.Lobby,Define_Scene.OvalToon,Define_Scene.Sprite2D})
             {
