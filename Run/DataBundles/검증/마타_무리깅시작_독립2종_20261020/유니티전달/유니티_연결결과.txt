@@ -1,0 +1,36 @@
+Unity 카툰테스트 마타 추가 (2026-10-20)
+
+대상 씬: Assets/Scenes/Scene_CartoonTest.unity
+추가 항목: 18번째, 마타 · 새 리깅 갤럽
+씬 루트: obj_monster_lineup/V_Cartoon_MatyrIndependent
+배치: (15.3, 0.18, 16), 마지막 줄 오른쪽의 별도 발판.
+기존 17종과 기존 무대/버튼/스크립트는 보존.
+
+적용 모델: 마지막 Blender 버전인 좌우 시간차 강조 갤럽.
+트리포 뼈가 아닌 메시에서 새로 만든 24개 뼈와 새 스키닝을 사용.
+애니메이션: Generic, 30fps, 18프레임/0.6초 반복. 한 주기만 FBX로 내보냄.
+Unity에서는 선형 스키닝으로 재생하며 Blender의 부피 보존 스키닝과 변형이 일부 다를 수 있음.
+
+추가 리소스
+- Assets/ArtBundles/Characters/MatyrIndependent/Models/Matyr_Independent_Gallop.fbx
+- Assets/ArtBundles/Characters/MatyrIndependent/Textures/Matyr_Albedo.jpg
+- Assets/ArtBundles/Characters/MatyrIndependent/Materials/Matyr_Surface.mat
+- Assets/ArtBundles/Characters/MatyrIndependent/Animations/Matyr_Idle.anim (정지 대기)
+- Assets/ArtBundles/Characters/MatyrIndependent/Animations/Matyr_Run.anim
+- Assets/Resources/Prefabs/Race/IndependentMonsters/P_Runner_MatyrIndependent.prefab
+
+씬 기능 연결
+- 대기/달리기, 이전/다음, 전체보기, 회전: 기존 Sys_CartoonShowcase에 전시 항목을 등록.
+- 원본 비교: LegacyURP의 기존 마타 프리팹과 원본 대기/달리기를 연결.
+- 별도 런타임/에디터 C# 스크립트는 추가하거나 수정하지 않음. 작업용 실행 코드는 작업기록에 보존.
+
+검증
+- 활성 Unity Run 프로젝트/카툰테스트 씬/Edit Mode를 확인한 뒤 진행.
+- 추가 전 씬을 내부 Unity 경로 유지 상태로 추가전백업에 복사.
+- FBX 임포트, 24개 뼈, Generic Avatar, 루프 클립 0.6초 확인.
+- Play 진입, 새 마타 개별 보기와 달리기 재생을 Game 카메라 캡처로 확인.
+- 원본 전환/복귀와 대기/달리기 전환 실행 확인 후 새 마타 달리기로 복귀.
+- 마타 관련 Console error/warning 조회.
+- 프로젝트 기존 AI 생성기 NoSubscription 오류는 본 작업과 무관한 기존 로그로 관찰됨.
+- 사용자에게 전달할 때 Play 상태로 새 마타에 포커스. 전체보기 버튼으로 18종을 볼 수 있음.
+- 씬과 에셋은 저장. 커밋/푸시는 수행하지 않음.

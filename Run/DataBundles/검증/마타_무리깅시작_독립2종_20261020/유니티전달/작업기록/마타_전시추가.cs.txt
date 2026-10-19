@@ -1,0 +1,78 @@
+var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+if (scene.path != "Assets/Scenes/Scene_CartoonTest.unity" || UnityEditor.EditorApplication.isPlaying) throw new System.InvalidOperationException("Open CartoonTest in Edit Mode.");
+var sys = UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.Sys_CartoonShowcase>();
+foreach (var entry in sys.Exhibits) if (entry.Root.name == "V_Cartoon_MatyrIndependent") throw new System.InvalidOperationException("Matyr already added.");
+string art = "Assets/ArtBundles/Characters/MatyrIndependent";
+string modelPath = art + "/Models/Matyr_Independent_Gallop.fbx";
+string prefabPath = "Assets/Resources/Prefabs/Race/IndependentMonsters/P_Runner_MatyrIndependent.prefab";
+System.IO.Directory.CreateDirectory("Assets/Resources/Prefabs/Race/IndependentMonsters");
+UnityEditor.AssetDatabase.Refresh();
+var texture = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Texture2D>(art+"/Textures/Matyr_Albedo.jpg");
+var surface = new UnityEngine.Material(UnityEngine.Shader.Find("Universal Render Pipeline/Lit"));
+surface.name="Matyr_Independent_Surface";
+surface.SetTexture("_BaseMap",texture);surface.SetColor("_BaseColor",UnityEngine.Color.white);surface.SetFloat("_Metallic",0);surface.SetFloat("_Smoothness",.12f);
+UnityEditor.AssetDatabase.CreateAsset(surface,art+"/Materials/Matyr_Surface.mat");
+UnityEngine.AnimationClip importedRun=null;
+foreach(var asset in UnityEditor.AssetDatabase.LoadAllAssetsAtPath(modelPath)) if(asset is UnityEngine.AnimationClip && asset.name=="Matyr_Independent_Run") importedRun=(UnityEngine.AnimationClip)asset;
+if(importedRun==null)throw new System.InvalidOperationException("Run clip missing");
+var run=UnityEngine.Object.Instantiate(importedRun);run.name="Matyr_Independent_Run";run.events=new UnityEngine.AnimationEvent[0];
+var runSettings=UnityEditor.AnimationUtility.GetAnimationClipSettings(run);runSettings.loopTime=true;UnityEditor.AnimationUtility.SetAnimationClipSettings(run,runSettings);
+UnityEditor.AssetDatabase.CreateAsset(run,art+"/Animations/Matyr_Run.anim");
+var preview=UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+var root=new UnityEngine.GameObject("P_Runner_MatyrIndependent");UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root,preview);
+var model=UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(modelPath),root.transform,false);model.name="obj_model";
+var animator=model.GetComponent<UnityEngine.Animator>();if(animator==null)animator=model.AddComponent<UnityEngine.Animator>();
+animator.runtimeAnimatorController=null;animator.applyRootMotion=false;animator.fireEvents=false;animator.cullingMode=UnityEngine.AnimatorCullingMode.AlwaysAnimate;
+foreach(var skin in model.GetComponentsInChildren<UnityEngine.SkinnedMeshRenderer>(true)){skin.sharedMaterial=surface;skin.updateWhenOffscreen=true;skin.quality=UnityEngine.SkinQuality.Bone4;}
+var idle=new UnityEngine.AnimationClip();idle.name="Matyr_Independent_Idle";idle.frameRate=30;
+System.Action<string,string,float> constant=(path,property,value)=>idle.SetCurve(path,typeof(UnityEngine.Transform),property,UnityEngine.AnimationCurve.Constant(0,1,value));
+foreach(var t in model.GetComponentsInChildren<UnityEngine.Transform>(true)){
+ string p=UnityEditor.AnimationUtility.CalculateTransformPath(t,model.transform);var pos=t.localPosition;var rot=t.localRotation;var scale=t.localScale;
+ constant(p,"localPosition.x",pos.x);constant(p,"localPosition.y",pos.y);constant(p,"localPosition.z",pos.z);
+ constant(p,"localRotation.x",rot.x);constant(p,"localRotation.y",rot.y);constant(p,"localRotation.z",rot.z);constant(p,"localRotation.w",rot.w);
+ constant(p,"localScale.x",scale.x);constant(p,"localScale.y",scale.y);constant(p,"localScale.z",scale.z);
+}
+var idleSettings=UnityEditor.AnimationUtility.GetAnimationClipSettings(idle);idleSettings.loopTime=true;UnityEditor.AnimationUtility.SetAnimationClipSettings(idle,idleSettings);
+UnityEditor.AssetDatabase.CreateAsset(idle,art+"/Animations/Matyr_Idle.anim");
+var view=root.AddComponent<ProjectRun.Race.RaceRunnerView>();view.enabled=false;view.MountAnimator=animator;view.MountRoot=model.transform;view.IdleClip=idle;view.RunClip=run;view.Trails=new UnityEngine.TrailRenderer[0];
+var focus=new UnityEngine.GameObject("obj_camera_target").transform;focus.SetParent(root.transform,false);focus.localPosition=new UnityEngine.Vector3(0,.45f,0);view.CameraTarget=view.FaceTarget=view.MonsterFaceTarget=focus;
+var prefab=UnityEditor.PrefabUtility.SaveAsPrefabAsset(root,prefabPath);
+UnityEngine.Object.DestroyImmediate(root);UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(preview);
+System.Func<UnityEngine.GameObject,UnityEngine.Bounds> boundsOf=(go)=>{
+ var b=new UnityEngine.Bounds();bool first=true;var baked=new UnityEngine.Mesh();
+ foreach(var skin in go.GetComponentsInChildren<UnityEngine.SkinnedMeshRenderer>(true)){
+  if(!skin.gameObject.activeInHierarchy || !skin.enabled)continue;
+  skin.BakeMesh(baked,true);foreach(var vertex in baked.vertices){var p=skin.transform.TransformPoint(vertex);if(first){b=new UnityEngine.Bounds(p,UnityEngine.Vector3.zero);first=false;}else b.Encapsulate(p);}
+ }
+ UnityEngine.Object.DestroyImmediate(baked);return b;
+};
+var wrapper=new UnityEngine.GameObject("V_Cartoon_MatyrIndependent");UnityEditor.Undo.RegisterCreatedObjectUndo(wrapper,"Add independent Matyr");wrapper.transform.SetParent(UnityEngine.GameObject.Find("obj_monster_lineup").transform,false);
+wrapper.transform.position=new UnityEngine.Vector3(15.3f,.18f,16);
+var instance=(UnityEngine.GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab,wrapper.transform);
+var instAnimator=instance.GetComponentInChildren<UnityEngine.Animator>(true);
+idle.SampleAnimation(instAnimator.gameObject,0);
+var bounds=boundsOf(instance);float factor=UnityEngine.Mathf.Min(3.05f/UnityEngine.Mathf.Max(bounds.size.x,bounds.size.y),3.8f/bounds.size.z);instance.transform.localScale*=factor;
+bounds=boundsOf(instance);instance.transform.position+=new UnityEngine.Vector3(15.3f-bounds.center.x,.18f-bounds.min.y,16-bounds.center.z);
+wrapper.transform.rotation=UnityEngine.Quaternion.Euler(0,160,0);
+bounds=boundsOf(instance);
+var exhibit=new ProjectRun.Race.Data_CartoonExhibit();exhibit.Name="마타 · 새 리깅 갤럽";exhibit.Root=wrapper.transform;exhibit.CartoonRoot=instance.transform;exhibit.Animator=instAnimator;exhibit.Idle=idle;exhibit.Run=run;exhibit.Focus=bounds.center;exhibit.Radius=UnityEngine.Mathf.Max(bounds.extents.x,bounds.extents.y,bounds.extents.z);
+var originalPrefab=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>("Assets/ArtBundles/LegacyURP/Monsters/Prefabs/morocc_mob/M_matyr_001_pawn.prefab");
+var origPreview=UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+var original=(UnityEngine.GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(originalPrefab,origPreview);
+foreach(var r in original.GetComponentsInChildren<UnityEngine.Renderer>(true))if(r.name=="shadow")r.gameObject.SetActive(false);
+var originalAnimator=original.GetComponentInChildren<UnityEngine.Animator>(true);
+foreach(var c in originalAnimator.runtimeAnimatorController.animationClips){if(c.name.EndsWith("_stand_01"))exhibit.OriginalIdle=c;if(c.name.EndsWith("_run_01"))exhibit.OriginalRun=c;}
+if(exhibit.OriginalIdle==null||exhibit.OriginalRun==null)throw new System.InvalidOperationException("Original clips missing");
+originalAnimator.runtimeAnimatorController=null;exhibit.OriginalIdle.SampleAnimation(originalAnimator.gameObject,.15f);
+var originalBounds=boundsOf(original);float origScale=UnityEngine.Mathf.Min(3.05f/UnityEngine.Mathf.Max(originalBounds.size.x,originalBounds.size.y),3.8f/originalBounds.size.z);original.transform.localScale*=origScale;
+originalBounds=boundsOf(original);original.transform.position-=new UnityEngine.Vector3(originalBounds.center.x,originalBounds.min.y,originalBounds.center.z);
+exhibit.OriginalPrefab=originalPrefab;exhibit.OriginalPosition=original.transform.localPosition;exhibit.OriginalRotation=original.transform.localRotation;exhibit.OriginalScale=original.transform.localScale;
+UnityEngine.Object.DestroyImmediate(original);UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(origPreview);
+var stage=UnityEngine.GameObject.Find("obj_stage").transform;
+var plinth=UnityEngine.GameObject.CreatePrimitive(UnityEngine.PrimitiveType.Cube);plinth.name="obj_plinth_MatyrIndependent";plinth.transform.SetParent(stage,false);plinth.transform.position=new UnityEngine.Vector3(15.3f,.05f,16);plinth.transform.localScale=new UnityEngine.Vector3(4.65f,.22f,5.4f);plinth.GetComponent<UnityEngine.Renderer>().sharedMaterial=UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Material>("Assets/ArtBundles/CartoonTest/Materials/NewPlinth.mat");
+var labelSource=stage.GetComponentInChildren<UnityEngine.TextMesh>();var label=UnityEngine.Object.Instantiate(labelSource.gameObject,stage);label.name="txt_name_MatyrIndependent";label.transform.position=new UnityEngine.Vector3(15.3f,.25f,13.58f);label.GetComponent<UnityEngine.TextMesh>().text="마타 · 새 리깅 갤럽";
+UnityEditor.Undo.RecordObject(sys,"Register independent Matyr exhibit");var entries=new System.Collections.Generic.List<ProjectRun.Race.Data_CartoonExhibit>(sys.Exhibits);entries.Add(exhibit);sys.Exhibits=entries.ToArray();var labels=new System.Collections.Generic.List<UnityEngine.GameObject>(sys.NameLabels);labels.Add(label);sys.NameLabels=labels.ToArray();
+if(sys.Status!=null)sys.Status.text="전체 "+sys.Exhibits.Length+"종 · 카툰 · 대기";
+UnityEditor.EditorUtility.SetDirty(sys);UnityEditor.AssetDatabase.SaveAssets();UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
+UnityEditor.Selection.activeGameObject=wrapper;
+return "Added " + exhibit.Name + " as exhibit " + sys.Exhibits.Length + "; run="+run.length+" sec; height="+bounds.size.y+"; bones="+instance.GetComponentInChildren<UnityEngine.SkinnedMeshRenderer>().bones.Length;
