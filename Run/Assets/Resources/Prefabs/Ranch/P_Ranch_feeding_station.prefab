@@ -155,7 +155,7 @@ Transform:
   m_Children:
   - {fileID: 84710548715609806}
   - {fileID: 252981108688595507}
-  - {fileID: 5960949264476062546}
+  - {fileID: 2225969591537904691}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &6697277362843777176
@@ -194,10 +194,11 @@ MonoBehaviour:
   Activity: 3
   Entry: {x: 0, y: 0.05, z: -1.85}
   ActionPoint: {x: 0, y: 0.05, z: -1.3}
+  EntryPoints: []
   Facing: {x: 0, y: 0, z: 1}
   TrackPoints: []
   Duration: 5
---- !u!1 &6987019024220072787
+--- !u!1 &7200924601402261993
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -205,9 +206,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5960949264476062546}
-  - component: {fileID: 6782300218070755518}
-  - component: {fileID: 2616648035928462861}
+  - component: {fileID: 2225969591537904691}
+  - component: {fileID: 6133258390167494145}
+  - component: {fileID: 1340217150673641393}
   m_Layer: 0
   m_Name: obj_entrance_path
   m_TagString: Untagged
@@ -215,13 +216,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5960949264476062546
+--- !u!4 &2225969591537904691
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6987019024220072787}
+  m_GameObject: {fileID: 7200924601402261993}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -230,21 +231,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8675333288748049240}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6782300218070755518
+--- !u!33 &6133258390167494145
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6987019024220072787}
+  m_GameObject: {fileID: 7200924601402261993}
   m_Mesh: {fileID: 4300000, guid: 65a82ca218d9f884fab8c6420f78cc07, type: 2}
---- !u!23 &2616648035928462861
+--- !u!23 &1340217150673641393
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6987019024220072787}
+  m_GameObject: {fileID: 7200924601402261993}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 1

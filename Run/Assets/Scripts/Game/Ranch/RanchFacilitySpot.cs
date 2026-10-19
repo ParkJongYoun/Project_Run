@@ -10,6 +10,7 @@ namespace ProjectRun.Ranch
         public E_RanchActivity Activity;
         public Vector3 Entry;
         public Vector3 ActionPoint;
+        public Vector3[] EntryPoints;
         public Vector3 Facing = Vector3.forward;
         public Vector3[] TrackPoints;
         public float Duration = 6;

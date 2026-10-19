@@ -18,6 +18,8 @@ Shader "ProjectRun/Ranch/FlowingWater"
         _FillStrength("Additional light response", Range(0,1)) = .5
         _RimPower("Rim tightness", Range(1,8)) = 3
         _Cutoff("Alpha cutoff", Range(0,1)) = .01
+        _WaterMotionStrength("Water motion strength", Range(0,2)) = .65
+        _WaterMotionSpeed("Water motion speed", Range(.1,4)) = 1
         [Toggle] _AlphaClip("Alpha clipping", Float) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
@@ -35,6 +37,7 @@ Shader "ProjectRun/Ranch/FlowingWater"
         half4 _BaseColor, _ShadeColor, _RimColor;
         half _Threshold, _Softness, _Specular, _Gloss, _RimStrength, _Cutoff, _AlphaClip, _Cull;
         half _AmbientStrength, _FillStrength, _RimPower, _AlbedoPower, _BumpScale;
+        half _WaterMotionStrength, _WaterMotionSpeed;
         CBUFFER_END
         struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; float4 tangentOS:TANGENT; };
         struct Varyings { float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; half3 normalWS : TEXCOORD1; float2 uv : TEXCOORD2; half fog : TEXCOORD3; half4 tangentWS:TEXCOORD4; };
@@ -149,11 +152,12 @@ Shader "ProjectRun/Ranch/FlowingWater"
                 // Cyan pixels isolate the supplied water albedo; rocks and wood keep their original shading.
                 half water = step(base.r*1.18h,base.g)*step(base.r*1.18h,base.b)*smoothstep(.15h,.5h,base.g);
                 half horizontal=smoothstep(.4h,.85h,abs(input.normalWS.y));
-                float ripple=sin(input.positionWS.x*9+_Time.y*1.7+sin(input.positionWS.z*6-_Time.y));
-                ripple*=sin(input.positionWS.z*11-_Time.y*1.3);
-                float fall=sin(input.positionWS.y*24+_Time.y*9+input.positionWS.x*8);
+                float waterTime=_Time.y*_WaterMotionSpeed;
+                float ripple=sin(input.positionWS.x*9+waterTime*1.7+sin(input.positionWS.z*6-waterTime));
+                ripple*=sin(input.positionWS.z*11-waterTime*1.3);
+                float fall=sin(input.positionWS.y*24+waterTime*9+input.positionWS.x*8);
                 half sheen=lerp(smoothstep(.35,.95,fall),smoothstep(.45,.9,ripple),horizontal);
-                color=lerp(color,color*1.06h+half3(.12,.2,.19)*sheen,water*.65h);
+                color=lerp(color,color*1.06h+half3(.12,.2,.19)*sheen,water*_WaterMotionStrength);
                 return half4(MixFog(color, input.fog), 1);
             }
             ENDHLSL

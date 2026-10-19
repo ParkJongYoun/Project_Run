@@ -17,6 +17,7 @@ namespace ProjectRun.Ranch
         public AnimationClip AttackClip;
         public AnimationClip EatClip;
         public AnimationClip RestClip;
+        public Transform FeedingHead;
         public float MoveSpeed = .85f;
         public float AnimationRate = .65f;
         public float HeadingOffset;
@@ -37,6 +38,8 @@ namespace ProjectRun.Ranch
         private float moveBlend, actionBlend, pause, activityRemaining, visitDelay, groundY, blockedTime;
         private Vector3 animatorPosition;
         private Quaternion animatorRotation;
+        private Quaternion feedingRotation;
+        private bool feedingPoseApplied;
         private bool dirty = true;
         private int waypoint;
         private bool[] roads;
@@ -204,6 +207,8 @@ namespace ProjectRun.Ranch
         private void Animate(bool walking, bool acting, float dt)
         {
             if (!graph.IsValid()) return;
+            if (feedingPoseApplied && FeedingHead != null) FeedingHead.localRotation = feedingRotation;
+            feedingPoseApplied = false;
             moveBlend = Mathf.MoveTowards(moveBlend, walking ? 1 : 0, dt * 5);
             actionBlend = Mathf.MoveTowards(actionBlend, acting ? 1 : 0, dt * 5);
             idleClock += dt; moveClock += dt * AnimationRate * (phase == Phase.Lap ? 1.6f : 1);
@@ -222,6 +227,13 @@ namespace ProjectRun.Ranch
             {
                 TargetAnimator.transform.localPosition = animatorPosition;
                 TargetAnimator.transform.localRotation = animatorRotation;
+            }
+            if (acting && spot != null && spot.Activity == E_RanchActivity.Feeding && EatClip == null && FeedingHead != null)
+            {
+                feedingRotation = FeedingHead.localRotation;
+                float nod = 14 + Mathf.Sin((float)actionClock * 5) * 4;
+                FeedingHead.Rotate(transform.right, nod, Space.World);
+                feedingPoseApplied = true;
             }
         }
 
@@ -271,7 +283,12 @@ namespace ProjectRun.Ranch
                     foreach (var p in spot.TrackPoints) route.Add(spot.transform.TransformPoint(p));
                     phase = Phase.Lap;
                 }
-                else { route.Add(spot.transform.TransformPoint(spot.ActionPoint)); phase = Phase.Enter; }
+                else
+                {
+                    if (spot.EntryPoints != null)
+                        foreach (var point in spot.EntryPoints) route.Add(spot.transform.TransformPoint(point));
+                    route.Add(spot.transform.TransformPoint(spot.ActionPoint)); phase = Phase.Enter;
+                }
             }
             else if (phase == Phase.Enter) BeginActivity();
             else if (phase == Phase.Lap) BeginExit();
@@ -289,10 +306,10 @@ namespace ProjectRun.Ranch
             Vector3 facing = spot.transform.TransformDirection(spot.Facing);
             if (facing.sqrMagnitude > .001f)
                 transform.rotation = Quaternion.LookRotation(facing) * Quaternion.Euler(0, HeadingOffset, 0);
-            AnimationClip clip = CelebrationClip;
-            if (spot.Activity == E_RanchActivity.Training) clip = AttackClip != null ? AttackClip : CelebrationClip;
-            if (spot.Activity == E_RanchActivity.Feeding) clip = EatClip != null ? EatClip : CelebrationClip;
-            if (spot.Activity == E_RanchActivity.Rest) clip = RestClip != null ? RestClip : CelebrationClip;
+            AnimationClip clip = IdleClip;
+            if (spot.Activity == E_RanchActivity.Training) clip = AttackClip;
+            if (spot.Activity == E_RanchActivity.Feeding) clip = EatClip;
+            if (spot.Activity == E_RanchActivity.Rest) clip = RestClip;
             clip = clip != null ? clip : IdleClip;
             if (!graph.IsValid() || clip == null) return;
             if (action.IsValid()) { graph.Disconnect(mixer, 2); graph.DestroyPlayable(action); }
@@ -304,8 +321,11 @@ namespace ProjectRun.Ranch
         {
             route.Clear(); waypoint = 0; phase = Phase.Exit;
             if (spot == null) { InvalidateRoute(); return; }
+            if (spot.Activity != E_RanchActivity.Track && spot.EntryPoints != null)
+                for (int i = spot.EntryPoints.Length - 1; i >= 0; i--)
+                    route.Add(spot.transform.TransformPoint(spot.EntryPoints[i]));
             route.Add(spot.transform.TransformPoint(spot.Entry));
-            int cell = NearestRoad(route[0]);
+            int cell = NearestRoad(spot.transform.TransformPoint(spot.Entry));
             if (cell >= 0) route.Add(Center(cell));
         }
 
@@ -392,6 +412,8 @@ namespace ProjectRun.Ranch
 
         private void OnDisable()
         {
+            if (feedingPoseApplied && FeedingHead != null) FeedingHead.localRotation = feedingRotation;
+            feedingPoseApplied = false;
             residents.Remove(this);
             ReleaseVisit();
             if (Placement != null) Placement.Changed -= InvalidateRoute;

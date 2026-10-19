@@ -49,13 +49,13 @@ namespace ProjectRun.Editor
                 var material = AssetDatabase.LoadAssetAtPath<Material>(folder+(revised?"/M_Ranch_"+id+"_V2.mat":"/M_RanchGenerated_"+id+"_0.mat"));
                 bool hasNormal = material.GetTexture("_BumpMap") != null;
                 material.SetFloat("_BumpScale", hasNormal ? .85f : 0);
-                if (id == "hot_spring" || id == "waterfall") material.shader = Shader.Find("ProjectRun/Ranch/FlowingWater");
+                if (id == "hot_spring" || id == "waterfall" || id == "fountain") material.shader = Shader.Find("ProjectRun/Ranch/FlowingWater");
                 EditorUtility.SetDirty(material);
                 EditPrefab(id, root =>
                 {
                     AddApron(root,id);
                     if (id == "windmill") SplitWindmill(root,material);
-                    if (id == "waterfall" || id == "hot_spring") AddWater(root,id);
+                    if (id == "waterfall" || id == "hot_spring" || id == "fountain") AddWater(root,id);
                 });
                 report.Add(id + ": " + (hasNormal ? "normal map / strength 0.85 / trilinear / anisotropic 4" : "no normal map in source; mesh normals retained"));
             }
@@ -156,7 +156,40 @@ namespace ProjectRun.Editor
             RemoveChild(root,"group_water_motion");
             var group=new GameObject("group_water_motion").transform;group.SetParent(root.transform,false);
             var fall=WaterMaterial("M_WaterFall",false); var foam=WaterMaterial("M_WaterFoam",true);
-            if(id=="waterfall")
+            if(id=="fountain")
+            {
+                var surface=root.GetComponentsInChildren<Renderer>(true).First(r=>r.name=="model_tripo_fountain").sharedMaterial;
+                surface.shader=Shader.Find("ProjectRun/Ranch/FlowingWater");
+                surface.SetFloat("_WaterMotionStrength",1.8f);
+                surface.SetFloat("_WaterMotionSpeed",1.7f);
+                EditorUtility.SetDirty(surface);
+                Foam(group,id+"_pool",new Vector3(0,.535f,0),.98f,foam);
+                Foam(group,id+"_upper_pool",new Vector3(0,1.505f,0),.39f,foam);
+                for(int i=0;i<8;i++)
+                {
+                    float angle=i*Mathf.PI/4;
+                    Vector3 direction=new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle));
+                    Vector3 top=Vector3.up*1.63f+direction*.13f;
+                    Vector3 middle=Vector3.up*1.05f+direction*.38f;
+                    Vector3 bottom=Vector3.up*.535f+direction*.68f;
+                    Vector3 side=Vector3.Cross(direction,Vector3.up);
+                    Ribbon(group,id+"_jet_top_"+i,top,middle,side,.065f,fall);
+                    Ribbon(group,id+"_jet_bottom_"+i,middle,bottom,side,.085f,fall);
+                    Foam(group,id+"_splash_"+i,bottom,.18f,foam);
+                }
+                var drops=new GameObject("obj_fountain_droplets",typeof(ParticleSystem));
+                drops.transform.SetParent(group,false);drops.transform.localPosition=Vector3.up*1.58f;
+                var particles=drops.GetComponent<ParticleSystem>();
+                particles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);
+                var main=particles.main;main.loop=true;main.playOnAwake=true;
+                main.startLifetime=.6f;main.startSpeed=.8f;main.startSize=.065f;
+                main.gravityModifier=.65f;main.maxParticles=96;
+                var emission=particles.emission;emission.rateOverTime=55;
+                var shape=particles.shape;shape.shapeType=ParticleSystemShapeType.Sphere;shape.radius=.23f;
+                var renderer=particles.GetComponent<ParticleSystemRenderer>();renderer.sharedMaterial=foam;
+                renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+            }
+            else if(id=="waterfall")
             {
                 if(root.name.Contains("_V2"))
                 {
@@ -186,7 +219,7 @@ namespace ProjectRun.Editor
             foreach(string id in additions)EditPrefab(id,root=>
             {
                 AddApron(root,id);
-                if(id=="waterfall" || id=="hot_spring")AddWater(root,id);
+                if(id=="waterfall" || id=="hot_spring" || id=="fountain")AddWater(root,id);
             });
             AssetDatabase.SaveAssets();
         }
@@ -229,10 +262,16 @@ namespace ProjectRun.Editor
         {
             Spot("hot_spring",E_RanchActivity.Bath,new Vector3(0,.05f,-2.35f),new Vector3(-.12f,.32f,-.10f),Vector3.back,6);
             Spot("feeding_station",E_RanchActivity.Feeding,new Vector3(0,.05f,-1.85f),new Vector3(0,.05f,-1.30f),Vector3.forward,5);
-            Spot("feed_store",E_RanchActivity.Feeding,new Vector3(0,.05f,-2.6f),new Vector3(0,.05f,-2.05f),Vector3.forward,5);
-            Spot("shelter",E_RanchActivity.Rest,new Vector3(0,.05f,-2.35f),new Vector3(0,.19f,-.65f),Vector3.back,8);
-            Spot("training",E_RanchActivity.Training,new Vector3(0,.05f,-2.95f),new Vector3(0,.23f,-1.2f),Vector3.forward,5);
-            Spot("race_track",E_RanchActivity.Track,new Vector3(0,.05f,2.92f),Vector3.zero,Vector3.forward,0);
+            EditPrefab("feed_store",root=>
+            {
+                var spot=root.GetComponent<RanchFacilitySpot>();
+                if(spot!=null)UnityEngine.Object.DestroyImmediate(spot);
+            });
+            Spot("shelter",E_RanchActivity.Rest,new Vector3(-1.18f,.05f,-2.35f),new Vector3(-1.18f,.19f,-1.18f),Vector3.back,8);
+            Spot("training",E_RanchActivity.Training,new Vector3(-2.1f,.05f,-3.2f),new Vector3(0,.23f,0),Vector3.forward,5);
+            EditPrefab("training",root=>root.GetComponent<RanchFacilitySpot>().EntryPoints=new[]
+            {new Vector3(-1.85f,.23f,-2.7f),new Vector3(-1.85f,.23f,-.6f)});
+            Spot("race_track",E_RanchActivity.Track,new Vector3(-3.2f,.05f,2f),Vector3.zero,Vector3.forward,0);
             EditPrefab("race_track",root=>
             {
                 var points=new List<Vector3>();
@@ -243,7 +282,16 @@ namespace ProjectRun.Editor
                 points.Add(new Vector3(1.12f,.14f,-1.73f));
                 for(int i=1;i<=16;i++)
                 {float a=-Mathf.PI*.5f+Mathf.PI*i/16;points.Add(new Vector3(1.12f+Mathf.Cos(a)*1.73f,.14f,Mathf.Sin(a)*1.73f));}
-                points.Add(points[0]);root.GetComponent<RanchFacilitySpot>().TrackPoints=points.ToArray();
+                // Rotate the closed lap to the southeast gate in the scene (the track faces 180 degrees).
+                int start=0;float best=float.PositiveInfinity;
+                for(int i=0;i<points.Count;i++)
+                {
+                    float distance=(points[i]-new Vector3(-2.34f,.14f,1.22f)).sqrMagnitude;
+                    if(distance<best){best=distance;start=i;}
+                }
+                var lap=new List<Vector3>();
+                for(int i=0;i<points.Count;i++)lap.Add(points[(start+i)%points.Count]);
+                lap.Add(lap[0]);root.GetComponent<RanchFacilitySpot>().TrackPoints=lap.ToArray();
             });
         }
 
@@ -253,7 +301,55 @@ namespace ProjectRun.Editor
             {
                 var spot=root.GetComponent<RanchFacilitySpot>();if(spot==null)spot=root.AddComponent<RanchFacilitySpot>();
                 spot.Activity=activity;spot.Entry=entry;spot.ActionPoint=point;spot.Facing=facing;spot.Duration=duration;
+                spot.EntryPoints=Array.Empty<Vector3>();
             });
+        }
+
+        public static void ApplyEntranceRevision()
+        {
+            RequireScene();ConfigureSpots();
+            EditPrefab("fountain",root=>AddWater(root,"fountain"));
+            foreach(var resident in GameObject.Find("RanchWorld/group_monsters").GetComponentsInChildren<Sys_RanchResident>(true))
+            {
+                resident.FeedingHead=resident.GetComponentsInChildren<Transform>(true)
+                    .FirstOrDefault(t=>t.name=="bone_head") ?? resident.TargetAnimator.transform;
+                if(resident.name.Contains("Minorous"))
+                {resident.CelebrationClip=null;resident.AttackClip=null;}
+                PrefabUtility.RecordPrefabInstancePropertyModifications(resident);
+                EditorUtility.SetDirty(resident);
+            }
+            var placement=UnityEngine.Object.FindFirstObjectByType<Sys_RanchPlacement>();
+            // Update the existing instances so unrelated objects and authored transforms retain their identities.
+            var revised=RanchDemoLayout.Create();
+            if(!RanchGrid.Validate(placement.Catalog,revised,placement.GridSize))
+                throw new InvalidOperationException("Revised entrance layout overlaps.");
+            foreach(string id in new[]{"hot_spring","waterfall","feed_store"})
+            {
+                var entry=revised.Facilities.First(f=>f.FacilityId==id);
+                var instance=placement.FacilitiesRoot.Cast<Transform>().First(t=>t.name.StartsWith("obj_"+id+"_"));
+                Undo.RecordObject(instance,"Revise ranch entrance");
+                instance.name="obj_"+id+"_"+entry.InstanceId;
+                instance.SetPositionAndRotation(placement.Position(entry),Quaternion.Euler(0,entry.Rotation*90,0));
+                PrefabUtility.RecordPrefabInstancePropertyModifications(instance);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(instance.gameObject);
+            }
+            placement.InitialLayout=revised;EditorUtility.SetDirty(placement);
+            AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(placement.gameObject.scene);
+        }
+
+        public static void RestoreWaterfallAndAnimateFountain()
+        {
+            RequireScene();
+            EditPrefab("fountain",root=>AddWater(root,"fountain"));
+            var placement=UnityEngine.Object.FindFirstObjectByType<Sys_RanchPlacement>();
+            var entry=placement.InitialLayout.Facilities.First(f=>f.FacilityId=="waterfall");
+            entry.Rotation=0;
+            var instance=placement.FacilitiesRoot.Cast<Transform>().First(t=>t.name.StartsWith("obj_waterfall_"));
+            Undo.RecordObject(instance,"Restore waterfall direction");
+            instance.rotation=Quaternion.identity;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(instance);
+            EditorUtility.SetDirty(placement);
+            AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(placement.gameObject.scene);
         }
 
         public static string ApplyVillage()
@@ -279,10 +375,12 @@ namespace ProjectRun.Editor
                 foreach(var body in monster.GetComponentsInChildren<Rigidbody>(true)){body.isKinematic=true;body.detectCollisions=false;}
                 RanchSurfaceRepair.ConfigureResident(monster,id,placement,i);
                 var resident=monster.GetComponent<Sys_RanchResident>();
-                resident.CelebrationClip=Clip(id,"Reaction",SourceClip(id,false));
-                resident.AttackClip=Clip(id,"Attack",SourceClip(id,true));
+                resident.CelebrationClip=id=="Minorous"?null:Clip(id,"Reaction",SourceClip(id,false));
+                resident.AttackClip=id=="Minorous"?null:Clip(id,"Attack",SourceClip(id,true));
                 resident.RestClip=Clip(id,"Rest",RestSource(id));
                 resident.EatClip=null; // No eating clip was supplied for these six skeletons.
+                resident.FeedingHead=resident.GetComponentsInChildren<Transform>(true)
+                    .FirstOrDefault(t=>t.name=="bone_head") ?? resident.TargetAnimator.transform;
                 PrefabUtility.RecordPrefabInstancePropertyModifications(resident);
                 foreach(var component in monster.GetComponentsInChildren<MonoBehaviour>(true))PrefabUtility.RecordPrefabInstancePropertyModifications(component);
                 foreach(var collider in monster.GetComponentsInChildren<Collider>(true))PrefabUtility.RecordPrefabInstancePropertyModifications(collider);
