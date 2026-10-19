@@ -6,6 +6,9 @@ namespace ProjectRun.Race
     public sealed class UIItem_ArenaExhibition : MonoBehaviour
     {
         [SerializeField] private float LapSeconds = 32f;
+        [SerializeField] private float FarRunnerSize = 29f;
+        [SerializeField] private float NearRunnerSize = 48f;
+        [SerializeField] private float RunnerSpacing = .009f;
         private static readonly string[] monsterIds = { "Minorous", "GiantPoring", "Smokie", "Savage", "Lunatic", "Edgar" };
         // Cubic control points measured on the 1672 x 941 arena illustration, from its top-left.
         // This is the dirt course, with long straights and separate end bends, not an ellipse.
@@ -29,7 +32,22 @@ namespace ProjectRun.Race
         private float elapsed;
         private float courseLength;
 
-        private IEnumerator Start()
+        public void ConfigurePresentation(float lapSeconds, float farSize, float nearSize, float spacing)
+        {
+            LapSeconds = Mathf.Max(1, lapSeconds);
+            FarRunnerSize = Mathf.Max(1, farSize);
+            NearRunnerSize = Mathf.Max(1, nearSize);
+            RunnerSpacing = Mathf.Clamp01(spacing);
+        }
+
+        private void OnEnable()
+        {
+            if (Application.isPlaying) StartCoroutine(PrepareRunners());
+        }
+
+        private void OnDisable() => StopAllCoroutines();
+
+        private IEnumerator PrepareRunners()
         {
             courseRect=(RectTransform)transform;
             Vector2 previous=CoursePoint(0);
@@ -41,6 +59,7 @@ namespace ProjectRun.Race
             courseLength=distances[SampleCount];
             for(int i=0;i<runners.Length;i++)
             {
+                if (runners[i] != null) continue;
                 var request=Resources.LoadAsync<Data_DirectionalRunSprites>("Race2D/AutoSprite/Run_"+monsterIds[i]);
                 yield return request;
                 sets[i]=request.asset as Data_DirectionalRunSprites;
@@ -57,7 +76,7 @@ namespace ProjectRun.Race
             for(int i=0;i<runners.Length;i++)
             {
                 var image=runners[i];var set=sets[i];if(image==null||set==null)continue;
-                float lap=.57f+elapsed/Mathf.Max(1,LapSeconds)-i*.009f+Mathf.Sin(elapsed*.23f+i)*.002f;
+                float lap=.57f+elapsed/Mathf.Max(1,LapSeconds)-i*RunnerSpacing+Mathf.Sin(elapsed*.23f+i)*.002f;
                 float parameter=DistanceParameter(Mathf.Repeat(lap,1)*courseLength);
                 Vector2 point=CoursePoint(parameter);
                 Vector2 tangent=(CoursePoint(Mathf.Repeat(parameter+.0005f,1))-CoursePoint(Mathf.Repeat(parameter-.0005f,1))).normalized;
@@ -67,6 +86,7 @@ namespace ProjectRun.Race
                 float heading=Mathf.Atan2(tangent.x,-tangent.y)*Mathf.Rad2Deg;
                 directions[i]=set.SelectDirection(heading,directions[i],directions[i]<0);
                 int count=set.FrameCount(directions[i]);
+                if (count <= 0) continue;
                 int frame=(int)((elapsed+i*.137f)/Mathf.Max(.1f,set.ClipDuration)*count)%count;
                 var sprite=set.Frame(directions[i],frame);if(sprite==null)continue;
                 image.sprite=sprite;
@@ -74,7 +94,7 @@ namespace ProjectRun.Race
                 // uGUI does not apply a SpriteRenderer's ground pivot automatically.
                 rect.pivot=new Vector2(sprite.pivot.x/sprite.rect.width,sprite.pivot.y/sprite.rect.height);
                 rect.anchoredPosition=new Vector2((point.x/1672f-.5f)*courseRect.rect.width,(.5f-point.y/941f)*courseRect.rect.height);
-                float size=Mathf.Lerp(29,48,perspective)*courseRect.rect.width/1672f;
+                float size=Mathf.Lerp(FarRunnerSize,NearRunnerSize,perspective)*courseRect.rect.width/1672f;
                 rect.sizeDelta=new Vector2(size,size);depths[i]=point.y;
                 image.gameObject.SetActive(true);
             }
