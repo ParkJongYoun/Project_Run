@@ -7,7 +7,9 @@ namespace ProjectRun.Race
     {
         public Sys_Race Race;
         public Sys_RaceCamera Director;
-        public Sys_RacePresentation Presentation;
+        [Tooltip("Optional. When set and enabled, the shot label comes from the Cinemachine rig.")]
+        public CameraRig.Sys_RaceCinemachine CinemachineDirector;
+public Sys_RacePresentation Presentation;
         public RectTransform SafeArea;
         public UnityEngine.UI.Text DistanceLabel, PhaseLabel, ShotLabel, CountdownLabel;
         public UnityEngine.UI.Image ProgressFill;
@@ -102,7 +104,7 @@ namespace ProjectRun.Race
             if (generation != Race.Generation) { generation = Race.Generation; previousRank = 0; rankChangeUntil = 0; }
             DistanceLabel.text = Mathf.CeilToInt(Presentation.Remaining).ToString();
             PhaseLabel.text = sim.Phase == E_RacePhase.Result ? "경기 종료" : Presentation.Remaining < 120 ? "최종 직선" : sim.Time < 5 ? "출발" : sim.Course != null ? sim.Course.Region((float)sim.Runners[sim.Order[0]].Distance) : "초원 레이스";
-            ShotLabel.text = Director.ShotLabel;
+            ShotLabel.text = CinemachineDirector != null && CinemachineDirector.isActiveAndEnabled ? CinemachineDirector.ShotLabel : Director.ShotLabel;
             CameraButtonLabel.text = "카메라";
             SpeedButtonLabel.text = Race.PlaybackSpeed > 1 ? "2배" : "1배";
             CutsceneButtonLabel.text = Presentation.Cutscenes ? "컷씬 연출  ON" : "컷씬 연출  OFF";
@@ -136,7 +138,7 @@ namespace ProjectRun.Race
             previousRank = selected.Rank;
             if (sim.Time >= rankChangeUntil) FocusChange.text = "";
             if (FocusChangeIcon != null) FocusChangeIcon.gameObject.SetActive(FocusChange.text.Length > 0);
-            CountdownLabel.text = Race.Countdown > .9f ? Mathf.CeilToInt(Race.Countdown - .9f).ToString() : Race.Countdown > 0 ? "READY" : sim.Time < .9 ? "START!" : "";
+            CountdownLabel.text = CameraRig.RaceStartIntro.Playing ? "" : Race.Countdown > .9f ?Mathf.CeilToInt(Race.Countdown - .9f).ToString() : Race.Countdown > 0 ? "READY" : sim.Time < .9 ? "START!" : "";
             CountdownLabel.gameObject.SetActive(CountdownLabel.text.Length > 0);
             if (CountdownRoot != null) CountdownRoot.SetActive(CountdownLabel.text.Length > 0);
             if (Commentary == null) Announcement.text = string.IsNullOrEmpty(Presentation.Announcement)
@@ -148,7 +150,7 @@ namespace ProjectRun.Race
                 SkillRunner.text = (Presentation.SkillRunner + 1).ToString("00") + " · " + skill.Name;
             }
             UpdateWorldMarker();
-            bool result = sim.Phase == E_RacePhase.Result; ResultRoot.SetActive(result && !menuOpen);
+            bool result = sim.Phase == E_RacePhase.Result && !CameraRig.RaceFinishOutro.Showing; ResultRoot.SetActive(result && !menuOpen);
             if (result && shownResultGeneration != Race.Generation)
             {
                 shownResultGeneration = Race.Generation;

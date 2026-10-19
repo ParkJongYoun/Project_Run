@@ -13,6 +13,8 @@ namespace ProjectRun.Race
         private bool hasSpriteBounds;
         private bool recorded;
         private int generation=-1;
+        /// <summary>Approximate demo race duration in seconds; runner speed = course length / RaceSeconds.</summary>
+        public const float RaceSeconds = 70f;
         public static void ConfigureRace(Sys_Race target)
         {
             if(Mgr_Game.Instance==null)return;
@@ -28,7 +30,7 @@ namespace ProjectRun.Race
             var monster=Mgr_Table.Demo.Monsters[selected];
             var entries=new Data_RunnerSetup[target.Entrants.Length];
             float courseLength=target.Course!=null?target.Course.Length:Data_RaceSimulation.Length;
-            float speed=courseLength/40f;
+            float speed=courseLength/RaceSeconds;
             float[] early={.7f,.2f,1.4f,1.7f,-.2f,-.7f};
             for(int i=0;i<entries.Length;i++)
             {

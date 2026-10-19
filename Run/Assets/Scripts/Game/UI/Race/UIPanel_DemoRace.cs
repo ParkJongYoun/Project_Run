@@ -189,7 +189,7 @@ namespace ProjectRun.Race
             SpeedLabel.text = race.PlaybackSpeed > 1 ? "2×" : "1×";
             PauseLabel.text = race.Paused ? "재개" : "정지";
             StaminaImage.fillAmount = hero.Stamina;
-            CountdownLabel.text = race.Countdown > 0 ? Mathf.CeilToInt(race.Countdown).ToString() : sim.Time < 1 ? "START!" : "";
+            CountdownLabel.text = CameraRig.RaceStartIntro.Playing ? "" : race.Countdown > 0 ? Mathf.CeilToInt(race.Countdown).ToString() : sim.Time < 1 ? "START!" : "";
             string ranks = "";
             for (int i = 0; i < sim.Order.Length; i++)
             {
@@ -205,7 +205,7 @@ namespace ProjectRun.Race
                 AnimateComic();
                 if (comicAge >= (minorousComic != null ? UIItem_MinorousComic.Duration : heroComic != null ? UIItem_DemoHeroComic.Duration : 0)) CancelComic();
             }
-            if (sim.Phase == E_RacePhase.Result && !ResultRoot.gameObject.activeSelf) ShowResult();
+            if (sim.Phase == E_RacePhase.Result && !CameraRig.RaceFinishOutro.Showing && !ResultRoot.gameObject.activeSelf) ShowResult();
         }
 
         private void StartComic()

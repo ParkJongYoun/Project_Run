@@ -13,6 +13,16 @@ namespace ProjectRun.Race
         public bool Paused;
         [Tooltip("Enable deterministic blocking, gap selection and overtaking for this scene.")]
         public bool EnableLaneContests;
+        [Tooltip("Built-in oval only (Course empty): meters added to each end of both straights. 0 = original 180m straights.")]
+        [Min(0)] public float StraightExtension;
+        [Tooltip("After the result, runners keep running past the line and slow to a stop (3D runner views).")]
+        public bool CoolDownAfterFinish = false;
+        [Tooltip("Deceleration (m/s²) of the post-result cool-down run. Lower = runs longer.")]
+        [Min(0.1f)] public float CoolDownDeceleration = 2.5f;
+        [Tooltip("Speed (m/s) runners already have the instant the race begins. 0 = standing start (original).")]
+        [Min(0)] public float StartLaunchSpeed = 0f;
+        [Tooltip("Acceleration (m/s²) during the first 3 race seconds. 6 = original.")]
+        [Min(0.1f)] public float StartAcceleration = 6f;
         public Data_RaceSimulation Simulation { get; private set; }
         public float Countdown { get; private set; }
         public int Generation { get; private set; }
@@ -23,9 +33,12 @@ namespace ProjectRun.Race
         private double accumulator;
         private bool firstFrame = true;
 
-        private void Awake() { Application.runInBackground = true; Sys_DemoRace.ConfigureRace(this); RestartRace(); }
+        private void Awake() { Application.runInBackground = true; Data_RaceSimulation.StraightExtension = StraightExtension; Sys_DemoRace.ConfigureRace(this); RestartRace(); }
         public void RestartRace()
         {
+            Data_RaceSimulation.StraightExtension = StraightExtension;
+            Data_RaceSimulation.StartLaunchSpeed = StartLaunchSpeed;
+            Data_RaceSimulation.StartAcceleration = StartAcceleration;
             if (Simulation != null) Simulation.Changed -= Publish;
             Simulation = new Data_RaceSimulation(Entrants, Course, EnableLaneContests, LapCount);
             Simulation.Changed += Publish;
@@ -56,7 +69,12 @@ namespace ProjectRun.Race
             // Keep the remaining accumulator on a slow frame; never drop simulation time.
             while (accumulator >= Data_RaceSimulation.StepSeconds && steps++ < 240 && !PresentationHeld)
             {
-                Simulation.Step();
+                if (Simulation.Phase == E_RacePhase.Result)
+                {
+                    if (!CoolDownAfterFinish || !Simulation.CoolingDown) { accumulator = 0; break; }
+                    Simulation.CoolDownStep(CoolDownDeceleration);
+                }
+                else Simulation.Step();
                 accumulator -= Data_RaceSimulation.StepSeconds;
             }
         }
