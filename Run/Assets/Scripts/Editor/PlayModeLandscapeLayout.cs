@@ -1,6 +1,5 @@
 using System;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using ProjectRun.Race;
 
@@ -11,52 +10,6 @@ namespace ProjectRun.Editor
     {
         public static readonly Vector2 ReferenceResolution = new Vector2(1280, 720);
         private static readonly Vector2 center = new Vector2(.5f, .5f);
-        private const string panels = "Assets/Resources/Prefabs/UI/Panel/";
-
-        [MenuItem("Tools/Project Run/Apply landscape to Title and Oval")]
-        public static void ApplyScenes()
-        {
-            if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play mode first.");
-            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-                if (UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).isDirty)
-                    throw new InvalidOperationException("Save open scene edits before applying the landscape layout.");
-
-            EditPrefab("UIPanel_RaceHUD", root => ApplyHUD(root.GetComponent<UIPanel_RaceHUD>()));
-            EditPrefab("UIPanel_RaceSkillVideo", root => ApplyVideo(root.GetComponent<UIPanel_RaceSkillVideo>()));
-            EditPrefab("UIPanel_PlayMode", root => ApplyPlayMode(root.GetComponent<UIPanel_PlayMode>(), true));
-            EditPrefab("UIPanel_PlayModeReturn", root => ApplyPlayMode(root.GetComponent<UIPanel_PlayMode>(), false));
-            foreach (string path in new[] { PlayModeMenuBuilder.ScenePaths[0], PlayModeMenuBuilder.ScenePaths[1] })
-            {
-                var scene = EditorSceneManager.OpenScene(path);
-                foreach (var scaler in UnityEngine.Object.FindObjectsByType<UnityEngine.UI.CanvasScaler>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    ConfigureCanvas(scaler);
-                var menu = UnityEngine.Object.FindFirstObjectByType<UIPanel_PlayMode>(FindObjectsInactive.Include);
-                ApplyPlayMode(menu, path == PlayModeMenuBuilder.ScenePaths[0]);
-                var director = UnityEngine.Object.FindFirstObjectByType<Sys_RaceCamera>();
-                if (director != null) { director.LandscapeComposition = true; EditorUtility.SetDirty(director); }
-                // Record authored scene objects, including any prefab overrides, without replacing references.
-                foreach (var root in scene.GetRootGameObjects())
-                    foreach (var component in root.GetComponentsInChildren<Component>(true))
-                        if (component != null && PrefabUtility.IsPartOfPrefabInstance(component))
-                            PrefabUtility.RecordPrefabInstancePropertyModifications(component);
-                EditorSceneManager.MarkSceneDirty(scene);
-                EditorSceneManager.SaveScene(scene);
-            }
-            PlayerSettings.defaultWebScreenWidth = 1280;
-            PlayerSettings.defaultWebScreenHeight = 720;
-            PlayerSettings.WebGL.template = "PROJECT:ProjectRunLandscape";
-            AssetDatabase.SaveAssets();
-            EditorSceneManager.OpenScene(PlayModeMenuBuilder.ScenePaths[0]);
-        }
-
-        private static void EditPrefab(string name, Action<GameObject> apply)
-        {
-            string path = panels + name + ".prefab";
-            var root = PrefabUtility.LoadPrefabContents(path);
-            try { apply(root); PrefabUtility.SaveAsPrefabAsset(root, path); }
-            finally { PrefabUtility.UnloadPrefabContents(root); }
-        }
-
         public static void ConfigureCanvas(UnityEngine.UI.CanvasScaler scaler)
         {
             scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;

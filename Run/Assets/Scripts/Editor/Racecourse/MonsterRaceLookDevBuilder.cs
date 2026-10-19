@@ -279,28 +279,6 @@ namespace ProjectRun.Editor
                 renderer.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(minoArt + "/Materials/" + renderer.name + "_LookDev.mat");
         }
 
-        [MenuItem("Tools/Project Run/Look development/Connect race selection to title")]
-        public static void ConnectTitle()
-        {
-            RequireSavedEditMode();
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
-                throw new InvalidOperationException("Create the updated race before connecting it.");
-            string prefabPath = "Assets/Resources/Prefabs/UI/Panel/UIPanel_PlayMode.prefab";
-            var prefab = PrefabUtility.LoadPrefabContents(prefabPath);
-            try
-            {
-                ConfigureTitle(prefab.GetComponent<UIPanel_PlayMode>());
-                PrefabUtility.SaveAsPrefabAsset(prefab, prefabPath);
-            }
-            finally { PrefabUtility.UnloadPrefabContents(prefab); }
-            var title = EditorSceneManager.OpenScene("Assets/Scenes/Scene_Title.unity");
-            ConfigureTitle(Find<UIPanel_PlayMode>(title).Single());
-            SaveScene(title);
-            AddBuildScene();
-        }
-
-        private static void ConfigureTitle(UIPanel_PlayMode panel) => PlayModeMenuBuilder.ConfigureTitle(panel);
-
         private static void AddBuildScene()
         {
             var scenes = EditorBuildSettings.scenes.ToList();

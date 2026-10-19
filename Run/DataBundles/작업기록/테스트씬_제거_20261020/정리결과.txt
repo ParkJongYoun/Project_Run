@@ -1,0 +1,14 @@
+테스트 씬 제거 작업 — 2026-10-20
+
+삭제: Scenes/Test의 현존 씬 4개와 메타, 테스트 타이틀 프리팹, 비교용 DemoMonsters 프리팹 6개, 프론테라 환경 프리팹 2개, 구형 RaceHUD 프리팹.
+삭제 코드: TestSceneMenuBuilder, PlayModeMenuBuilder, RaceSceneSetBuilder, PronteraAssetSceneryBuilder, PronteraWorldRaceBuilder, PronteraWorldRaceScenery, PronteraWorldRaceValidation.
+삭제 실행기: PlayTestScenes.cmd, StartTestScenes.ps1.
+수정: 게임 웹 빌드의 테스트 분기 제거, 독립적인 저장/유휴 상태 검사 유지, 빌드 목록의 테스트 항목 제거, 구형 타이틀 비교 메뉴 연결/일괄 가로 전환 도구 제거.
+유지 카툰 전시: Scene_CartoonTest의 현재 폴더 밖 경로를 제작 도구와 일치시키고 복귀 대상을 Scene_Title로 변경. 기존 전시 내용과 다른 작업 중인 변경은 보존.
+게임 웹 빌드 포함 씬: Scene_Title, Scene_Lobby, Scene_OvalToon, Scene_2D.
+미사용 판단: 삭제할 씬의 재귀 의존성과 남은 씬을 비교하고, 남은 씬·프리팹 및 Resources 직렬화 참조를 검사. 공용 코드, 다른 제작 도구에서 참조하는 타입, 원본 에셋은 유지.
+문서: 개발 규칙과 AGENTS.md의 현재 빌드 기준을 사용자 요청에 맞춰 갱신. 과거 산출물과 검증 기록은 보존.
+검증: Unity 재컴파일 완료, scriptCompilationFailed=false. 등록된 모든 빌드 씬 존재. 남은 Scenes/Resources/ProjectSettings 파일 134개에서 삭제 GUID 참조 0건. 테스트 빌드/연결 메뉴 및 코드 참조 검색 0건.
+콘솔: Unity AI 서비스의 NoSubscription 로그가 존재하며 C# 컴파일 실패는 없음.
+참고: Assets/_Recovery/0.unity는 기존 복구용 백업이며 삭제한 RaceHUD GUID 참조가 남아 있음. 복구 자료는 다른 작업 자료 보존 기준에 따라 수정/삭제하지 않음.
+수행하지 않음: 전체 WebGL 재빌드, 경기 플레이 검증, Git 커밋/푸시.

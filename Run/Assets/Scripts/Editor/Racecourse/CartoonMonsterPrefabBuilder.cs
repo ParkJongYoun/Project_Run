@@ -242,7 +242,7 @@ namespace ProjectRun.Editor
                 foreach (string path in AssetDatabase.GetDependencies("Assets/Resources/Prefabs/Race/DemoMonsters/P_Runner_" + id + ".prefab", true))
                     if (path.StartsWith("Assets/", StringComparison.Ordinal)) paths.Add(path);
             paths.Add("Assets/Scenes/Scene_Oval.unity");
-            paths.Add("Assets/Scenes/Scene_MinorousLookDev.unity");
+            paths.Add(ProjectRun.EditorTools.CartoonShowcaseBuilder.ScenePath);
             paths.Add("Assets/Scenes/Scene_MinorousRaceTest.unity");
             paths.Add("Assets/Scenes/Scene_Title.unity");
             foreach (string folder in new[] { "Assets/ArtBundles/RaceShowcase/MinorousLookDev", "Assets/ArtBundles/RaceShowcase/MonsterLookDev" })

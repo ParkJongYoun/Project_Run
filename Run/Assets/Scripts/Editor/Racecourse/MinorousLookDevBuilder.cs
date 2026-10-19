@@ -14,7 +14,7 @@ namespace ProjectRun.EditorTools
     /// <summary>Creates an isolated copy; never edits the race scene or source monster assets.</summary>
     public static class MinorousLookDevBuilder
     {
-        public const string ScenePath = "Assets/Scenes/Scene_MinorousLookDev.unity";
+        public const string ScenePath = CartoonShowcaseBuilder.ScenePath;
         public const string ArtRoot = "Assets/ArtBundles/RaceShowcase/MinorousLookDev";
 
         [MenuItem("Project Run/Minorous Look/Create Isolated Scene")]
