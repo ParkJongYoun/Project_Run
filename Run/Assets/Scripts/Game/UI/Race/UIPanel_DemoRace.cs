@@ -95,6 +95,7 @@ namespace ProjectRun.Race
             CutscenesEnabled = cutscenes;
             InitStandings(); // 왼쪽 순위 리스트(row_1~6) 연결
             InitProgress(); // 상단 START-GOAL 진행바 연결
+            InitResultSkin(); // 결과창을 네온 스타일 프리팹으로 교체 (버튼 연결 전에!)
             BindButtons();
             Mgr_Event.RaceChanged += Handle;
             Mgr_Event.Reset += CancelComic;
@@ -186,7 +187,8 @@ namespace ProjectRun.Race
             }
             var sim = race.Simulation;
             var hero = sim.Runners[Hero];
-            RankLabel.text = hero.Rank + "위 / " + sim.Runners.Length;
+            // 리치 텍스트로 "2위"는 크게(46)+하늘색, " / 6"은 작게(28)+기본색
+            RankLabel.text = "<b><size=46><color=#4FE6FF>" + hero.Rank + "위</color></size><size=28> / " + sim.Runners.Length + "</size></b>";
             RemainingLabel.text = "남은 거리  " + Mathf.CeilToInt(Mathf.Max(0, sim.CourseLength - (float)hero.Distance)) + "m";
             SpeedLabel.text = race.PlaybackSpeed > 1 ? "2×" : "1×";
             PauseLabel.text = race.Paused ? "재개" : "정지";
@@ -259,12 +261,11 @@ namespace ProjectRun.Race
         {
             CancelSkillPresentation();
             var hero = race.Simulation.Runners[Hero];
-            ResultTitle.text = hero.Rank == 1 ? "프론테라컵 우승!" : "프론테라컵 완주!";
             ResultHero.sprite = DemoUI.Art.Get(Monster.Id + "_body");
             ResultName.text = Monster.Name;
-            ResultSummary.text = hero.Rank + "위  ·  " + hero.FinishTime.ToString("0.00") + "초\nLv.5  ·  스피드 "
-                + (Monster.Stats[0] + Mgr_User.Data.Monsters[Mgr_User.Data.SelectedMonster].SpeedBonus)
-                + "\n전술  " + Monster.Tactic + "\n고유  " + Monster.Skill + "\n후천  지치지 않는 발";
+            // 제목/순위/기록 텍스트 채우기 (UIPanel_DemoRace.Result.cs)
+            FillResultTexts(hero.Rank, hero.FinishTime.ToString("0.00"),
+                (Monster.Stats[0] + Mgr_User.Data.Monsters[Mgr_User.Data.SelectedMonster].SpeedBonus).ToString());
             ResultRoot.SetAsLastSibling(); // 결과창을 순위 리스트·진행바보다 앞(위)에 그림
             ResultRoot.gameObject.SetActive(true);
         }
