@@ -27,11 +27,6 @@ namespace ProjectRun.Race
         [SerializeField] private Button CutsceneButton;
         [SerializeField] private Text CutsceneLabel;
 
-        [Header("만화 연출 · 콘텐츠만 실행 중 생성")]
-        [SerializeField] private RectTransform ComicRoot;
-        [SerializeField] private RectTransform ComicContent;
-        [SerializeField] private Button ComicSkipButton;
-
         [Header("결과 화면")]
         [SerializeField] private RectTransform ResultRoot;
         [SerializeField] private Text ResultTitle;
@@ -42,15 +37,11 @@ namespace ProjectRun.Race
         [SerializeField] private Button EndDemoButton;
 
         private Sys_Race race;
-        private float comicAge = -1;
-        private UIItem_MinorousComic minorousComic;
-        private UIItem_DemoHeroComic heroComic;
         private bool cutscenes = true;
         private bool opened;
         private int generation = -1;
         private string latest = "선택한 친구의 첫 레이스를 응원해 주세요";
         private float latestUntil;
-        public bool IsComicPlaying => comicAge >= 0;
         public bool CutscenesEnabled
         {
             get => cutscenes;
@@ -89,13 +80,12 @@ namespace ProjectRun.Race
             CommentaryFeed.gameObject.SetActive(CommentaryFeed.enabled);
             CommentaryLabel.enabled = !CommentaryFeed.enabled;
             CommentaryLabel.text = latest;
-            ComicRoot.gameObject.SetActive(false);
             ResultRoot.gameObject.SetActive(false);
             SetVideoOpacity(0);
             CutscenesEnabled = cutscenes;
             BindButtons();
             Mgr_Event.RaceChanged += Handle;
-            Mgr_Event.Reset += CancelComic;
+            Mgr_Event.Reset += CancelSkillPresentation;
         }
 
         public override void OnClose()
@@ -103,7 +93,7 @@ namespace ProjectRun.Race
             if (!opened) return;
             opened = false;
             Mgr_Event.RaceChanged -= Handle;
-            Mgr_Event.Reset -= CancelComic;
+            Mgr_Event.Reset -= CancelSkillPresentation;
             UnbindButtons();
             CancelSkillPresentation();
         }
@@ -115,7 +105,6 @@ namespace ProjectRun.Race
             ResultButton.onClick.AddListener(SkipToResult);
             LobbyButton.onClick.AddListener(ReturnToLobby);
             CutsceneButton.onClick.AddListener(ToggleCutscenes);
-            ComicSkipButton.onClick.AddListener(CancelComic);
             ReplayButton.onClick.AddListener(Replay);
             EndDemoButton.onClick.AddListener(EndDemo);
             VideoSkipButton.onClick.AddListener(SkipVideo);
@@ -129,7 +118,6 @@ namespace ProjectRun.Race
             ResultButton.onClick.RemoveListener(SkipToResult);
             LobbyButton.onClick.RemoveListener(ReturnToLobby);
             CutsceneButton.onClick.RemoveListener(ToggleCutscenes);
-            ComicSkipButton.onClick.RemoveListener(CancelComic);
             ReplayButton.onClick.RemoveListener(Replay);
             EndDemoButton.onClick.RemoveListener(EndDemo);
             VideoSkipButton.onClick.RemoveListener(SkipVideo);
@@ -157,12 +145,7 @@ namespace ProjectRun.Race
             {
                 latest = Monster.Skill + "! 고유 능력 자동 발동";
                 latestUntil = (float)race.Simulation.Time + 5;
-                if (cutscenes)
-                {
-                    bool second = race.Simulation.Runners[Hero].SkillActivationCount == 2;
-                    if (second && skillVideo != null && skillVideo.TryPlay()) return;
-                    PlayComicFallback();
-                }
+                if (cutscenes && skillVideo != null) skillVideo.TryPlay();
             }
             else if (value.Kind == E_RaceEvent.Overtake && value.RunnerId == Hero)
             {
@@ -179,7 +162,7 @@ namespace ProjectRun.Race
             if (generation != race.Generation)
             {
                 generation = race.Generation;
-                CancelComic();
+                CancelSkillPresentation();
                 ResultRoot.gameObject.SetActive(false);
             }
             var sim = race.Simulation;
@@ -199,52 +182,7 @@ namespace ProjectRun.Race
             StandingsLabel.text = ranks;
             if (!CommentaryFeed.isActiveAndEnabled)
                 CommentaryLabel.text = race.Paused ? "잠시 쉬어가기" : (float)sim.Time < latestUntil ? latest : hero.SkillUsed ? "결승선까지, 한 걸음 더!" : sim.Time < 8 ? Monster.Tactic + " 전술로 대열을 잡습니다" : hero.BlockedBy >= 0 ? "앞 주자를 피해 빈틈을 찾고 있어요" : "힘을 아끼며 기회를 기다립니다";
-            if (comicAge >= 0 && !race.Paused)
-            {
-                comicAge += Mathf.Min(Time.unscaledDeltaTime, .1f);
-                AnimateComic();
-                if (comicAge >= (minorousComic != null ? UIItem_MinorousComic.Duration : heroComic != null ? UIItem_DemoHeroComic.Duration : 0)) CancelComic();
-            }
             if (sim.Phase == E_RacePhase.Result && !CameraRig.RaceFinishOutro.Showing && !ResultRoot.gameObject.activeSelf) ShowResult();
-        }
-
-        private void StartComic()
-        {
-            // Only animated character content is transient; authored controls are never cleared.
-            DemoUI.Clear(ComicContent);
-            ComicRoot.gameObject.SetActive(true);
-            comicAge = 0;
-            minorousComic = null;
-            heroComic = null;
-            if (Monster.Id == "Minorous") minorousComic = UIItem_MinorousComic.Create(ComicContent);
-            else if (Monster.Id == "Poring" || Monster.Id == "Eddga")
-                heroComic = UIItem_DemoHeroComic.Create(ComicContent, Monster.Id, Monster.Skill);
-            if (minorousComic == null && heroComic == null)
-            {
-                Debug.LogWarning("Demo comic resources are missing for " + Monster.Id, this);
-                CancelComic();
-                return;
-            }
-            Mgr_Sound.PlayAccent(true);
-        }
-
-        private void AnimateComic()
-        {
-            if (minorousComic != null) minorousComic.Evaluate(comicAge);
-            else if (heroComic != null) heroComic.Evaluate(comicAge);
-        }
-
-        public void CancelComic()
-        {
-            comicAge = -1;
-            if (ComicRoot != null) ComicRoot.gameObject.SetActive(false);
-            if (race != null) race.ReleasePresentationHold(this);
-        }
-
-        public void PlayComicFallback()
-        {
-            if (opened && cutscenes && isActiveAndEnabled && !race.IsSkipping && race.Simulation.Phase != E_RacePhase.Result
-                && race.AcquirePresentationHold(this)) StartComic();
         }
 
         private void ShowResult()

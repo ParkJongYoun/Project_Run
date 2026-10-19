@@ -102,7 +102,7 @@ namespace ProjectRun.Race
                 case E_RaceShot.SkillVideo:
                     focus = view.MountRoot.position + Vector3.up * 1.5f;
                     offset = forward * 7.2f + right * 4.7f + Vector3.up * 1.6f;
-                    fov = 42; ShotLabel = "여우의 잔상"; break;
+                    fov = 42; ShotLabel = "필살기 질주"; break;
                 case E_RaceShot.Opening:
                     focus = PackCenter(); offset = right * -20 + forward * 15 + Vector3.up * Mathf.Lerp(9, 15, Race.Countdown / Race.CountdownSeconds); group = true; ShotLabel = "출발 준비"; break;
                 case E_RaceShot.Pack:

@@ -42,7 +42,6 @@ namespace ProjectRun.Race
         private void SkipVideo() => skillVideo?.Skip();
         private void CancelSkillPresentation()
         {
-            CancelComic();
             if (skillVideo != null) skillVideo.Cancel();
         }
     }

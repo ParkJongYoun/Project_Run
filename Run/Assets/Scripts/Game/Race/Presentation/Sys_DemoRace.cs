@@ -27,6 +27,8 @@ namespace ProjectRun.Race
         }
         public static void ConfigureSetups(Sys_Race target,int selected)
         {
+            if (target.gameObject.scene.name == Define_Scene.OvalToon)
+                target.Entrants = Mgr_Bundle.Load<Data_CartoonRaceRoster>("Tables/Data_CartoonRaceRoster").CreateEntrants();
             var monster=Mgr_Table.Demo.Monsters[selected];
             var entries=new Data_RunnerSetup[target.Entrants.Length];
             float courseLength=target.Course!=null?target.Course.Length:Data_RaceSimulation.Length;
@@ -50,8 +52,8 @@ namespace ProjectRun.Race
             hero.BaseSpeed=speed*(.91f+(trainedSpeed-240)*.0018f);
             hero.EarlyPower=speed*(monster.TacticIndex==1?.035f:monster.TacticIndex==2?-.01f:-.035f);
             hero.LatePower=speed*.08f;hero.SurgePower=speed*(selected==2?.64f:.49f);hero.SurgeDuration=11;
-            hero.ConditionalSkill=true;hero.SkillProgress=.34f;hero.DemoSkillType=selected+1;
-            hero.SkillActivationLimit=2;hero.RepeatSkillProgress=.72f;
+            hero.ConditionalSkill=true;hero.SkillProgress=.60f;hero.DemoSkillType=selected+1;
+            hero.SkillActivationLimit=1;
             hero.StaminaDrainMultiplier=Mgr_User.Data.Monsters[selected].EndurancePassive?.8f:1;
             target.Entrants=entries;target.LapCount=1;target.CountdownSeconds=3;target.EnableLaneContests=true;
         }
@@ -78,8 +80,7 @@ namespace ProjectRun.Race
             camera3D=FindFirstObjectByType<Sys_RaceCamera>();if(camera3D!=null){camera3D.LandscapeComposition=true;camera3D.CameraDistanceScale=.95f;}
             var skillVideo=FindFirstObjectByType<Sys_RaceSkillVideo>();if(skillVideo!=null)skillVideo.enabled=false;
             var demoVideo=gameObject.AddComponent<Sys_DemoSkillVideo>();
-            demoVideo.Configure(race,panel,Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster].Id,
-                gameObject.scene.name==Define_Scene.Sprite2D);
+            demoVideo.Configure(race,panel,Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster].Id);
             gameObject.AddComponent<Sys_DemoSkillEffects>();
         }
         private void Update()

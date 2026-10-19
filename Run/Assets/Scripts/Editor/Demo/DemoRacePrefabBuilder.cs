@@ -26,7 +26,8 @@ namespace ProjectRun.Race.Editor
             // Reinstalling or opening a completed prefab must preserve all designer changes.
             if (prefab.transform.childCount > 0)
             {
-                Validate(prefab);
+                MigrateVideoOnly();
+                Validate(AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath));
                 return;
             }
             var root = PrefabUtility.LoadPrefabContents(PrefabPath);
@@ -67,6 +68,22 @@ namespace ProjectRun.Race.Editor
             var feed = root.GetComponentInChildren<UIItem_RaceCommentary>(true);
             if (feed == null || feed.Lines == null || feed.Lines.Length != 3 || Array.Exists(feed.Lines, line => line == null))
                 throw new InvalidOperationException("Missing authored commentary rows.");
+        }
+
+        public static void MigrateVideoOnly()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("Stop Play before migrating the race UI prefab.");
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                var legacy = root.transform.Find("obj_safe_area/group_comic");
+                if (legacy == null) return;
+                UnityEngine.Object.DestroyImmediate(legacy.gameObject);
+                Validate(root);
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
         }
 
         private static T Bind<T>(SerializedObject view, string field, T component) where T : UnityEngine.Object
@@ -128,10 +145,6 @@ namespace ProjectRun.Race.Editor
             var countdown = Bind(view, "CountdownLabel", DemoUI.Text(safe, "txt_countdown", "", 0, 20, 800, 150, 88, DemoUI.Paper, TextAnchor.MiddleCenter, true));
             countdown.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(3, -4);
 
-            var comic = Bind(view, "ComicRoot", DemoUI.Fill(safe, "group_comic"));
-            Bind(view, "ComicContent", DemoUI.Fill(comic, "obj_comic_content"));
-            Anchor(Button(view, "ComicSkipButton", comic, "btn_skip_comic", "연출 건너뛰기", -145, 31, 245, 46, false), 1, 0, -145, 31);
-            comic.gameObject.SetActive(false);
             BuildResult(safe, view);
         }
 

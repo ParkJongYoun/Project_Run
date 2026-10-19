@@ -10,152 +10,209 @@ namespace ProjectRun.Race.Editor
 {
     public static class DemoSkillVideoValidation
     {
-        private const string Folder="DataBundles/아트/필살기영상/인게임연결_작업기록";
+        private const string folder = "DataBundles/UI/스킬영상_고화질_20261020/작업기록/Unity검증";
         private static IEnumerator<float> sequence;
-        private static double next,deadline;
+        private static double next, deadline;
         private static string savedUser;
-        private static readonly List<string> notes=new List<string>();
-        private static Sys_Race Race=>UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
-        private static UIPanel_DemoRace Panel=>UnityEngine.Object.FindFirstObjectByType<UIPanel_DemoRace>();
-        private static Sys_DemoSkillVideo Video=>UnityEngine.Object.FindFirstObjectByType<Sys_DemoSkillVideo>();
+        private static readonly List<string> notes = new List<string>();
+        public static string Status { get; private set; }
+        private static Sys_Race Race => UnityEngine.Object.FindFirstObjectByType<Sys_Race>();
+        private static UIPanel_DemoRace Panel => UnityEngine.Object.FindFirstObjectByType<UIPanel_DemoRace>();
+        private static Sys_DemoSkillVideo Video => UnityEngine.Object.FindFirstObjectByType<Sys_DemoSkillVideo>();
 
-        [Serializable] private sealed class SimulationReport { public List<SimulationResult> Races=new List<SimulationResult>();public bool LegacySingleSkill; }
+        [Serializable] private sealed class SimulationReport { public List<SimulationResult> Races = new List<SimulationResult>(); }
         [Serializable] private sealed class SimulationResult
         {
-            public string Scene,Monster;
+            public string Monster;
             public int Count;
-            public float[] ActivationTimes;
-            public float FinishTime;
+            public float ActivationTime, ActivationProgress, FinishTime;
             public bool Deterministic;
         }
         public static string Simulations()
         {
-            if(EditorApplication.isPlaying)throw new InvalidOperationException("Stop Play before simulation validation.");
-            var report=new SimulationReport();
-            foreach(string sceneName in new[]{Define_Scene.OvalToon,Define_Scene.Sprite2D})
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Stop Play before simulation validation.");
+            var report = new SimulationReport();
+            var scene = EditorSceneManager.OpenPreviewScene(Define_Scene.Path(Define_Scene.OvalToon));
+            try
             {
-                var scene=EditorSceneManager.OpenPreviewScene(Define_Scene.Path(sceneName));
-                try
+                var race = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Sys_Race>(true)).Single();
+                for (int selected = 0; selected < 3; selected++)
                 {
-                    var race=scene.GetRootGameObjects().SelectMany(root=>root.GetComponentsInChildren<Sys_Race>(true)).Single();
-                    var original=race.Entrants;
-                    for(int selected=0;selected<3;selected++)
-                    {
-                        race.Entrants=original;Sys_DemoRace.ConfigureSetups(race,selected);
-                        int hero=Mgr_Table.Demo.Monsters[selected].RunnerIndex;
-                        race.Entrants[hero].BaseSpeed=(race.Course!=null?race.Course.Length:Data_RaceSimulation.Length)/Sys_DemoRace.RaceSeconds*(.91f+(Mgr_Table.Demo.Monsters[selected].Stats[0]+30-240)*.0018f);
-                        race.Entrants[hero].StaminaDrainMultiplier=.8f;
-                        var first=new Data_RaceSimulation(race.Entrants,race.Course,true,1);
-                        var second=new Data_RaceSimulation(race.Entrants,race.Course,true,1);
-                        var times=new List<float>();first.Changed+=e=>{if(e.Kind==E_RaceEvent.Skill&&e.RunnerId==hero)times.Add(e.Time);};
-                        first.Begin();second.Begin();
-                        for(int step=0;step<12000&&first.Phase!=E_RacePhase.Result;step++)first.Step();
-                        for(int batch=0;batch<6000&&second.Phase!=E_RacePhase.Result;batch++){second.Step();second.Step();}
-                        bool equal=first.Order.SequenceEqual(second.Order)&&first.Runners.Zip(second.Runners,(a,b)=>a.FinishTime==b.FinishTime&&a.SkillActivationCount==b.SkillActivationCount).All(value=>value);
-                        if(times.Count!=2||!equal||times[1]>=first.Runners[hero].FinishTime)throw new InvalidOperationException("Skill count/determinism failed: "+sceneName+" / "+selected);
-                        report.Races.Add(new SimulationResult{Scene=sceneName,Monster=Mgr_Table.Demo.Monsters[selected].Id,Count=times.Count,ActivationTimes=times.ToArray(),FinishTime=(float)first.Runners[hero].FinishTime,Deterministic=equal});
-                    }
+                    Sys_DemoRace.ConfigureSetups(race, selected);
+                    int hero = Mgr_Table.Demo.Monsters[selected].RunnerIndex;
+                    race.Entrants[hero].BaseSpeed = (race.Course != null ? race.Course.Length : Data_RaceSimulation.Length)
+                        / Sys_DemoRace.RaceSeconds * (.91f + (Mgr_Table.Demo.Monsters[selected].Stats[0] + 30 - 240) * .0018f);
+                    race.Entrants[hero].StaminaDrainMultiplier = .8f;
+                    var first = new Data_RaceSimulation(race.Entrants, race.Course, true, 1);
+                    var second = new Data_RaceSimulation(race.Entrants, race.Course, true, 1);
+                    var result = new SimulationResult { Monster = Mgr_Table.Demo.Monsters[selected].Id };
+                    first.Changed += e => {
+                        if (e.Kind != E_RaceEvent.Skill || e.RunnerId != hero) return;
+                        result.Count++; result.ActivationTime = e.Time;
+                        result.ActivationProgress = (float)(first.Runners[hero].Distance / first.CourseLength);
+                    };
+                    first.Begin(); second.Begin();
+                    for (int i = 0; i < 12000 && first.Phase != E_RacePhase.Result; i++) first.Step();
+                    for (int i = 0; i < 6000 && second.Phase != E_RacePhase.Result; i++) { second.Step(); second.Step(); }
+                    result.FinishTime = (float)first.Runners[hero].FinishTime;
+                    result.Deterministic = Equal(first, second);
+                    if (result.Count != 1 || !result.Deterministic || result.ActivationTime >= result.FinishTime || result.ActivationProgress < .59f)
+                        throw new InvalidOperationException("Single skill/determinism failed: " + result.Monster);
+                    report.Races.Add(result);
                 }
-                finally {EditorSceneManager.ClosePreviewScene(scene);}
             }
-            var legacy=new Data_RaceSimulation(new[]{new Data_RunnerSetup{SurgeTime=1}});legacy.Begin();
-            for(int i=0;i<12000&&legacy.Phase!=E_RacePhase.Result;i++)legacy.Step();
-            report.LegacySingleSkill=legacy.Runners[0].SkillActivationCount==1;
-            if(!report.LegacySingleSkill)throw new InvalidOperationException("Legacy activation count changed.");
-            Directory.CreateDirectory(Folder);string json=JsonUtility.ToJson(report,true);File.WriteAllText(Folder+"/경기계산_검증.json",json);return json;
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
+            Directory.CreateDirectory(folder);
+            string json = JsonUtility.ToJson(report, true);
+            File.WriteAllText(folder + "/경기계산_검증.json", json);
+            return json;
         }
-        public static void RunPlaythrough()
+        private static bool Equal(Data_RaceSimulation a, Data_RaceSimulation b) =>
+            a.Phase == E_RacePhase.Result && b.Phase == E_RacePhase.Result && a.Order.SequenceEqual(b.Order)
+            && a.Runners.Zip(b.Runners, (x, y) => x.FinishTime == y.FinishTime && x.SkillActivationCount == y.SkillActivationCount).All(x => x);
+
+        public static void RunPlaythrough(int first = 0, int count = 3)
         {
-            if(!EditorApplication.isPlaying)throw new InvalidOperationException("Enter Play first.");
-            if(sequence!=null)throw new InvalidOperationException("Validation already running.");
-            Directory.CreateDirectory(Folder);notes.Clear();
-            savedUser=JsonUtility.ToJson(Mgr_User.Data);
-            File.WriteAllText(Folder+"/검증전_사용자데이터.json",savedUser);
-            sequence=Steps();next=0;deadline=EditorApplication.timeSinceStartup+600;
-            EditorApplication.update+=Tick;WriteStatus("RUNNING");
+            if (!EditorApplication.isPlaying || sequence != null) throw new InvalidOperationException("Enter Play, with no verification running.");
+            if (first < 0 || count < 1 || first + count > 3) throw new ArgumentOutOfRangeException("first/count");
+            Directory.CreateDirectory(folder); notes.Clear();
+            savedUser = JsonUtility.ToJson(Mgr_User.Data);
+            File.WriteAllText(folder + "/검증전_사용자데이터.json", savedUser);
+            sequence = Steps(first, count); next = 0; deadline = EditorApplication.timeSinceStartup + 600;
+            EditorApplication.update += Tick; WriteStatus("RUNNING");
         }
         private static void Tick()
         {
-            if(EditorApplication.timeSinceStartup<next)return;
+            if (EditorApplication.timeSinceStartup < next) return;
             try
             {
-                if(!EditorApplication.isPlaying||EditorApplication.timeSinceStartup>deadline)throw new InvalidOperationException("Play stopped or QA timed out.");
-                if(!sequence.MoveNext()){Finish("COMPLETED");return;}
-                next=EditorApplication.timeSinceStartup+sequence.Current;
+                if (!EditorApplication.isPlaying || EditorApplication.timeSinceStartup > deadline) throw new InvalidOperationException("Play stopped or verification timed out.");
+                if (!sequence.MoveNext()) { Finish("PASSED"); return; }
+                next = EditorApplication.timeSinceStartup + sequence.Current;
             }
-            catch(Exception exception){notes.Add(exception.ToString());Finish("FAILED");Debug.LogException(exception);}
+            catch (Exception e) { notes.Add(e.ToString()); Finish("FAILED"); Debug.LogException(e); }
         }
         private static void Finish(string status)
         {
-            EditorApplication.update-=Tick;sequence?.Dispose();sequence=null;
-            if(savedUser!=null){JsonUtility.FromJsonOverwrite(savedUser,Mgr_User.Data);Mgr_User.Save();savedUser=null;}
-            if(EditorApplication.isPlaying&&Mgr_Game.Instance!=null)Mgr_Game.Instance.Go(Define_Scene.Title);
+            EditorApplication.update -= Tick; sequence?.Dispose(); sequence = null;
+            if (savedUser != null) { JsonUtility.FromJsonOverwrite(savedUser, Mgr_User.Data); Mgr_User.Save(); savedUser = null; }
+            if (EditorApplication.isPlaying && Mgr_Game.Instance != null) Mgr_Game.Instance.Go(Define_Scene.Title);
             WriteStatus(status);
         }
-        private static void WriteStatus(string state)=>File.WriteAllLines(Folder+"/실제플레이_검증.txt",new[]{state}.Concat(notes));
-        private static void Check(bool condition,string message)
+        private static void WriteStatus(string state) { Status = state; File.WriteAllLines(folder + "/실제플레이_검증.txt", new[] { state }.Concat(notes)); }
+        private static void Check(bool condition, string message)
         {
-            if(!condition)throw new InvalidOperationException(message);notes.Add("PASS "+message);WriteStatus("RUNNING");
+            if (!condition) throw new InvalidOperationException(message);
+            notes.Add("PASS " + message); WriteStatus("RUNNING");
         }
-        private static void Capture(string name)=>ScreenCapture.CaptureScreenshot(Path.GetFullPath(Folder+"/"+name+".png"));
-        private static IEnumerator<float> Steps()
+        private static void Capture(string name) => ScreenCapture.CaptureScreenshot(Path.GetFullPath(folder + "/" + name + ".png"));
+        private static bool FramesHero(int hero)
         {
-            foreach(string scene in new[]{Define_Scene.Sprite2D,Define_Scene.OvalToon})
-            for(int id=0;id<3;id++)
+            var rig = UnityEngine.Object.FindFirstObjectByType<CameraRig.Sys_RaceCinemachine>();
+            if (rig != null && rig.isActiveAndEnabled)
             {
-                string label=scene+"_"+Mgr_Table.Demo.Monsters[id].Id;
-                Mgr_User.Data.SelectedMonster=id;
-                var growth=Mgr_User.Data.Monsters[id];growth.Level=5;growth.SpeedBonus=30;growth.Trained=true;growth.EndurancePassive=true;
-                Mgr_Game.Instance.EnterRace(scene);yield return 1;
-                while(Race==null||Panel==null||Mgr_Game.Instance.IsTransitioning)yield return .1f;
-                var race=Race;var panel=Panel;var video=Video;int hero=Mgr_Game.Instance.HeroRunner;
-                Check(video!=null&&video.VideoPath==Sys_DemoSkillVideo.PathFor(Mgr_Table.Demo.Monsters[id].Id,scene==Define_Scene.Sprite2D),label+" correct movie mapping");
-                var expected=new Data_RaceSimulation(race.Entrants,race.Course,race.EnableLaneContests,race.LapCount);expected.Begin();
-                for(int step=0;step<12000&&expected.Phase!=E_RacePhase.Result;step++)expected.Step();
-                race.PlaybackSpeed=2;
-                while(!panel.IsComicPlaying&&race.Simulation.Phase!=E_RacePhase.Result)yield return .05f;
-                Check(panel.IsComicPlaying&&!video.IsActive&&race.Simulation.Runners[hero].SkillActivationCount==1,label+" first activation comic only");
-                double held=race.Simulation.Time;yield return .35f;
-                Check(race.Simulation.Time==held,label+" comic holds all runners");
-                Capture(label+"_1차_만화");yield return .15f;
-                if(id==0&&scene==Define_Scene.Sprite2D){while(panel.IsComicPlaying)yield return .1f;}
-                else {GameObject.Find("btn_skip_comic").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();yield return .1f;}
-                Check(!panel.IsComicPlaying&&!race.PresentationHeld,label+" comic completion/skip releases hold");
-                while(!video.IsActive&&race.Simulation.Phase!=E_RacePhase.Result)yield return .05f;
-                Check(video.IsActive&&!panel.IsComicPlaying&&race.Simulation.Runners[hero].SkillActivationCount==2,label+" second activation movie only");
-                while(video.IsActive&&!video.HasFirstFrame)yield return .05f;
-                Check(video.IsActive&&video.HasFirstFrame,label+" actual decoded first frame");
-                held=race.Simulation.Time;yield return .7f;
-                Check(race.Simulation.Time==held&&video.MediaTime>.1,label+" movie advances while race holds");
-                if(id==0)
+                var brain = UnityEngine.Object.FindFirstObjectByType<Unity.Cinemachine.CinemachineBrain>();
+                return rig.IsSkillVideoFraming && rig.ProtagonistId == hero && brain != null && brain.ActiveVirtualCamera == rig.SkillCamera;
+            }
+            var director = UnityEngine.Object.FindFirstObjectByType<Sys_RaceCamera>();
+            return director != null && director.isActiveAndEnabled && director.CurrentShot == E_RaceShot.SkillVideo && director.FocusRunner == hero;
+        }
+        private static bool HeroBodyInFrame(int hero)
+        {
+            var view = UnityEngine.Object.FindFirstObjectByType<Sys_RacePresentation>().Views[hero];
+            var mesh = view.MountRoot.GetComponentsInChildren<SkinnedMeshRenderer>().FirstOrDefault(r => r.enabled && !r.name.StartsWith("obj_outline"));
+            if (mesh == null || Camera.main == null) return false;
+            Vector3 screen = Camera.main.WorldToViewportPoint(mesh.bounds.center);
+            Vector3 top = Camera.main.WorldToViewportPoint(mesh.bounds.center + Vector3.up * mesh.bounds.extents.y);
+            Vector3 bottom = Camera.main.WorldToViewportPoint(mesh.bounds.center - Vector3.up * mesh.bounds.extents.y);
+            return screen.z > 0 && screen.x > .08f && screen.x < .92f && screen.y > .08f && screen.y < .92f
+                && top.y < .97f && bottom.y > .03f;
+        }
+
+        private static IEnumerator<float> Steps(int first, int count)
+        {
+            for (int id = first; id < first + count; id++)
+            {
+                string label = Mgr_Table.Demo.Monsters[id].Id;
+                Mgr_User.Data.SelectedMonster = id;
+                var growth = Mgr_User.Data.Monsters[id]; growth.Level = 5; growth.SpeedBonus = 30; growth.Trained = true; growth.EndurancePassive = true;
+                Mgr_Game.Instance.EnterRace(Define_Scene.OvalToon); yield return 1;
+                while (Race == null || Panel == null || Mgr_Game.Instance.IsTransitioning) yield return .1f;
+                var race = Race; var panel = Panel; var video = Video; int hero = Mgr_Game.Instance.HeroRunner;
+                Check(video != null && video.VideoPath == Sys_DemoSkillVideo.PathFor(label), label + " correct movie mapping");
+                Check(panel.transform.Find("obj_safe_area/group_comic") == null, label + " no comic UI");
+                var expected = new Data_RaceSimulation(race.Entrants, race.Course, race.EnableLaneContests, race.LapCount); expected.Begin();
+                for (int step = 0; step < 12000 && expected.Phase != E_RacePhase.Result; step++) expected.Step();
+                race.PlaybackSpeed = 2;
+                while (!video.IsActive && race.Simulation.Phase != E_RacePhase.Result) yield return .05f;
+                Check(video.IsActive && race.Simulation.Runners[hero].SkillActivationCount == 1, label + " one skill starts video");
+                while (video.IsActive && !video.HasFirstFrame) yield return .05f;
+                Check(video.IsActive && video.HasFirstFrame && !video.HasFailed, label + " actual decoded first frame");
+                double held = race.Simulation.Time; yield return .7f;
+                var decoder = video.GetComponent<UnityEngine.Video.VideoPlayer>();
+                Check(decoder.width == 1920 && decoder.height == 1080 && Math.Abs(decoder.length - 7) < .1, label + " actual 1080p seven-second media");
+                Check(race.Simulation.Time == held && video.MediaTime > .1, label + " movie advances while all runners hold");
+                var opacity = panel.transform.Find("group_skill_video").GetComponent<CanvasGroup>();
+                Check(opacity.alpha > .98f, label + " fade reaches full opacity");
+                Check(FramesHero(hero), label + " camera reframes under opaque movie");
+                Capture(label + "_영상초반");
+                if (id == 0)
                 {
-                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();yield return .2f;
-                    double media=video.MediaTime;yield return .35f;
-                    Check(race.Paused&&race.Simulation.Time==held&&Math.Abs(media-video.MediaTime)<.09,label+" pause freezes movie and race");
-                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();yield return .3f;
+                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke(); yield return .2f;
+                    double media = video.MediaTime; yield return .35f;
+                    Check(race.Paused && race.Simulation.Time == held && Math.Abs(media - video.MediaTime) < .09, label + " pause freezes media and race");
+                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 }
-                yield return 1.4f;Capture(label+"_2차_영상");yield return .1f;
-                if(id==1){GameObject.Find("btn_skip_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();yield return .4f;}
-                else while(video.IsActive)yield return .1f;
-                Check(!video.IsActive&&!race.PresentationHeld,label+" movie completion/skip releases hold");
-                while(race.Simulation.Phase!=E_RacePhase.Result)yield return .1f;
-                Check(race.Simulation.Runners[hero].SkillActivationCount==2&&race.Simulation.Order.SequenceEqual(expected.Order)
-                    &&race.Simulation.Runners.Zip(expected.Runners,(a,b)=>a.FinishTime==b.FinishTime).All(value=>value),label+" exactly two skills and deterministic result");
-                yield return .2f;
-                // Restart resets the activation sequence; result skip must not start a movie.
-                race.RestartRace();yield return .1f;
-                Check(race.Simulation.Runners[hero].SkillActivationCount==0&&!video.IsActive&&!panel.IsComicPlaying,label+" restart clears presentation");
-                race.SkipToResult();yield return .2f;
-                Check(race.Simulation.Runners[hero].SkillActivationCount==2&&!race.PresentationHeld&&!video.IsActive&&!panel.IsComicPlaying,label+" result skip suppresses both presentations");
-                if(id==2)
+                yield return 3; Capture(label + "_영상후반");
+                while (video.IsActive && opacity.alpha > .98f) yield return .02f;
+                if (video.IsActive) Capture(label + "_복귀디졸브");
+                while (video.IsActive) yield return .05f;
+                Check(!race.PresentationHeld && opacity.alpha == 0 && !video.TryPlay(), label + " full playback and fade release hold, duplicate replay blocked");
+                Check(FramesHero(hero), label + " fade returns to the selected runner");
+                Capture(label + "_질주복귀");
+                Check(HeroBodyInFrame(hero), label + " visible character body remains inside the return frame");
+                while (race.Simulation.Phase != E_RacePhase.Result) yield return .1f;
+                Check(race.Simulation.Runners[hero].SkillActivationCount == 1 && Equal(race.Simulation, expected), label + " one skill and deterministic result");
+                race.RestartRace(); yield return .1f;
+                Check(race.Simulation.Runners[hero].SkillActivationCount == 0 && !video.IsActive, label + " restart clears presentation");
+                race.SkipToResult(); yield return .2f;
+                Check(!race.PresentationHeld && !video.IsActive && Equal(race.Simulation, expected), label + " result skip preserves skill and result");
+                if (id != 2) continue;
+
+                race.RestartRace(); race.PlaybackSpeed = 20;
+                while (!video.IsActive && race.Simulation.Phase != E_RacePhase.Result) yield return .05f;
+                while (video.IsActive && !video.HasFirstFrame) yield return .05f;
+                Check(video.HasFirstFrame && video.IsActive, "skip scenario has actual media");
+                yield return .5f; video.Skip(); yield return .6f;
+                Check(!video.IsActive && !race.PresentationHeld, "skip fades back and releases hold");
+                race.SkipToResult(); yield return .1f;
+                Check(Equal(race.Simulation, expected), "skip preserves deterministic result");
+
+                race.RestartRace(); race.PlaybackSpeed = 20;
+                while (!video.IsActive && race.Simulation.Phase != E_RacePhase.Result) yield return .05f;
+                Check(video.IsActive, "OFF scenario starts presentation");
+                panel.CutscenesEnabled = false; yield return .1f;
+                Check(!video.IsActive && !race.PresentationHeld, "turning OFF immediately clears active presentation");
+                while (race.Simulation.Phase != E_RacePhase.Result)
                 {
-                    panel.CutscenesEnabled=false;race.RestartRace();race.PlaybackSpeed=20;yield return .1f;
-                    while(race.Simulation.Phase!=E_RacePhase.Result)
-                    {
-                        Check(!race.PresentationHeld&&!video.IsActive&&!panel.IsComicPlaying,label+" cutscenes off remains live");yield return .4f;
-                    }
-                    Check(race.Simulation.Runners[hero].SkillActivationCount==2&&race.Simulation.Runners[hero].FinishTime==expected.Runners[hero].FinishTime,label+" cutscenes off preserves skills/result");
+                    if (video.IsActive || race.PresentationHeld) throw new InvalidOperationException("OFF reopened a presentation");
+                    yield return .2f;
                 }
+                Check(Equal(race.Simulation, expected), "OFF preserves one skill and deterministic result");
+
+                panel.CutscenesEnabled = true; race.RestartRace(); race.PlaybackSpeed = 20;
+                while (!video.IsActive && race.Simulation.Phase != E_RacePhase.Result) yield return .05f;
+                Check(video.IsActive, "restart scenario starts presentation");
+                race.RestartRace(); yield return .1f;
+                // Restart legitimately gives the hold to the opening camera sequence.
+                // Verify that the video relinquished ownership without rejecting that new intro.
+                var owner = typeof(Sys_Race).GetField("presentationOwner", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(race);
+                Check(!video.IsActive && owner != video && (owner == null || owner is CameraRig.RaceStartIntro)
+                    && race.Simulation.Runners[hero].SkillActivationCount == 0, "restart during video clears media and transfers hold only to the new intro");
+                decoder.Stop(); decoder.url = Application.streamingAssetsPath + "/Video/RaceSkills/VerificationMissing.mp4"; decoder.Prepare();
+                yield return .5f; race.PlaybackSpeed = 20;
+                while (race.Simulation.Phase != E_RacePhase.Result) yield return .2f;
+                Check(video.HasFailed && !video.IsActive && !race.PresentationHeld && Equal(race.Simulation, expected), "missing media keeps one skill, no comic fallback, same result");
             }
         }
     }

@@ -1,0 +1,147 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "미노타우르스_스킬시작_20261020.png"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "type": "minimax",
+      "device": "default"
+    }
+  },
+  "4": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_h3_video_vae_int8_convrot.safetensors"
+    }
+  },
+  "5": {
+    "class_type": "MiniMaxH3ImageToVideo",
+    "inputs": {
+      "clip": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ],
+      "prompt": "A spectacular 7.3-second ultimate-skill cinematic for a fantasy racing game, rich polished 3D cel-shaded animation with expressive motion, clean toon shapes, cinematic depth and extraordinary magical effects. The character must remain recognizable and clearly visible. Distinct anticipation, explosive acceleration, then a powerful moving hero finish. The environment remains a real detailed sunlit fantasy racing course with stone stadium arches, grass, distant mountains and blue sky. Dynamic motivated camera moves and crisp changes of angle, fluid locomotion and readable silhouettes. No text, subtitles, interface, panels, logos, rider, extra limbs, transformation into a different creature, static slideshow, persistent whiteout or abstract speed-line-only background. Effects surround the character rather than obscure it. End on forward momentum for a seamless return to the race. Preserve the exact powerful ochre-brown minotaur from the reference: angular bull head, tall dark mohawk, two downward-curving ivory horns, glowing red eyes, a gold nose ring, X shoulder scars, dark maroon leather harness with silver rivets, thick bracers and fists, waist armor, dark furry legs and cloven hooves. No weapon. 0-1.3 seconds: low camera slowly pushes toward his fierce face while both fists tighten, nostrils exhale steam and his massive legs brace. Golden embers spiral around his hooves and wrists, pebbles tremble. 1.3-2.2 seconds: sharp dramatic eye-and-horn close-up with a brilliant red-gold glint; mane and leather straps blow back under rising pressure. 2.2-3.0 seconds: ground-level close-up of one hoof crashing down. Glowing cracks race across the dirt and one enormous golden circular shockwave erupts, lifting a ring of rocks, grass and dust. A brief intense impact glint and camera jolt clear instantly. 3.0-6.0 seconds: cut to a wide low three-quarter tracking shot as he launches into a tremendously forceful sprint, shoulders driving, powerful alternating hoof strikes. A gigantic translucent golden bull-shaped energy silhouette rises behind him, charges with him, then stretches into blazing gold ribbons and sparks. Grand stadium arches sweep past in deep parallax. Keep his actual body fully readable in front of the spectral bull. 6.0-7.3 seconds: camera sweeps toward a frontal heroic charge. His fierce confident red-eyed gaze and one driving fist dominate the composition while the golden wake splits to either side and large stone arches remain visible. No punch at another character; this is a physical racing acceleration. Emphasize heavy impact, enormous muscular power, layered golden particles and strong directed momentum.",
+      "width": 1536,
+      "height": 864,
+      "length": 175,
+      "first_frame": [
+        "1",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 20261020031
+    }
+  },
+  "7": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "res_multistep"
+    }
+  },
+  "8": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "scheduler": "simple",
+      "steps": 25,
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "conditioning": [
+        "5",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "6",
+        0
+      ],
+      "guider": [
+        "9",
+        0
+      ],
+      "sampler": [
+        "7",
+        0
+      ],
+      "sigmas": [
+        "8",
+        0
+      ],
+      "latent_image": [
+        "5",
+        1
+      ]
+    }
+  },
+  "11": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "CreateVideo",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ],
+      "fps": 24
+    }
+  },
+  "13": {
+    "class_type": "SaveVideo",
+    "inputs": {
+      "video": [
+        "12",
+        0
+      ],
+      "filename_prefix": "ProjectRunSkillHD20261020/Minorous_1536_v01",
+      "format": "mp4",
+      "format.codec": "h264"
+    }
+  }
+}
