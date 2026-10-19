@@ -25,7 +25,7 @@ namespace ProjectRun.Race.Editor
                 {
                     race.Entrants=original;Sys_DemoRace.ConfigureSetups(race,id);int hero=Mgr_Table.Demo.Monsters[id].RunnerIndex;
                     race.Entrants[hero].StaminaDrainMultiplier=.8f;
-                    race.Entrants[hero].BaseSpeed=(race.Course!=null?race.Course.Length:Data_RaceSimulation.Length)/40f*(.91f+(Mgr_Table.Demo.Monsters[id].Stats[0]+Mgr_Table.Demo.TrainingSpeed-240)*.0018f);
+                    race.Entrants[hero].BaseSpeed=(race.Course!=null?race.Course.Length:Data_RaceSimulation.Length)/Sys_DemoRace.RaceSeconds*(.91f+(Mgr_Table.Demo.Monsters[id].Stats[0]+Mgr_Table.Demo.TrainingSpeed-240)*.0018f);
                     var first=new Data_RaceSimulation(race.Entrants,race.Course,race.EnableLaneContests,race.LapCount);
                     var second=new Data_RaceSimulation(race.Entrants,race.Course,race.EnableLaneContests,race.LapCount);
                     float skillAt=-1;first.Changed+=e=>{if(e.Kind==E_RaceEvent.Skill&&e.RunnerId==hero)skillAt=e.Time;};
