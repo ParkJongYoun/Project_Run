@@ -27,6 +27,14 @@ namespace ProjectRun.Race
         private void OnDisable() { Mgr_Event.RaceChanged -= Handle; Mgr_Event.Reset -= ResetPresentation; Mgr_Sound.SetWind(0); }
         private void Start()
         {
+            // The oval demo selects a fresh lineup before the simulation starts.
+            // Remove the old authored lineup before binding its replacement.
+            if (gameObject.scene.name == Define_Scene.OvalToon && Mgr_Game.Instance != null && Mgr_Game.Instance.IsDemoRace && Views != null)
+            {
+                foreach (var view in Views)
+                    if (view != null) { view.gameObject.SetActive(false); Destroy(view.gameObject); }
+                Views = null;
+            }
             if (Views != null && Views.Length == Race.Entrants.Length && Views[0] != null)
             {
                 for (int i = 0; i < Views.Length; i++) Views[i].Bind(Race, i);

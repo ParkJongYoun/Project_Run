@@ -59,7 +59,7 @@ namespace ProjectRun.Race
                 var button=card.gameObject.AddComponent<UnityEngine.UI.Button>();button.targetGraphic=card;button.interactable=recommended;
                 button.onClick.AddListener(()=>{tacticSelected=true;ClearOverlay();Body.Find("group_tactics/btn_tactic_confirm").GetComponent<UnityEngine.UI.Button>().interactable=true;});
             }
-            DemoUI.Button(panel,"btn_tactic_confirm","전술 확정 · 경기 모드 선택",0,-224,460,60,()=>{if(tacticSelected)ShowModes();}).interactable=false;
+            DemoUI.Button(panel,"btn_tactic_confirm","전술 확정 · 출전 확인",0,-224,460,60,()=>{if(tacticSelected)ShowModes();}).interactable=false;
             SetObjective("출전 몬스터 · "+monster.Name+" / 전술 선택");
             GuideOnce("tactics",monster.Strength+"에 강한 "+monster.Name+"에게는\n‘"+monster.Tactic+"’ 전술을 추천해요. 선택 후 확정해 주세요.");
         }
@@ -67,13 +67,11 @@ namespace ProjectRun.Race
         {
             ClearPage("modes");var panel=PagePanel("group_modes");
             BackButton(panel,"전술로 돌아가기",ShowTactics);
-            DemoUI.Text(panel,"txt_title","어떤 경기장에서 달릴까요?",30,218,700,60,34,null,TextAnchor.MiddleCenter,true);
-            DemoUI.Text(panel,"txt_subtitle","선택한 몬스터와 훈련 결과가 두 모드에 동일하게 반영됩니다",0,161,980,40,21);
-            var left=DemoUI.Image(panel,"img_oval_preview","mode_3d",-263,0,470,240);DemoUI.Image(panel,"img_oval_frame","photo_frame",-263,0,478,248);
-            DemoUI.Image(panel,"img_2d_preview","mode_2d",263,0,470,240);DemoUI.Image(panel,"img_2d_frame","photo_frame",263,0,478,248);
-            DemoUI.Button(panel,"btn_enter_oval","카툰 경기장  ·  3D",-263,-183,470,68,()=>Mgr_Game.Instance.EnterRace(Define_Scene.OvalToon));
-            DemoUI.Button(panel,"btn_enter_2d","초원 경기장  ·  2D",263,-183,470,68,()=>Mgr_Game.Instance.EnterRace(Define_Scene.Sprite2D));
-            SetObjective("경기 모드를 골라 레이스 시작");
+            DemoUI.Text(panel,"txt_title","카툰 경기장 출전",30,218,700,60,34,null,TextAnchor.MiddleCenter,true);
+            DemoUI.Text(panel,"txt_subtitle","포링 · 미노타우르스 · 페코페코 + 무작위 주자 3종",0,161,980,40,21);
+            DemoUI.Image(panel,"img_oval_preview","mode_3d",0,0,470,240);DemoUI.Image(panel,"img_oval_frame","photo_frame",0,0,478,248);
+            DemoUI.Button(panel,"btn_enter_oval","카툰 경기장 · 레이스 시작",0,-183,470,68,()=>Mgr_Game.Instance.EnterRace(Define_Scene.OvalToon));
+            SetObjective("선택한 몬스터와 훈련 결과로 카툰 레이스 시작");
         }
     }
 }

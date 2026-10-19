@@ -117,6 +117,7 @@ namespace ProjectRun.Race
         private void Start()
         {
             MountAnimator.applyRootMotion = false;
+            MountAnimator.fireEvents = false;
             MountAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             mountGraph = PlayableGraph.Create("Mount_" + RunnerId);
             mountGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
@@ -194,7 +195,8 @@ namespace ProjectRun.Race
                 idleClock = RunnerId * 0.3; ridePitch = 0; rideRoll = 0; displayedSpeed = 0;
                 lastFoot = -1;
                 foreach (var trail in Trails) trail.Clear();
-                Dust.Clear(); Sparks.Clear();
+                if (Dust != null) Dust.Clear();
+                if (Sparks != null) Sparks.Clear();
             }
             // Match interpolated translation: do not hold the skeleton at 60 Hz while the camera renders faster.
             double clock = System.Math.Max(0, race.Simulation.Time - Data_RaceSimulation.StepSeconds
@@ -202,7 +204,7 @@ namespace ProjectRun.Race
             double delta = System.Math.Max(0, clock - previousClock);
             previousClock = clock;
             // Start intro timeline holds the race before the start: keep the idle pose alive.
-            // Mid-race holds (skill video / comic) still freeze the pose.
+            // Mid-race skill video holds still freeze the pose.
             bool preStartHold = race.PresentationHeld && race.Simulation.Phase == E_RacePhase.Preparing;
             float poseDelta = race.Paused || (race.PresentationHeld && !preStartHold) ? 0
                 : (preStartHold || race.Countdown > 0 || race.Simulation.Phase == E_RacePhase.Result
@@ -318,10 +320,10 @@ namespace ProjectRun.Race
             else FaceTarget.SetPositionAndRotation(MonsterFaceTarget.position, MonsterFaceTarget.rotation);
             CameraTarget.position = transform.position + Vector3.up * CameraFocusHeight;
             bool boosted = s.SkillAge >= 0 && s.SkillAge < race.Entrants[RunnerId].SurgeDuration;
-            var dustEmission = Dust.emission; dustEmission.rateOverTime = race.Paused || race.PresentationHeld || s.Speed < 2 ? 0 : (boosted ? 32 : 14);
-            var sparkEmission = Sparks.emission; sparkEmission.rateOverTime = boosted && !race.Paused && !race.PresentationHeld ? 28 : 0;
+            if (Dust != null) { var dustEmission = Dust.emission; dustEmission.rateOverTime = race.Paused || race.PresentationHeld || s.Speed < 2 ? 0 : (boosted ? 32 : 14); }
+            if (Sparks != null) { var sparkEmission = Sparks.emission; sparkEmission.rateOverTime = boosted && !race.Paused && !race.PresentationHeld ? 28 : 0; }
             foreach (var trail in Trails) trail.emitting = boosted && !race.Paused && !race.PresentationHeld;
-            Shadow.localPosition = new Vector3(0, 0.035f, -0.2f);
+            if (Shadow != null) Shadow.localPosition = new Vector3(0, 0.035f, -0.2f);
             HasPose = true;
         }
         private void UpdateMotionProps()
