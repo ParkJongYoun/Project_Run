@@ -8,6 +8,8 @@ namespace ProjectRun.Race
         public RaceRunnerView[] Views;
         [Tooltip("Optional pooled skill aura prefab for this race's 3D runners.")]
         public RaceRunnerSkillAura SkillAuraPrefab;
+        [Tooltip("Optional one-shot skill start effect prefab attached to each runner (e.g. eff_skill_start).")]
+        public GameObject SkillStartEffectPrefab;
         public int SkillRunner { get; private set; } = -1;
         public float SkillStarted { get; private set; }
         public string Announcement { get; private set; }
@@ -29,6 +31,7 @@ namespace ProjectRun.Race
             {
                 for (int i = 0; i < Views.Length; i++) Views[i].Bind(Race, i);
                 CreateSkillAuras();
+                CreateSkillStartEffects();
                 return;
             }
             Views = new RaceRunnerView[Race.Entrants.Length];
@@ -42,6 +45,7 @@ namespace ProjectRun.Race
                 Views[i].Bind(Race, i);
             }
             CreateSkillAuras();
+            CreateSkillStartEffects();
         }
         private void CreateSkillAuras()
         {
@@ -51,6 +55,27 @@ namespace ProjectRun.Race
                 var aura = Instantiate(SkillAuraPrefab, Views[i].transform);
                 aura.name = "obj_skill_aura";
                 aura.Bind(Race, i, Race.Entrants[i].Color);
+            }
+        }
+        private void CreateSkillStartEffects()
+        {
+            if (SkillStartEffectPrefab == null || Views == null) return;
+            for (int i = 0; i < Views.Length; i++)
+            {
+                if (Views[i] == null) continue;
+                // If the runner view already has a trigger effect attached (e.g. pre-baked in scene/prefab), just bind it.
+                var trigger = Views[i].GetComponentInChildren<RaceRunnerSkillTriggerEffect>(true);
+                if (trigger == null)
+                {
+                    var effObj = Instantiate(SkillStartEffectPrefab, Views[i].transform);
+                    effObj.name = "eff_skill_start";
+                    effObj.transform.localPosition = new Vector3(0, 0.05f, 0);
+                    effObj.transform.localRotation = Quaternion.identity;
+                    effObj.transform.localScale = Vector3.one * 1.5f;
+                    trigger = effObj.GetComponent<RaceRunnerSkillTriggerEffect>();
+                    if (trigger == null) trigger = effObj.AddComponent<RaceRunnerSkillTriggerEffect>();
+                }
+                trigger.Bind(Race, i);
             }
         }
         private void Update()
