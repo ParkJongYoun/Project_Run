@@ -19,6 +19,10 @@ namespace ProjectRun.Race.CameraRig
         [Header("When")]
         [Tooltip("Speed lines appear while any of these cameras is live.")]
         public List<Unity.Cinemachine.CinemachineCamera> Cameras = new List<Unity.Cinemachine.CinemachineCamera>();
+        [Tooltip("While one of these cameras is live, the lines are centered on the screen (+ScreenCenterOffset) instead of the protagonist's face. Use for fixed cameras.")]
+        public List<Unity.Cinemachine.CinemachineCamera> ScreenCenterCameras = new List<Unity.Cinemachine.CinemachineCamera>();
+        [Tooltip("Offset from the screen center as a fraction of the screen size. (0, 0.05) = slightly above center.")]
+        public Vector2 ScreenCenterOffset = Vector2.zero;
 
         [Header("Look")]
         [Tooltip("World offset from the protagonist's face anchor.")]
@@ -75,7 +79,14 @@ namespace ProjectRun.Race.CameraRig
         private bool TryGetHeadScreenPoint(out Vector2 screen)
         {
             screen = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-            if (Rig == null || Rig.Presentation == null || Rig.Presentation.Views == null) return true;
+            var live = Brain.ActiveVirtualCamera as Object;
+            foreach (var cam in ScreenCenterCameras)
+                if (cam != null && ReferenceEquals(cam, live))
+                {
+                    screen += new Vector2(Screen.width * ScreenCenterOffset.x, Screen.height * ScreenCenterOffset.y);
+                    return true;
+                }
+            if (Rig == null|| Rig.Presentation == null || Rig.Presentation.Views == null) return true;
             int id = Rig.ProtagonistId;
             if (id < 0 || id >= Rig.Presentation.Views.Length) return true;
             var view = Rig.Presentation.Views[id];

@@ -115,6 +115,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8136124028659984779}
   - component: {fileID: 2953366982612487693}
+  - component: {fileID: 4942643630865969295}
   m_Layer: 0
   m_Name: CM_Start_center_out
   m_TagString: Untagged
@@ -180,6 +181,30 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
+--- !u!114 &4942643630865969295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 498721387654092120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b2d199b96b516448144ab30fb26aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseListener
+  ApplyAfter: 2
+  ChannelMask: 2
+  Gain: 1
+  Use2DDistance: 0
+  UseCameraSpace: 1
+  SignalCombinationMode: 0
+  ReactionSettings:
+    m_SecondaryNoise: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    Duration: 1
+    m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1718218863761261834
 GameObject:
   m_ObjectHideFlags: 0
@@ -377,10 +402,15 @@ PlayableDirector:
   m_SceneBindings:
   - key: {fileID: 8518429181780328819, guid: 4b10d75ba0f796f48907f88f9738e233, type: 2}
     value: {fileID: 0}
+  - key: {fileID: 0}
+    value: {fileID: 6155236785627454413}
+  - key: {fileID: 0}
+    value: {fileID: 6155236785627454413}
   m_ExposedReferences:
     m_References:
     - 275f5f01c1958bf45a8f23b6c5aedfbc: {fileID: 2953366982612487693}
     - f0787468f31852840b2c2192cb44b7a4: {fileID: 5954428530173983655}
+    - 22adb7bf7ab4dff41a7cf6c76548e36c: {fileID: 5954428530173983655}
     - 4c101bff40230d84b8687d2ce828e041: {fileID: 6245762300761835828}
     - 8e2aba304ff112a46bfda84f11da8a75: {fileID: 1434491479342853079}
 --- !u!1 &2266066503516091040
@@ -1144,6 +1174,7 @@ Transform:
   - {fileID: 1988371982855794881}
   - {fileID: 7814202780202209650}
   - {fileID: 1862429432869416840}
+  - {fileID: 5874822052587079088}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3635052197045559755
@@ -2008,6 +2039,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3877251622250531434}
   - component: {fileID: 5954428530173983655}
+  - component: {fileID: 6155236785627454413}
   m_Layer: 0
   m_Name: CM_Start_center
   m_TagString: Untagged
@@ -2073,6 +2105,28 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
+--- !u!95 &6155236785627454413
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6254018720136689117}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6572063143585453916
 GameObject:
   m_ObjectHideFlags: 0
@@ -2576,6 +2630,138 @@ MonoBehaviour:
     Time: 0
     Smoothing: 0
     IgnoreY: 0
+--- !u!1 &7396568828501244035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5874822052587079088}
+  - component: {fileID: 1358035776203770799}
+  - component: {fileID: 1005318130835957640}
+  - component: {fileID: 3279126883424780842}
+  m_Layer: 0
+  m_Name: Sys_RaceStartImpact
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5874822052587079088
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7396568828501244035}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7199790007485573953}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1358035776203770799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7396568828501244035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 200
+  blendDistance: 0
+  weight: 0
+  sharedProfile: {fileID: 11400000, guid: 45905dc103db4b34ab61d1e5a93b610e, type: 2}
+--- !u!114 &1005318130835957640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7396568828501244035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 2
+    ImpulseShape: 2
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &3279126883424780842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7396568828501244035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 638637b9253d3c64a85c188e3266a134, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectRun.Race.CameraRig.RaceStartImpact
+  Race: {fileID: 0}
+  Cameras:
+  - {fileID: 2953366982612487693}
+  Source: {fileID: 1005318130835957640}
+  ImpactVolume: {fileID: 1358035776203770799}
+  EnableShake: 1
+  ShakeStrength: 1.3
+  ShakeDuration: 0.35
+  ShakeVelocity: {x: 0.6, y: 1, z: 0.35}
+  EnableFovPunch: 1
+  FovKick: 22
+  FovAttack: 0.12
+  FovRelease: 0.9
+  EnableVolumePulse: 1
+  VolumeAttack: 0.06
+  VolumeRelease: 0.8
 --- !u!1 &7461678745988929566
 GameObject:
   m_ObjectHideFlags: 0
@@ -2845,6 +3031,10 @@ MonoBehaviour:
   Lines: {fileID: 0}
   Cameras:
   - {fileID: 2552129371420376828}
+  - {fileID: 2953366982612487693}
+  ScreenCenterCameras:
+  - {fileID: 2953366982612487693}
+  ScreenCenterOffset: {x: 0, y: 0}
   HeadOffset: {x: 0, y: 0, z: 0}
   FadeInSeconds: 0.25
   FadeOutSeconds: 0.2
