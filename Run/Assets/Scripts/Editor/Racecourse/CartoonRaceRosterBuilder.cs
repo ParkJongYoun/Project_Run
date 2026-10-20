@@ -16,8 +16,8 @@ namespace ProjectRun.EditorTools
         private const string prefabFolder = "Assets/Resources/Prefabs/Race/CartoonRaceLineup";
         private const string portraitFolder = "Assets/ArtBundles/UI/CartoonRaceLineup";
         private const string rosterPath = "Assets/Resources/Tables/Data_CartoonRaceRoster.asset";
-        private static readonly string[] ids = { "Poring", "Minorous", "Pecopeco", "Fox", "Alpaca", "Smokie", "Lunatic", "Savage", "Horse", "BaphometJr", "FlameBird" };
-        private static readonly string[] names = { "포링", "미노타우르스", "페코페코", "여우", "알파카", "스모키", "루나틱", "세비지", "말", "바포메트 주니어", "불꽃새" };
+        private static readonly string[] ids = { "Poring", "Minorous", "Pecopeco", "Lunatic", "BaphometJr", "Alpaca" };
+        private static readonly string[] names = { "포링", "미노타우르스", "페코페코", "루나틱", "바포메트 주니어", "알파카" };
 
         [MenuItem("Tools/Project Run/Cartoon monsters/Sync race lineup from showcase")]
         public static void Sync()
@@ -91,7 +91,7 @@ namespace ProjectRun.EditorTools
                 EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
                 if (openedRace) EditorSceneManager.CloseScene(scene, true);
                 EditorBuildSettings.scenes = EditorBuildSettings.scenes.Select(s => new EditorBuildSettingsScene(s.path, s.path == Define_Scene.Path(Define_Scene.Sprite2D) ? false : s.enabled)).ToArray();
-                Debug.Log("CARTOON_RACE_ROSTER_SYNCED: 3 playable + 8 candidates; showcase proportions preserved.");
+                Debug.Log("CARTOON_RACE_ROSTER_SYNCED: 3 playable + 3 fixed opponents; showcase proportions preserved.");
             }
             finally
             {
