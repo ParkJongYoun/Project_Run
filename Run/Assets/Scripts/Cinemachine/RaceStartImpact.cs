@@ -19,6 +19,10 @@ namespace ProjectRun.Race.CameraRig
         [Tooltip("Global volume whose weight is pulsed 0 -> 1 -> 0. Keep its weight at 0 in the scene.")]
         public UnityEngine.Rendering.Volume ImpactVolume;
 
+        [Header("Trigger")]
+        [Tooltip("On: plays at the race start. Off: plays only when Play() is called (e.g. skill camera entry).")]
+        public bool PlayOnRaceStart = true;
+
         [Header("Shake")]
         public bool EnableShake = true;
         [Min(0f)] public float ShakeStrength = 1.3f;
@@ -56,7 +60,7 @@ namespace ProjectRun.Race.CameraRig
 
         private void OnRaceChanged(Data_RaceEvent e)
         {
-            if (e.Kind != E_RaceEvent.Start) return;
+            if (!PlayOnRaceStart || e.Kind != E_RaceEvent.Start) return;
             if (Race != null && Race.IsSkipping) return;
             Play();
         }

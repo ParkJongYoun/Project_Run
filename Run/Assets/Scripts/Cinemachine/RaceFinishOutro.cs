@@ -36,6 +36,10 @@ namespace ProjectRun.Race.CameraRig
         [Tooltip("Order = timeline order. Rebuild the timeline after editing.")]
         public List<Shot> Shots = new List<Shot>();
 
+        [Header("Effect")]
+        [Tooltip("Scene effect (kept inactive) that is re-activated and played from the start when the outro begins, e.g. eff_color_paper.")]
+        public GameObject FinishEffect;
+
         [Header("Timing")]
         [Tooltip("Delay (race-independent, unscaled) between the protagonist finishing and the first shot.")]
         [Min(0f)] public float StartDelay = 0f;
@@ -78,13 +82,14 @@ namespace ProjectRun.Race.CameraRig
             {
                 generation = Race.Generation;
                 Stop();
+                HideEffect();
                 triggered = false;
                 delayLeft = -1f;
             }
             // Keep finish cameras aimed at the protagonist at all times (no "missing target" state, correct preview).
             if (Rig != null && Rig.ProtagonistId >= 0 && Rig.ProtagonistId != boundProtagonist) RetargetShots();
 
-            if (Race.IsSkipping) { Stop(); delayLeft = -1f; return; }
+            if (Race.IsSkipping) { Stop(); HideEffect(); delayLeft = -1f; return; }
 
             if (delayLeft > 0f)
             {
@@ -104,6 +109,24 @@ namespace ProjectRun.Race.CameraRig
             Director.time = 0;
             Director.Play();
             Director.Evaluate(); // apply the first shot this frame
+            PlayEffect();
+        }
+
+        private void PlayEffect()
+        {
+            if (FinishEffect == null) return;
+            FinishEffect.SetActive(false);
+            FinishEffect.SetActive(true);
+            foreach (var ps in FinishEffect.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                ps.Clear(true);
+                ps.Play(true);
+            }
+        }
+
+        private void HideEffect()
+        {
+            if (FinishEffect != null && FinishEffect.activeSelf) FinishEffect.SetActive(false);
         }
 
         private void RetargetShots()

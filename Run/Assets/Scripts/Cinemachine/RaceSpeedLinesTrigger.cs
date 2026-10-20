@@ -23,6 +23,9 @@ namespace ProjectRun.Race.CameraRig
         public List<Unity.Cinemachine.CinemachineCamera> ScreenCenterCameras = new List<Unity.Cinemachine.CinemachineCamera>();
         [Tooltip("Offset from the screen center as a fraction of the screen size. (0, 0.05) = slightly above center.")]
         public Vector2 ScreenCenterOffset = Vector2.zero;
+        [Tooltip("Lines only appear while the protagonist has run less than this fraction of the first lap (start only). " +
+                 "The start and finish share the same spot, so this keeps the effect from reappearing at the finish. 1+ = no limit.")]
+        [Min(0f)] public float StartOnlyLapFraction = 0.5f;
 
         [Header("Look")]
         [Tooltip("World offset from the protagonist's face anchor.")]
@@ -49,7 +52,7 @@ namespace ProjectRun.Race.CameraRig
         private void LateUpdate()
         {
             if (Brain == null || Lines == null || outputCamera == null) return;
-            bool want = IsTargetLive() && !IsRaceFrozen();
+            bool want = IsTargetLive() && !IsRaceFrozen() && IsStartPhase();
             float dt = Time.unscaledDeltaTime;
             intensity = Mathf.MoveTowards(intensity, want ? 1f : 0f, dt / (want ? FadeInSeconds : FadeOutSeconds));
 
@@ -74,6 +77,16 @@ namespace ProjectRun.Race.CameraRig
             var race = Rig != null ? Rig.Race : null;
             return race == null || race.Simulation == null || race.Paused || race.PresentationHeld || race.IsSkipping
                 || race.Countdown > 0f || race.Simulation.Phase == E_RacePhase.Preparing;
+        }
+
+        private bool IsStartPhase()
+        {
+            var sim = Rig != null && Rig.Race != null ? Rig.Race.Simulation : null;
+            if (sim == null || sim.Runners == null) return true;
+            int id = Rig.ProtagonistId;
+            if (id < 0 || id >= sim.Runners.Length) return true;
+            var runner = sim.Runners[id];
+            return !runner.Finished && runner.Distance < sim.LapLength * StartOnlyLapFraction;
         }
 
         private bool TryGetHeadScreenPoint(out Vector2 screen)
