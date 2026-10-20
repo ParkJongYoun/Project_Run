@@ -37,6 +37,7 @@ namespace ProjectRun.EditorTools
             {
                 foreach (var entry in show.Exhibits)
                 {
+                    if (entry.KeepAppearance || entry.Root.name == "V_Cartoon_NewMinotaurus") continue;
                     var view = entry.Root.GetComponentInChildren<RaceRunnerView>(true);
                     entry.CartoonRoot = view.transform;
                     string id = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(PrefabUtility.GetCorrespondingObjectFromSource(view.gameObject))).Replace("P_Runner_Cartoon_", "");

@@ -243,6 +243,7 @@ namespace ProjectRun.EditorTools
             RenderSettings.ambientSkyColor=new Color(.60f,.70f,.85f); RenderSettings.ambientEquatorColor=new Color(.46f,.49f,.57f); RenderSettings.ambientGroundColor=new Color(.30f,.25f,.22f); RenderSettings.fog=false;
             BuildControls(showcase);
             CartoonOriginalComparisonBuilder.Configure(showcase);
+            NewMinotaurusComparisonBuilder.ApplyToScene(showcase);
             Selection.activeGameObject=exhibitsRoot;
             if(SceneView.lastActiveSceneView!=null) SceneView.lastActiveSceneView.Frame(new Bounds(new Vector3(0,1.5f,8),new Vector3(35,7,28)),false);
         }
