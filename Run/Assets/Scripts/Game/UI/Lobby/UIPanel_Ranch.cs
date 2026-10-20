@@ -369,7 +369,7 @@ namespace ProjectRun.Race
             if (CollectionManager != null) { OpenCollection(E_PanelType.RanchArena); return; }
             var panel = OpenModal("프론테라컵 경기장");
             Icon(panel, "img_arena", "arena", -305, 20, 228, 200);
-            Label(panel, "txt_body", "몬스터 1마리 출전 · 자동 레이스\n\n출전 조건  Lv.5 / 스피드 260\n카툰 경기장\n\n훈련을 마친 친구와 함께 출전해 보세요", 135, 17, 615, 252, 23);
+            Label(panel, "txt_body", "몬스터 1마리 출전 · 자동 레이스\n\n훈련 없이도 출전 가능\n카툰 경기장\n\n함께 달릴 친구를 선택하고 출전하세요", 135, 17, 615, 252, 23);
             PlainButton(panel, "btn_dismiss", "목장으로", 0, -195, 240, 52, CloseModal);
         }
 

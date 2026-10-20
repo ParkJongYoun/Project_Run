@@ -199,7 +199,7 @@ namespace ProjectRun.Race.Editor
             }
             Mgr_Game.Instance.StartDemo(); yield return 2;
             while (Mgr_Game.Instance.IsTransitioning) yield return .25f;
-            Check(HasGuide && Mgr_User.Data.SelectedMonster == -1 && !Mgr_User.CanEnter(2), "New demo resets progress and greeting");
+            Check(HasGuide && Mgr_User.Data.SelectedMonster == -1 && !Mgr_User.Data.Monsters[2].Trained && Mgr_User.CanEnter(2), "New demo resets growth and greeting while allowing untrained entry");
             Click("btn_skip_all"); yield return .2f;
             foreach(float delay in OpenMenu("btn_training"))yield return delay; yield return .2f;
             Check(!HasGuide && !Mgr_Guide.Enabled, "Skip suppresses screen hints");

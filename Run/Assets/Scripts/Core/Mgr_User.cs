@@ -85,8 +85,8 @@ namespace ProjectRun.Race
             Save();
         }
         public static void Select(int id) { if (id < 0 || id > 2) return; Data.SelectedMonster = id; Save(); }
-        public static bool CanEnter(int id) => id >= 0 && id < 3 && Data.Monsters[id].Level >= Mgr_Table.Demo.RequiredLevel &&
-            Mgr_Table.Demo.Monsters[id].Stats[0] + Data.Monsters[id].SpeedBonus >= Mgr_Table.Demo.RequiredSpeed;
+        // Training improves race stats, but is not required to enter with an owned monster.
+        public static bool CanEnter(int id) => id >= 0 && id < Data.Monsters.Length;
         public static bool Train(int id)
         {
             if (id < 0 || id > 2 || Data.Monsters[id].Trained) return false;

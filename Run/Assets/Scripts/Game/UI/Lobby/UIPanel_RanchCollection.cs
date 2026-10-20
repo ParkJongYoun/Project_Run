@@ -194,8 +194,8 @@ namespace ProjectRun.Race
                 int currentSpeed = monster.Stats[0] + progress.SpeedBonus;
                 GrowthSpeed.text = progress.Trained ? "스피드  " + currentSpeed + "  ·  <color=#186B28>+" + table.TrainingSpeed + "</color>" : "스피드  " + currentSpeed + "  →  <color=#186B28>" + (monster.Stats[0] + table.TrainingSpeed) + "</color>";
                 GrowthPassive.text = progress.EndurancePassive ? "지치지 않는 발 습득" : "후천 패시브 습득";
-                Requirements.text = "Lv." + table.RequiredLevel + " · 스피드 " + table.RequiredSpeed;
-                TrainingStatus.text = progress.Trained ? "훈련 완료 · 출전 조건 충족" : "선택한 몬스터만 성장해요";
+                Requirements.text = "훈련 없이도 출전 가능";
+                TrainingStatus.text = progress.Trained ? "훈련 완료 · 성장 보너스 적용" : "선택한 몬스터만 성장해요";
                 TrainLabel.text = progress.Trained ? "훈련 완료" : "훈련 시작";
                 TrainButton.interactable = !training && !progress.Trained;
                 SetTrainingProgress(0);

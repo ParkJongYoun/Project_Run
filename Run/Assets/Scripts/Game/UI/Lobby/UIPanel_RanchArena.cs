@@ -57,7 +57,10 @@ namespace ProjectRun.Race
                 int id = i;
                 Bind(EntrantButtons[i], () => SelectEntrant(id));
             }
-            Requirements.text = "Lv." + Mgr_Table.Demo.RequiredLevel + " · 스피드 " + Mgr_Table.Demo.RequiredSpeed;
+            Requirements.text = "훈련 없이도 출전 가능";
+            var entryDescription = EntryPopup.transform.Find("group_content/txt_description");
+            if (entryDescription != null)
+                entryDescription.GetComponent<UnityEngine.UI.Text>().text = "함께 달릴 친구를 선택하고 출전하세요";
             ClosePopups();
         }
 
@@ -277,7 +280,7 @@ namespace ProjectRun.Race
             AbsText(body, "txt_title", "출전할 친구", font, 44, EntryCream, true, TextAnchor.MiddleCenter, 520, 60, 330, 92, true);
 
             // 2) 안내 글귀(종이 띠 위)
-            AbsText(body, "txt_description", "한 마리를 선택하고 추천 전술을 확인하세요", font, 22, NoteInk, false, TextAnchor.MiddleCenter, 340, 166, 600, 34, false);
+            AbsText(body, "txt_description", "함께 달릴 친구를 선택하고 출전하세요", font, 22, NoteInk, false, TextAnchor.MiddleCenter, 340, 166, 600, 34, false);
 
             // 3) 돌아가기 버튼(왼쪽 위)
             EntryClose = AbsButton(body, "btn_close_entry", art.Get("arena_entry_back"), 13, 47, 298, 102);
@@ -351,31 +354,20 @@ namespace ProjectRun.Race
         private void RefreshConfirmLook()
         {
             if (confirmEnabledLook == null || confirmDisabledLook == null) return;
-            bool off = selectedId < 0;
-            // 선택은 했지만 아직 훈련이 필요한 친구면 '훈련하러 가기' 노란 버튼으로 표시
-            bool training = !off && !Mgr_User.CanEnter(selectedId);
-            var trainingLook = GetTrainingLook();
-            confirmEnabledLook.SetActive(!off && !training);
+            bool off = !Mgr_User.CanEnter(selectedId);
+            confirmEnabledLook.SetActive(!off);
             confirmDisabledLook.SetActive(off);
-            if (trainingLook != null) trainingLook.SetActive(training);
-            // 글자색: 선택 전=회색, 훈련하러 가기=짙은 갈색(노란 버튼 위), 그 외=크림색
-            ConfirmLabel.color = off ? new Color(.45f, .42f, .39f) : training ? new Color(.36f, .21f, .11f) : EntryCream;
-        }
-
-        // '훈련하러 가기' 노란 버튼 이미지를 확정 버튼 아래에 없으면 만들어서 돌려준다 (글자보다 뒤에 깔리도록 맨 앞 순서로 배치)
-        private GameObject GetTrainingLook()
-        {
-            if (ConfirmEntry == null) return null;
-            var existing = ConfirmEntry.transform.Find("img_training");
-            if (existing != null) return existing.gameObject;
-            var ranchArt = Mgr_Bundle.Load<Data_DemoArt>("UI/Ranch/Data_RanchArt");
-            var sprite = ranchArt != null ? ranchArt.Get("arena_entry_training") : null;
-            if (sprite == null) return null;
-            var img = AbsImage(ConfirmEntry.transform, "img_training", sprite, 0, 0, 0, 0);
-            AbsStretch(img);
-            img.raycastTarget = false;
-            img.transform.SetSiblingIndex(ConfirmLabel != null ? ConfirmLabel.transform.GetSiblingIndex() : 0);   // 글자 바로 뒤로 보내 글자가 위에 보이게 함
-            return img.gameObject;
+            var trainingLook = ConfirmEntry.transform.Find("img_training");
+            if (trainingLook != null) trainingLook.gameObject.SetActive(false);
+            ConfirmLabel.color = off ? new Color(.45f, .42f, .39f) : EntryCream;
+            // Older scene instances override the outline with a thick cream rim.
+            // Match the edge to the current light/dark button state after those overrides.
+            var outline = ConfirmLabel.GetComponent<UnityEngine.UI.Outline>();
+            if (outline != null)
+            {
+                outline.effectColor = off ? new Color(1, .97f, .86f, .45f) : EntryOutline;
+                outline.effectDistance = new Vector2(.6f, -.6f);
+            }
         }
 
         // 오브젝트를 지운다. 실행 중에는 Destroy, 에디터에서 프리팹을 편집할 때는 DestroyImmediate를 쓴다.
@@ -470,13 +462,11 @@ namespace ProjectRun.Race
                 portraitRect.anchoredPosition = new Vector2(157.5f + portraitShiftX, -117f);
                 EntrantNames[i].text = monster.Name;
                 EntrantStats[i].text = "Lv." + progress.Level + "  ·  스피드 " + (monster.Stats[0] + progress.SpeedBonus);
-                bool eligible = Mgr_User.CanEnter(i);
-                EntrantStates[i].text = eligible ? "출전 가능" : "훈련이 필요해요";
-                EntrantStates[i].color = eligible ? new Color(.10f,.39f,.17f) : new Color(.60f,.26f,.12f);
+                EntrantStates[i].text = "출전 가능";
+                EntrantStates[i].color = new Color(.10f,.39f,.17f);
             }
             RefreshSelection();
             EntryPopup.SetActive(true);
-            owner?.Guide?.EnterEntry();
         }
 
         public void SelectEntrant(int id)
@@ -490,8 +480,8 @@ namespace ProjectRun.Race
         {
             RefreshConfirmLook();   // 선택 여부에 따라 확정 버튼 모양(활성/비활성) 전환
             for (int i = 0; i < EntrantFrames.Length; i++) EntrantFrames[i].gameObject.SetActive(i == selectedId);
-            ConfirmEntry.interactable = selectedId >= 0;
-            if (selectedId < 0)
+            ConfirmEntry.interactable = Mgr_User.CanEnter(selectedId);
+            if (!ConfirmEntry.interactable)
             {
                 TacticDescription.text = "이번 경기에 출전할 친구 한 마리를 선택하세요.";
                 ConfirmLabel.text = "친구를 선택하세요";
@@ -499,17 +489,12 @@ namespace ProjectRun.Race
             }
             var monster = Mgr_Table.Demo.Monsters[selectedId];
             TacticDescription.text = "추천 전술 · " + monster.Tactic + "\n" + monster.Strength + "에 강한 친구예요.";
-            ConfirmLabel.text = Mgr_User.CanEnter(selectedId) ? "전술 확정 · 레이스 시작" : "훈련하러 가기";
+            ConfirmLabel.text = "출전하기";
         }
 
         private void ConfirmSelection()
         {
-            if (selectedId < 0) return;
-            if (!Mgr_User.CanEnter(selectedId))
-            {
-                if (owner != null) owner.ShowTrainingFromArena();
-                return;
-            }
+            if (!Mgr_User.CanEnter(selectedId)) return;
             if (Mgr_Game.Instance == null || Mgr_Game.Instance.IsTransitioning) return;
             // Browsing or cancelling never changes monster/training selections or entry data.
             Mgr_User.Select(selectedId);

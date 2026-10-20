@@ -238,7 +238,7 @@ namespace ProjectRun.Editor
             var layer = Popup(layout, "popup_entry", out var body, 1040, 572);
             panel.EntryPopup = layer.gameObject;
             Label(body, "txt_title", "출전할 친구", 160, 24, 720, 45, 31, ink, true);
-            Label(body, "txt_description", "한 마리를 선택하고 추천 전술을 확인하세요", 110, 75, 820, 35, 21, ink);
+            Label(body, "txt_description", "함께 달릴 친구를 선택하고 출전하세요", 110, 75, 820, 35, 21, ink);
             panel.EntryClose = Button(body, "btn_close_entry", "back_button", "돌아가기", 26, 24, 143, 49, 19);
             panel.EntrantButtons = new UnityEngine.UI.Button[3];
             panel.EntrantFrames = new UnityEngine.UI.Image[3];
