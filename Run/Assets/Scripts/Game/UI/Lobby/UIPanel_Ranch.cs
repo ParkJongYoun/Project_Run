@@ -1,10 +1,12 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using ProjectRun.Ranch;
 
 namespace ProjectRun.Race
 {
+    [DefaultExecutionOrder(200)]
     public sealed class UIPanel_Ranch : UIPanel_Base
     {
         public Data_DemoArt Art;
@@ -17,7 +19,6 @@ namespace ProjectRun.Race
         public RectTransform Navigation;
         public Mgr_UI CollectionManager;
         private CanvasGroup collectionVisibility;
-        public Text PlacementLabel;
         public Text Toast;
         public Button ConfirmButton;
         public Button RemoveButton;
@@ -25,13 +26,15 @@ namespace ProjectRun.Race
         public RectTransform[] LockedLabels;
         private int catalogPage;
         private float toastUntil;
-        private bool subscribed;
+        private bool subscribed, catalogDragging;
+        private CanvasGroup actionVisibility;
+        private readonly Vector3[] uiCorners = new Vector3[4];
         private static readonly Color ink = new Color(.25f, .13f, .065f);
 
         public override void OnOpen()
         {
             if (!Application.isPlaying || Placement == null || SafeArea == null) return;
-            foreach (var surface in new[] { Drawer, Actions, Navigation, SafeArea.Find("group_ranch_info") as RectTransform })
+            foreach (var surface in new[] { Drawer, Drawer.Find("group_catalog") as RectTransform, Navigation, SafeArea.Find("group_ranch_info") as RectTransform })
                 if (surface != null) surface.Find("bg_surface").GetComponent<Image>().raycastTarget = true;
             Bind("btn_home", Home);
             Bind("btn_monsters", ShowMonsters);
@@ -56,9 +59,15 @@ namespace ProjectRun.Race
         public override void OnClose()
         {
             if (Placement == null) return;
+            catalogDragging = false;
             if (subscribed) { Placement.Changed -= Refresh; Placement.Message -= Notify; subscribed = false; }
             Placement.InputBlocked = false;
             if (Application.isPlaying) Placement.Cancel();
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            if (!focused) catalogDragging = false;
         }
 
         private void Bind(string name, UnityEngine.Events.UnityAction action)
@@ -107,26 +116,7 @@ namespace ProjectRun.Race
                 Click(button, null); Icon(button, "img_icon", names[i], -60, 6, 77, 74);
                 Label(button, "txt_label", titles[i], 34, 0, 110, 49, 25);
             }
-            Drawer = Pair(SafeArea, "group_construction", "bottom", 0, -261, 1260, 190);
-            var activeBuild=Pair(Drawer,"group_build_selected","menu",-520,42,184,72);
-            activeBuild.Find("bg_surface").GetComponent<Image>().color=new Color(1,.78f,.25f);
-            Icon(activeBuild,"img_icon","build",-53,2,63,63);
-            Label(activeBuild,"txt_label","건설",30,0,104,55,29);
-            var closeBuild=Pair(Drawer,"btn_close_build","menu",-520,-40,184,65);
-            Click(closeBuild,null);Label(closeBuild,"txt_cross","×",-56,0,45,54,42);
-            Label(closeBuild,"txt_label","닫기",25,0,110,52,27);
-            var catalog=Pair(Drawer,"group_catalog","panel",96,0,1036,170);
-            Label(catalog, "txt_heading", "시설 배치", -420, 61, 140, 28, 22);
-            Label(catalog, "txt_help", "시설 선택 → 바닥을 눌러 이동 → 배치 확정", 72, 61, 720, 30, 18);
-            PlainButton(catalog, "btn_previous", "◀", -490, -15, 32, 43, null);
-            PlainButton(catalog, "btn_next", "▶", 490, -15, 32, 43, null);
-            DemoUI.Rect(catalog, "group_cards", 0, -16, 922, 125);
-            Actions = Pair(SafeArea, "group_placement_actions", "panel", 0, -126, 660, 66);
-            PlacementLabel = Label(Actions, "txt_placement", "", -146, 0, 320, 54, 18);
-            PlainButton(Actions, "btn_rotate", "회전", 63, 0, 74, 43, null);
-            ConfirmButton = PlainButton(Actions, "btn_confirm", "배치", 143, 0, 74, 43, null);
-            PlainButton(Actions, "btn_cancel", "취소", 223, 0, 74, 43, null);
-            RemoveButton = PlainButton(Actions, "btn_remove", "회수", 295, 0, 62, 43, null);
+            RebuildConstructionUI();
             var toast = Pair(SafeArea, "group_toast", "panel", 0, 260, 550, 46);
             Toast = Label(toast, "txt_toast", "", 0, 0, 515, 38, 20);
             toast.gameObject.SetActive(false);
@@ -141,7 +131,97 @@ namespace ProjectRun.Race
             }
             Modal = DemoUI.Fill(SafeArea, "group_overlay"); Modal.gameObject.SetActive(false);
             Drawer.gameObject.SetActive(false); Actions.gameObject.SetActive(false);
-            if(Placement!=null && Placement.Catalog!=null) BuildCards();
+        }
+
+
+        public void RebuildConstructionUI()
+        {
+            RemoveConstructionRoot(Drawer); RemoveConstructionRoot(Actions);
+            Drawer = Pair(SafeArea, "group_construction", "bottom", 0, 72, 1260, 120);
+            Drawer.anchorMin = Drawer.anchorMax = new Vector2(.5f, 0);
+            Drawer.SetSiblingIndex(Navigation.GetSiblingIndex() + 1);
+            var selected = Pair(Drawer, "group_build_selected", "menu", -520, 28, 184, 50);
+            selected.Find("bg_surface").GetComponent<Image>().color = new Color(1, .78f, .25f);
+            Icon(selected, "img_icon", "build", -57, 2, 50, 49);
+            Label(selected, "txt_label", "건설", 28, 0, 110, 42, 24);
+            var close = Pair(Drawer, "btn_close_build", "menu", -520, -27, 184, 50);
+            Click(close, null); Label(close, "txt_cross", "×", -57, 0, 40, 43, 34);
+            Label(close, "txt_label", "닫기", 27, 0, 110, 42, 24);
+            var catalog = Pair(Drawer, "group_catalog", "panel", 96, 0, 1036, 120);
+            PlainButton(catalog, "btn_previous", "◀", -490, 0, 32, 43, null);
+            PlainButton(catalog, "btn_next", "▶", 490, 0, 32, 43, null);
+            DemoUI.Rect(catalog, "group_cards", 0, 0, 922, 108);
+
+            Actions = DemoUI.Rect(SafeArea, "group_placement_actions", 0, 0, 164, 42);
+            Actions.SetSiblingIndex(Drawer.GetSiblingIndex() + 1);
+            actionVisibility = Actions.gameObject.AddComponent<CanvasGroup>();
+            ActionButton("btn_rotate", "action_rotate", -60);
+            ConfirmButton = ActionButton("btn_confirm", "action_confirm", -20);
+            ActionButton("btn_cancel", "action_cancel", 20);
+            RemoveButton = ActionButton("btn_remove", "action_store", 60);
+            Drawer.gameObject.SetActive(false); Actions.gameObject.SetActive(false);
+            if (Placement != null && Placement.Catalog != null) BuildCards();
+        }
+
+        private static void RemoveConstructionRoot(RectTransform root)
+        {
+            if (root == null) return;
+            root.gameObject.SetActive(false); root.SetParent(null);
+            if (Application.isPlaying) Destroy(root.gameObject); else DestroyImmediate(root.gameObject);
+        }
+
+        private Button ActionButton(string name, string key, float x)
+        {
+            var rect = Pair(Actions, name, "round", x, 0, 36, 38);
+            var button = Click(rect, null);
+            Icon(rect, "img_symbol", key, 0, 1, 30, 30);
+            rect.gameObject.AddComponent<CanvasGroup>();
+            return button;
+        }
+
+        private void LateUpdate()
+        {
+            if (Placement == null || RanchCamera == null || !Placement.IsBuilding || Drawer == null) return;
+            UpdateConstructionView();
+        }
+
+        private void UpdateConstructionView()
+        {
+            // Match the actual compact dock and safe area instead of reserving an empty action bar.
+            var canvas = SafeArea.GetComponentInParent<Canvas>();
+            var uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            Drawer.GetWorldCorners(uiCorners);
+            var dockTop = RectTransformUtility.WorldToScreenPoint(uiCamera, uiCorners[1]);
+            SafeArea.GetWorldCorners(uiCorners);
+            var safeMin = RectTransformUtility.WorldToScreenPoint(uiCamera, uiCorners[0]);
+            var safeMax = RectTransformUtility.WorldToScreenPoint(uiCamera, uiCorners[2]);
+            float scale = canvas.scaleFactor;
+            // Keep one small toolbar row below even the bottom-most building's roof overhang.
+            var viewportMin = Placement.WorldCamera.ScreenToViewportPoint(new Vector3(safeMin.x + 8 * scale, dockTop.y + 60 * scale, 0));
+            var viewportMax = Placement.WorldCamera.ScreenToViewportPoint(new Vector3(safeMax.x - 8 * scale, safeMax.y - 10 * scale, 0));
+            RanchCamera.SetBuildViewport(Rect.MinMaxRect(viewportMin.x, viewportMin.y, viewportMax.x, viewportMax.y));
+
+            if (Placement.Preview == null || !Actions.gameObject.activeSelf) return;
+            if (!Placement.TryGetPreviewBounds(out var bounds)) return;
+            var screen = Placement.WorldCamera.WorldToScreenPoint(bounds.center);
+            float bottomY = float.PositiveInfinity;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = bounds.center + Vector3.Scale(bounds.extents, new Vector3(
+                    (i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                bottomY = Mathf.Min(bottomY, Placement.WorldCamera.WorldToScreenPoint(corner).y);
+            }
+            screen.y = bottomY;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(SafeArea, screen, uiCamera, out var local);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(SafeArea, dockTop, uiCamera, out var dockLocal);
+            float halfWidth = Actions.rect.width * .5f, halfHeight = Actions.rect.height * .5f;
+            local.y -= halfHeight + 2;
+            local.x = Mathf.Clamp(local.x, SafeArea.rect.xMin + halfWidth + 8, SafeArea.rect.xMax - halfWidth - 8);
+            local.y = Mathf.Clamp(local.y, dockLocal.y + halfHeight + 5, SafeArea.rect.yMax - halfHeight - 8);
+            Actions.anchoredPosition = local;
+            // The moving toolbar cannot catch the pointer during a facility drag near an edge.
+            if (actionVisibility == null) actionVisibility = Actions.GetComponent<CanvasGroup>();
+            actionVisibility.blocksRaycasts = !Placement.IsDraggingPreview && !catalogDragging;
         }
 
         private void BuildCards()
@@ -151,13 +231,36 @@ namespace ProjectRun.Race
             for (int i = 0; i < 6 && start + i < Placement.Catalog.Facilities.Length; i++)
             {
                 var definition = Placement.Catalog.Facilities[start + i]; string id = definition.Id;
-                var card = Pair(holder, "btn_facility_" + id, "panel", (i - 2.5f) * 151, 0, 143, 125);
-                Click(card, () => Placement.BeginNew(id));
-                var portrait = Icon(card, "img_portrait", "", 0, 17, 126, 88);
+                var card = Pair(holder, "btn_facility_" + id, "panel", (i - 2.5f) * 151, 0, 143, 108);
+                bool dragged = false;
+                Click(card, () => { if (!dragged) Placement.BeginNew(id); });
+                var drag = card.gameObject.AddComponent<EventTrigger>();
+                AddDragEvent(drag, EventTriggerType.PointerDown, data => { dragged = false; catalogDragging = false; });
+                AddDragEvent(drag, EventTriggerType.BeginDrag, data =>
+                {
+                    if (((PointerEventData)data).button != PointerEventData.InputButton.Left) return;
+                    dragged = catalogDragging = true; Placement.BeginNew(id);
+                });
+                AddDragEvent(drag, EventTriggerType.Drag, data =>
+                {
+                    if (dragged) Placement.DragPreviewToScreen(((PointerEventData)data).position);
+                });
+                AddDragEvent(drag, EventTriggerType.EndDrag, data =>
+                {
+                    if (dragged) Placement.DragPreviewToScreen(((PointerEventData)data).position);
+                    catalogDragging = false;
+                });
+                var portrait = Icon(card, "img_portrait", "", 0, 18, 110, 68);
                 portrait.sprite = definition.Portrait != null ? definition.Portrait : Art.Get("build");
-                Label(card, "txt_name", definition.Name, 0, -33, 136, 24, 19);
-                Label(card, "txt_size", definition.Footprint.x + " × " + definition.Footprint.y, 0, -53, 135, 18, 15);
+                Label(card, "txt_name", definition.Name, 0, -24, 136, 22, 17);
+                Label(card, "txt_size", definition.Footprint.x + " × " + definition.Footprint.y, 0, -43, 135, 16, 13);
             }
+        }
+
+        private static void AddDragEvent(EventTrigger trigger, EventTriggerType type, UnityEngine.Events.UnityAction<BaseEventData> action)
+        {
+            var entry = new EventTrigger.Entry { eventID = type };
+            entry.callback.AddListener(action); trigger.triggers.Add(entry);
         }
 
         private void Refresh()
@@ -168,8 +271,14 @@ namespace ProjectRun.Race
             Actions.gameObject.SetActive(Placement.Preview != null && !Modal.gameObject.activeSelf);
             ConfirmButton.interactable = Placement.CanConfirm;
             RemoveButton.interactable = Placement.IsMoving;
-            PlacementLabel.text = Placement.Preview == null ? "" : Placement.Catalog.Find(Placement.Preview.FacilityId).Name + "\n" + Placement.PreviewReason;
-            PlacementLabel.color = Placement.CanConfirm ? new Color(.14f,.35f,.13f) : new Color(.65f,.15f,.10f);
+            ConfirmButton.GetComponent<CanvasGroup>().alpha = Placement.CanConfirm ? 1 : .4f;
+            RemoveButton.GetComponent<CanvasGroup>().alpha = Placement.IsMoving ? 1 : .4f;
+            foreach (string name in new[] { "btn_zoom_in", "btn_zoom_out" })
+            {
+                var button = SafeArea.Find(name);
+                if (button != null) button.GetComponent<Button>().interactable = !Placement.IsBuilding;
+            }
+            if (Placement.IsBuilding) UpdateConstructionView();
         }
 
         private void Home() { CloseModal(); Placement.SetBuildMode(false); RanchCamera.ResetView(); }
@@ -262,7 +371,7 @@ namespace ProjectRun.Race
         private void ShowNotebook()
         {
             var panel = OpenModal("목장 수첩");
-            Label(panel, "txt_body", "건설 메뉴에서 시설이나 흙길을 고르고 바닥을 탭하세요.\n초록색 영역에서 배치를 확정할 수 있어요.\n배치한 시설을 탭하면 이동하거나 회수할 수 있어요.\n몬스터는 서로 연결된 길을 따라 돌아다닙니다.\n\n좌클릭 드래그 / 한 손가락 스와이프: 화면 이동\n우클릭 드래그: 좌우 회전 / 우클릭: 원래 각도\n+/− 버튼·휠·두 손가락 벌리기: 5단계 확대·축소\nR: 시설 회전 / Enter: 배치 / Esc: 취소\n\n데모의 배치는 저장하지 않으며 새 실행에 기본 배치로 시작합니다.", 0, -16, 935, 335, 22);
+            Label(panel, "txt_body", "건설 모드에서는 농장 전체를 위에서 내려다봅니다.\n목록의 시설을 농장으로 끌어 놓거나 선택 후 드래그하세요.\n설치된 시설도 직접 잡아 이동하거나 회수할 수 있어요.\n시설 아래 아이콘: 회전 · 체크(배치) · X(취소) · 수납(회수)\n초록색일 때 배치 확정 · 빨간색은 배치 불가입니다.\n건설 중 카메라는 고정되며 닫으면 이전 시점으로 돌아갑니다.\n\n일반 목장: 좌클릭 드래그 / 한 손가락으로 화면 이동\n우클릭 드래그: 좌우 회전 / 우클릭: 원래 각도\n+/− 버튼·휠·두 손가락 벌리기: 확대·축소\n건설 중 R: 시설 회전 / Enter: 배치 / Esc: 선택 취소\n\n데모의 배치는 저장하지 않으며 새 실행에 기본 배치로 시작합니다.", 0, -16, 935, 335, 22);
         }
 
         private void ShowSettings()
