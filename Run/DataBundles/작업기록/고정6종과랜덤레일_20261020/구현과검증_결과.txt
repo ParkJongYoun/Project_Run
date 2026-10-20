@@ -1,0 +1,53 @@
+고정 6종 편성과 출발 레일 무작위 배치 — 2026-10-20
+
+요청과 적용
+- 플레이어블: 미노타우르스, 포링, 페코페코.
+- 고정 경합 NPC: 루나틱, 바포메트 주니어, 알파카.
+- Scene_OvalToon의 편성 에셋과 편집 상태 주자를 같은 6종으로 수정했다.
+- 신규 경기와 RestartRace 때 6개 출발 레일을 Fisher–Yates 방식으로 섞는다.
+- 참가자 배열의 식별 순서는 유지하므로 선택 몬스터, 능력치, 필살기, 프로필 및 카메라 참조가 다른 몬스터로 바뀌지 않는다.
+- 로비 Scene_LobbyTest는 같은 6종만 표시한다. 이전 추가 후보 5종의 씬 인스턴스만 제거했고 원본 프리팹과 리소스는 보존했다.
+- 기존 6종의 이동, 애니메이션, 시설 연결과 상대 크기를 유지했다.
+- 카툰 전시에서 경기 편성을 동기화하는 도구 및 개발 규칙과 AGENTS.md를 함께 갱신했다.
+- 실제 Unity 프로젝트 경로: C:/Project_Run/Run. 기존 지침에 적힌 D:/Project_Run/Run은 현재 환경에 없었다.
+
+실행 검증 (Unity 6000.3.23f1, Editor Play)
+PASS Lobby active residents: obj_resident_Alpaca, obj_resident_BaphometJr, obj_resident_Lunatic, obj_resident_Minorous, obj_resident_Pecopeco, obj_resident_Poring
+All six retain placement, animator, idle and locomotion references.
+obj_resident_Pecopeco=(0.788, 0.050, -4.725)
+obj_resident_Minorous=(-3.375, 0.050, 2.121)
+obj_resident_BaphometJr=(-1.013, 0.050, -1.865)
+obj_resident_Poring=(-0.788, 0.050, -0.432)
+obj_resident_Lunatic=(-4.220, 0.050, -3.375)
+obj_resident_Alpaca=(4.326, 0.050, 4.725)
+PASS: fixed six residents retained on second Play entry.
+PASS: all six residents moved between observations.
+obj_resident_Pecopeco=(0.675, 0.050, -4.721)
+obj_resident_Minorous=(-2.025, 0.050, 3.375)
+obj_resident_BaphometJr=(6.075, 0.050, -3.895)
+obj_resident_Poring=(0.675, 0.050, -1.888)
+obj_resident_Lunatic=(-2.799, 0.050, -4.725)
+obj_resident_Alpaca=(-3.895, 0.050, 4.725)
+Loading race with Poring selected.
+PASS Poring: 120 starts, 108 distinct rail orders; all six monsters reached all six rails; hero/skill identity preserved.
+PASS Poring: identical normal-step/skip finish order and exact finish times for the same starting rails; one selected skill activation.
+PASS Minorous: 120 starts, 112 distinct rail orders; all six monsters reached all six rails; hero/skill identity preserved.
+PASS Minorous: identical normal-step/skip finish order and exact finish times for the same starting rails; one selected skill activation.
+PASS Pecopeco: 120 starts, 108 distinct rail orders; all six monsters reached all six rails; hero/skill identity preserved.
+PASS Pecopeco: identical normal-step/skip finish order and exact finish times for the same starting rails; one selected skill activation.
+PASS rendered models and runner IDs match all six fixed entrants.
+Screenshot A lanes: Poring=4.2, Minorous=1.4, Pecopeco=7.0, Lunatic=-7.0, BaphometJr=-4.2, Alpaca=-1.4
+PASS: normal race-to-lobby transition completed, UI ready, exactly the same six active residents.
+
+검증 범위와 기록
+- Unity 스크립트 컴파일 완료, 게임 코드 컴파일 오류 없음.
+- 플레이어블 3종을 각각 선택한 구성으로 120회씩 총 360회 RestartRace를 실행했다. 모든 회차에서 지정 6종, 레일 중복 없음, 주자와 스킬 식별 유지, 시뮬레이션 시작 좌표 일치를 검사했다.
+- 각 플레이어블의 동일한 출발 배치에서 일반 고정 스텝 계산과 SkipToResult의 순위 및 완주 시간이 완전히 일치하고 선택 주자의 스킬이 1회 발동하는 것을 검사했다.
+- Play 화면의 실제 모델 메시 및 RunnerId가 고정 편성과 일치하는 것을 검사했다.
+- 01_로비_고정6종.png와 02_경기_랜덤레일_A.png, 03_경기_랜덤레일_B.png를 열어 확인했다. A/B에서 같은 위치의 출발 주자가 변경된다.
+- 로비 씬의 큰 텍스트 차이는 기존 후보 5종의 직렬화 객체 제거와 Unity 저장 정렬에 따른 것이다. 후행 공백 정리 전 구조 비교에서 삭제 634블록, 추가 0블록, 유지 객체 중 수정 7블록(주민 목록·위치·활성 상태)을 확인했다.
+- 첫 로비 검증 중 외부 리소스 임포트/재컴파일과 Play 종료가 관찰되어 다시 Play했다. 초기 콘솔에 UIPanel_Ranch.Refresh 및 TMP 임포트 관련 오류가 있었지만, 재실행과 최종 정상 로비 복귀 검증에서는 재현되지 않았다.
+- 최종 Play 콘솔에는 기존 Unity AI 패키지의 NoSubscription 오류만 남아 있었다.
+- 변경 파일 git diff --check 통과. 에디터를 원래 Scene_Title의 Edit 모드로 복구했다.
+- 웹 빌드 생성 및 브라우저 검증은 이번 작업에 포함하지 않았다.
+- 다른 작업에서 변경된 폰트/TMP 리소스, EditorBuildSettings, 아트와 기존 검증 자료는 수정하지 않았다.

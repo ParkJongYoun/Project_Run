@@ -562,6 +562,22 @@ namespace ProjectRun.Editor
             material.shader=Shader.Find("Universal Render Pipeline/Lit");material.SetFloat("_Smoothness",.08f);material.SetFloat("_Metallic",0);
             material.SetColor("_BaseColor",color);material.SetColor("_ShadeColor",new Color(.62f,.69f,.73f));material.SetFloat("_AmbientStrength",.18f);
             material.SetFloat("_Softness",.10f);material.SetFloat("_Specular",.025f);material.SetFloat("_FillStrength",.2f);material.enableInstancing=true;
+            if (name == "FootprintValid" || name == "FootprintInvalid")
+            {
+                color.a = .42f;
+                material.SetColor("_BaseColor", color);
+                material.SetColor("_Color", color);
+                material.SetFloat("_Surface", 1);
+                material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+                material.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetFloat("_ZWrite", 0);
+                material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                material.SetOverrideTag("RenderType", "Transparent");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                material.SetShaderPassEnabled("ShadowCaster", false);
+            }
             EditorUtility.SetDirty(material);materials[name]=material;return material;
         }
         private static GameObject Box(Transform root,string name,Vector3 position,Vector3 scale,Material material)

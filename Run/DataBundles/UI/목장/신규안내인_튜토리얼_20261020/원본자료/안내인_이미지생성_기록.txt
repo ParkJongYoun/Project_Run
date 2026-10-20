@@ -1,0 +1,10 @@
+생성 방식: 내장 image_gen 이미지 편집, transparent_background=true
+입력: 사용자_안내캐릭터_3포즈.png
+최종 PNG: ../목장안내인_환영.png (1024×1536 RGBA)
+Unity: Assets/ArtBundles/UI/RanchGuide/RanchGuide_Welcome.png
+검수: 알파 채널 존재, 좌상단 및 좌측 배경 알파 0, 실제 목장 합성 화면에서 경계 확인.
+
+사용 프롬프트:
+Use case: background-extraction. Asset type: Unity tutorial character transparent sprite. Edit target: the supplied three-pose character reference. Extract ONLY the RIGHTMOST welcoming pose as a single full-body character centered on a tall portrait transparent canvas. Remove the other two characters and all white background. Preserve the exact rightmost character identity, face, expression, pose, costume, hat, long braid, navy/white/gold/sage details, line art and rendering style. Do not redesign, do not add objects, do not add text. Preserve white costume areas as opaque. Leave small clear padding around hat, hair, hands and feet. Crisp antialiased edges, real RGBA transparency, no shadow or glow. Output a high-quality portrait PNG.
+
+기존 카프라 이미지와 원본 첨부파일은 보존했다. UI 배경과 금색 프레임은 프로젝트의 dialog_bg/dialog_frame을 별도 레이어로 재사용했다.

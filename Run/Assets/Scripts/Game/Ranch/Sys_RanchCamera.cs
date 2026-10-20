@@ -18,6 +18,13 @@ namespace ProjectRun.Ranch
         [Tooltip("시작 각도를 기준으로 한 좌우 회전 한계. 상하 각도는 고정합니다.")]
         [Range(0, 60)] public float MaxYawOffset = 30;
         [Min(.01f)] public float YawDegreesPerPixel = .18f;
+        [Tooltip("실제 하단 건설 목록과 Safe Area에 맞춰 UI가 갱신하는 농장 표시 영역입니다.")]
+        public Rect BuildViewport = new Rect(.01f, .267f, .98f, .719f);
+        [Min(0)] public float BuildPadding = .45f;
+        private bool buildView, savedFacilityFocus;
+        private Vector3 savedPosition;
+        private Quaternion savedRotation;
+        private float savedSize;
         private Vector3 targetPosition, followVelocity, inertiaVelocity;
         private Vector2 pressPoint, previousPoint, previousTouchCenter;
         private float previousTouchDistance, pinchDistance;
@@ -26,6 +33,7 @@ namespace ProjectRun.Ranch
         private Vector2 rightPressPoint;
         private float rightStartYaw, previousOrbitX;
         private bool rightHeld, rightRejected, rightDragged;
+        private bool facilityFocus;
 
         private void Awake()
         {
@@ -35,8 +43,10 @@ namespace ProjectRun.Ranch
 
         public void ResetView()
         {
+            if (buildView) { ApplyBuildView(); return; }
             if (WorldCamera == null) WorldCamera = GetComponent<Camera>();
             ClearGesture(); zoomLevel = 0;
+            facilityFocus = false;
             transform.SetPositionAndRotation(HomePosition, Quaternion.Euler(HomeAngles));
             WorldCamera.orthographicSize = HomeSize;
             targetPosition = LimitPosition(HomePosition, false);
@@ -46,8 +56,70 @@ namespace ProjectRun.Ranch
         public void ZoomIn() => StepZoom(-1);
         public void ZoomOut() => StepZoom(1);
 
+        public void StopMotion()
+        {
+            ClearGesture(); facilityFocus = false;
+            targetPosition = transform.position;
+        }
+
+        public void FocusOn(Vector3 groundPosition)
+        {
+            if (buildView) return;
+            var ray = WorldCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+            if (!new Plane(Vector3.up, groundPosition).Raycast(ray, out float distance)) return;
+            StopMotion(); facilityFocus = true;
+            var offset = groundPosition - ray.GetPoint(distance); offset.y = 0;
+            targetPosition = LimitPosition(transform.position + offset, false);
+        }
+
+        public void SetBuildView(bool enabled)
+        {
+            if (buildView == enabled) return;
+            if (enabled)
+            {
+                savedPosition = transform.position; savedRotation = transform.rotation;
+                savedSize = WorldCamera.orthographicSize; savedFacilityFocus = facilityFocus;
+                StopMotion(); buildView = true;
+                ApplyBuildView();
+            }
+            else
+            {
+                buildView = false; StopMotion(); facilityFocus = savedFacilityFocus;
+                transform.SetPositionAndRotation(savedPosition, savedRotation);
+                WorldCamera.orthographicSize = savedSize;
+                targetPosition = savedPosition;
+            }
+        }
+
+        public void SetBuildViewport(Rect viewport)
+        {
+            if (BuildViewport == viewport) return;
+            BuildViewport = viewport;
+            if (buildView) ApplyBuildView();
+        }
+
+        private void ApplyBuildView()
+        {
+            if (Placement == null || WorldCamera == null) return;
+            float width = Placement.GridSize.x * Placement.CellSize + BuildPadding * 2;
+            float depth = Placement.GridSize.y * Placement.CellSize + BuildPadding * 2;
+            float size = Mathf.Max(depth / (2 * Mathf.Max(.1f, BuildViewport.height)),
+                width / (2 * Mathf.Max(.1f, WorldCamera.aspect * BuildViewport.width)));
+            // The overhead view deliberately exceeds the normal five-step zoom range.
+            size = Mathf.Max(size, HomeSize + WheelZoomStep * 2 + 1);
+            var center = Placement.GridOrigin + new Vector3(Placement.GridSize.x, 0, Placement.GridSize.y) * (Placement.CellSize * .5f);
+            center.x -= (BuildViewport.center.x - .5f) * size * 2 * WorldCamera.aspect;
+            center.z -= (BuildViewport.center.y - .5f) * size * 2;
+            center.y = Placement.GridOrigin.y + Mathf.Max(40, HomePosition.y);
+            transform.SetPositionAndRotation(center, Quaternion.Euler(90, 0, 0));
+            WorldCamera.orthographicSize = size;
+            targetPosition = center;
+        }
+
         private void LateUpdate()
         {
+            if (Placement != null) SetBuildView(Placement.IsBuilding);
+            if (buildView) { ApplyBuildView(); return; }
             if (Placement != null && Placement.InputBlocked)
             { ClearGesture(); targetPosition = transform.position; return; }
             float dt = Mathf.Min(Time.unscaledDeltaTime, .05f);
@@ -164,6 +236,8 @@ namespace ProjectRun.Ranch
 
         private void ApplyYaw(float offset)
         {
+            if (buildView) return;
+            facilityFocus = false;
             var ray = WorldCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
             if (!new Plane(Vector3.up, Vector3.zero).Raycast(ray, out float distance)) return;
             var pivot = ray.GetPoint(distance);
@@ -206,6 +280,13 @@ namespace ProjectRun.Ranch
 
         private void Pan(Vector2 from, Vector2 to, float dt)
         {
+            if (buildView) return;
+            if ((to - from).sqrMagnitude < .0001f)
+            {
+                inertiaVelocity = Vector3.Lerp(inertiaVelocity, Vector3.zero, .65f);
+                return;
+            }
+            facilityFocus = false;
             var plane = new Plane(Vector3.up, Vector3.zero);
             var oldRay = WorldCamera.ScreenPointToRay(from); var newRay = WorldCamera.ScreenPointToRay(to);
             if (!plane.Raycast(oldRay, out float oldDistance) || !plane.Raycast(newRay, out float newDistance)) return;
@@ -216,6 +297,8 @@ namespace ProjectRun.Ranch
 
         private void StepZoom(int direction)
         {
+            if (buildView) return;
+            facilityFocus = false;
             zoomLevel = Mathf.Clamp(zoomLevel + direction, -2, 2);
             WorldCamera.orthographicSize = Mathf.Max(.1f, HomeSize + zoomLevel * WheelZoomStep);
             inertiaVelocity = Vector3.zero;
@@ -237,6 +320,20 @@ namespace ProjectRun.Ranch
             var centerRay = WorldCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
             if (!plane.Raycast(centerRay, out float centerDistance)) return position;
             var focus = centerRay.GetPoint(centerDistance) + offset;
+            if (Placement != null && facilityFocus)
+            {
+                // Normal lobby focus can reach facilities near the edge of the ranch.
+                var origin = Placement.GridOrigin;
+                float margin = Placement.CellSize * .5f;
+                var correction = new Vector3(
+                    Mathf.Clamp(focus.x, origin.x + margin, origin.x + Placement.GridSize.x * Placement.CellSize - margin) - focus.x,
+                    0,
+                    Mathf.Clamp(focus.z, origin.z + margin, origin.z + Placement.GridSize.y * Placement.CellSize - margin) - focus.z);
+                var placementLimit = position + correction;
+                if (elastic) placementLimit += new Vector3(Mathf.Clamp(-correction.x * .25f, -.45f, .45f), 0,
+                    Mathf.Clamp(-correction.z * .25f, -.45f, .45f));
+                return placementLimit;
+            }
             var homeDirection = Quaternion.Euler(HomeAngles) * Vector3.forward;
             var homeFocus = HomePosition - homeDirection * (HomePosition.y / homeDirection.y);
             float x = Mathf.Clamp(focus.x, homeFocus.x - 12, homeFocus.x + 12) - focus.x;

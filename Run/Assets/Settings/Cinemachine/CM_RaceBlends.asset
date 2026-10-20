@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBlenderSettings
   CustomBlends:
   - From: '**ANY CAMERA**'
-    To: CM_Skill_CloseUp
+    To: CM_Skill_Hero
     Blend:
       Style: 0
       Time: 0
@@ -24,7 +24,29 @@ MonoBehaviour:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-  - From: CM_Skill_CloseUp
+  - From: '**ANY CAMERA**'
+    To: CM_Skill_Other
+    Blend:
+      Style: 0
+      Time: 0
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CM_Skill_Hero
+    To: '**ANY CAMERA**'
+    Blend:
+      Style: 1
+      Time: 0.5
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CM_Skill_Other
     To: '**ANY CAMERA**'
     Blend:
       Style: 1
@@ -62,6 +84,39 @@ MonoBehaviour:
     Blend:
       Style: 0
       Time: 0
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CM_Arc_Orbit
+    To: '**ANY CAMERA**'
+    Blend:
+      Style: 1
+      Time: 0.8
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CM_Follow_Protagonist_back
+    To: CM_Follow_Protagonist_back_up
+    Blend:
+      Style: 1
+      Time: 0.6
+      CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  - From: CM_Follow_Protagonist_back_up
+    To: CM_Follow_Protagonist_back
+    Blend:
+      Style: 1
+      Time: 0.8
       CustomCurve:
         serializedVersion: 2
         m_Curve: []

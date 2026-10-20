@@ -98,11 +98,13 @@ namespace ProjectRun.Race
             Refresh();
             Canvas.ForceUpdateCanvases();
             UpdateScrollControls();
+            owner?.Guide?.EnterCollection(this);
         }
 
         public override void OnClose()
         {
             if (!Application.isPlaying) return;
+            owner?.Guide?.Clear();
             training = false;
             if (trainingVideo != null) trainingVideo.Shutdown();
             if (TrainingFilm != null) TrainingFilm.SetPlaying(false);
@@ -353,6 +355,7 @@ namespace ProjectRun.Race
             training = false;
             Mgr_User.Train(selectedId);
             Refresh();
+            owner?.Guide?.TrainingCompleted();
         }
 
         public void ReturnToRanch()
