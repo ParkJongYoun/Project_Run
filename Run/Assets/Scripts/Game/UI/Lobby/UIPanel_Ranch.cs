@@ -26,6 +26,7 @@ namespace ProjectRun.Race
         public Vector3[] LockedPositions;
         public RectTransform[] LockedLabels;
         private int catalogPage;
+        private const int CardsPerPage = 6;   // 카탈로그 한 페이지에 보이는 시설 카드 수
         private float toastUntil;
         private bool subscribed, catalogDragging;
         private CanvasGroup actionVisibility;
@@ -52,7 +53,7 @@ namespace ProjectRun.Race
             Bind("btn_cancel", Placement.Cancel);
             Bind("btn_remove", Placement.RemoveSelected);
             Bind("btn_previous", () => { catalogPage = Mathf.Max(0, catalogPage - 1); BuildCards(); });
-            Bind("btn_next", () => { catalogPage = Mathf.Min((Placement.Catalog.Facilities.Length - 1) / 6, catalogPage + 1); BuildCards(); });
+            Bind("btn_next", () => { catalogPage = Mathf.Min((Placement.Catalog.Facilities.Length - 1) / CardsPerPage, catalogPage + 1); BuildCards(); });
             if (!subscribed) { Placement.Changed += Refresh; Placement.Message += Notify; subscribed = true; }
             BuildCards(); Refresh();
             Guide?.EnterHome();
@@ -101,14 +102,11 @@ namespace ProjectRun.Race
             Icon(info, "img_ranch", "home", -132, 4, 76, 68);
             Label(info, "txt_name", "나의 목장", -18, 1, 160, 42, 27);
             Label(info, "txt_level", "Lv. 1", 114, 1, 75, 42, 24, new Color(1,.92f,.73f));
-            var notebook = IconButton(SafeArea, "btn_notebook", "notebook", 549, 326, 52, 57);
-            Icon(notebook.transform, "img_alert", "alert", 19, 23, 14, 14);
-            var settings = Pair(SafeArea, "btn_settings", "round", 603, 326, 57, 60);
-            Click(settings, null); Icon(settings, "img_settings", "settings", 0, 1, 41, 41);
-            var zoomIn=Pair(SafeArea,"btn_zoom_in","round",435,326,51,54);
-            Click(zoomIn,null);Label(zoomIn,"txt_symbol","+",0,1,43,46,36,new Color(1,.94f,.78f));
-            var zoomOut=Pair(SafeArea,"btn_zoom_out","round",492,326,51,54);
-            Click(zoomOut,null);Label(zoomOut,"txt_symbol","−",0,1,43,46,36,new Color(1,.94f,.78f));
+            // 우측 상단 버튼 4개: 목업의 이미지 한 장씩 사용한다 (프레임·기호·알림 핀이 이미지에 이미 포함되어 있다)
+            IconButton(SafeArea, "btn_notebook", "hud_notebook", 546, 326, 56, 54);   // 목장 수첩
+            ArtButton(SafeArea, "btn_settings", "hud_settings", 603, 326, 55, 54, null);   // 설정
+            ArtButton(SafeArea, "btn_zoom_in", "hud_zoom_in", 432, 326, 52, 52, null);     // 확대 (+)
+            ArtButton(SafeArea, "btn_zoom_out", "hud_zoom_out", 489, 326, 52, 52, null);   // 축소 (−)
             var bottom = Pair(SafeArea, "group_navigation_base", "bottom", 0, -324, 1200, 81);
             Navigation = bottom;
             string[] names = { "home", "monsters", "build", "training", "arena" };
@@ -140,20 +138,26 @@ namespace ProjectRun.Race
         public void RebuildConstructionUI()
         {
             RemoveConstructionRoot(Drawer); RemoveConstructionRoot(Actions);
-            Drawer = Pair(SafeArea, "group_construction", "bottom", 0, 72, 1260, 120);
+            // 건설 도크 전체 틀: 화면 아래에서 102 위, 크기 1260x180 (배경 그림은 없다)
+            Drawer = DemoUI.Rect(SafeArea, "group_construction", 0, 102, 1260, 180);
             Drawer.anchorMin = Drawer.anchorMax = new Vector2(.5f, 0);
             Drawer.SetSiblingIndex(Navigation.GetSiblingIndex() + 1);
-            var selected = Pair(Drawer, "group_build_selected", "menu", -520, 28, 184, 50);
-            selected.Find("bg_surface").GetComponent<Image>().color = new Color(1, .78f, .25f);
-            Icon(selected, "img_icon", "build", -57, 2, 50, 49);
-            Label(selected, "txt_label", "건설", 28, 0, 110, 42, 24);
-            var close = Pair(Drawer, "btn_close_build", "menu", -520, -27, 184, 50);
-            Click(close, null); Label(close, "txt_cross", "×", -57, 0, 40, 43, 34);
-            Label(close, "txt_label", "닫기", 27, 0, 110, 42, 24);
-            var catalog = Pair(Drawer, "group_catalog", "panel", 96, 0, 1036, 120);
-            PlainButton(catalog, "btn_previous", "◀", -490, 0, 32, 43, null);
-            PlainButton(catalog, "btn_next", "▶", 490, 0, 32, 43, null);
-            DemoUI.Rect(catalog, "group_cards", 0, 0, 922, 108);
+            // 투명 차단막: 도크 영역을 눌러도 뒤의 목장 월드로 클릭이 새지 않게 한다 (OnOpen이 raycastTarget을 켠다)
+            Image(Drawer, "bg_surface", "", 0, 0, 1260, 180, false).color = new Color(1, 1, 1, 0);
+            // 왼쪽 위: 지금 건설 모드임을 보여 주는 '건설' 표시 (망치 그림 포함, 클릭 불가)
+            var selected = ArtPair(Drawer, "group_build_selected", "construct_build", -516, 40, 214, 88);
+            Label(selected, "txt_label", "건설", 34, -2, 110, 42, 26);
+            // 왼쪽 아래: '닫기' 버튼 (X 그림 포함) - 누르면 건설 모드 종료
+            var close = ArtButton(Drawer, "btn_close_build", "construct_close", -509, -42, 205, 77, null);
+            Label(close, "txt_label", "닫기", 28, 2, 110, 42, 26);
+            // 오른쪽: 시설 카탈로그 패널 (좌우 금속 끝단은 9-slice로 보존, 가운데만 가로로 늘어난다)
+            var catalog = DemoUI.Rect(Drawer, "group_catalog", 128, 0, 996, 176);
+            var panelImage = Image(catalog, "bg_surface", "construct_panel", 0, 0, 996, 176, false);
+            if (panelImage.sprite != null) panelImage.pixelsPerUnitMultiplier = panelImage.sprite.rect.height / 176f;   // 세로는 원본 비율 그대로
+            ArtButton(catalog, "btn_previous", "construct_prev", -497, 2, 55, 68, null);   // ◀ 이전 페이지
+            ArtButton(catalog, "btn_next", "construct_next", 469, 2, 54, 68, null);        // ▶ 다음 페이지
+            var cardHolder = DemoUI.Rect(catalog, "group_cards", -13, 0, 930, 150);         // 카드가 들어갈 자리
+            CreateCardSlots(cardHolder);                                                     // 카드 슬롯 6장 (프리팹에서 위치 조정 가능)
 
             Actions = DemoUI.Rect(SafeArea, "group_placement_actions", 0, 0, 164, 42);
             Actions.SetSiblingIndex(Drawer.GetSiblingIndex() + 1);
@@ -227,17 +231,35 @@ namespace ProjectRun.Race
             actionVisibility.blocksRaycasts = !Placement.IsDraggingPreview && !catalogDragging;
         }
 
+        // 시설 카드 채우기: 프리팹에 미리 놓인 카드 슬롯(group_cards의 자식)을 그대로 쓰고 내용만 바꾼다.
+        // 그래서 프리팹에서 슬롯 위치·크기를 옮기면 게임에도 그대로 반영된다. 슬롯이 하나도 없으면 6장을 새로 만든다.
         private void BuildCards()
         {
-            var holder = Drawer.Find("group_catalog/group_cards"); DemoUI.Clear(holder);
-            int start = catalogPage * 6;
-            for (int i = 0; i < 6 && start + i < Placement.Catalog.Facilities.Length; i++)
+            var holder = Drawer.Find("group_catalog/group_cards");
+            if (holder.childCount == 0) CreateCardSlots(holder);
+            int start = catalogPage * CardsPerPage;   // 이번 페이지 첫 시설의 번호
+            for (int i = 0; i < holder.childCount; i++)
             {
-                var definition = Placement.Catalog.Facilities[start + i]; string id = definition.Id;
-                var card = Pair(holder, "btn_facility_" + id, "panel", (i - 2.5f) * 151, 0, 143, 108);
+                var card = (RectTransform)holder.GetChild(i);
+                int index = start + i;
+                bool visible = i < CardsPerPage && index < Placement.Catalog.Facilities.Length;
+                card.gameObject.SetActive(visible);   // 마지막 페이지에서 남는 슬롯은 숨긴다
+                if (!visible) continue;
+
+                var definition = Placement.Catalog.Facilities[index]; string id = definition.Id;
+                card.name = "btn_facility_" + id;     // 검증 도구가 이 이름으로 카드를 찾는다
                 bool dragged = false;
-                Click(card, () => { if (!dragged) Placement.BeginNew(id); });
-                var drag = card.gameObject.AddComponent<EventTrigger>();
+
+                // 클릭: 드래그가 아니었으면 시설 배치 시작 (페이지를 넘길 때마다 이전 연결은 지운다)
+                var button = card.GetComponent<Button>();
+                if (button == null) button = Click(card, null);
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => { if (!dragged) Placement.BeginNew(id); });
+
+                // 드래그: 카드를 끌어서 목장 위에 바로 놓기 (기존 이벤트를 비우고 다시 연결)
+                var drag = card.GetComponent<EventTrigger>();
+                if (drag == null) drag = card.gameObject.AddComponent<EventTrigger>();
+                drag.triggers.Clear();
                 AddDragEvent(drag, EventTriggerType.PointerDown, data => { dragged = false; catalogDragging = false; });
                 AddDragEvent(drag, EventTriggerType.BeginDrag, data =>
                 {
@@ -253,10 +275,25 @@ namespace ProjectRun.Race
                     if (dragged) Placement.DragPreviewToScreen(((PointerEventData)data).position);
                     catalogDragging = false;
                 });
-                var portrait = Icon(card, "img_portrait", "", 0, 18, 110, 68);
-                portrait.sprite = definition.Portrait != null ? definition.Portrait : Art.Get("build");
-                Label(card, "txt_name", definition.Name, 0, -24, 136, 22, 17);
-                Label(card, "txt_size", definition.Footprint.x + " × " + definition.Footprint.y, 0, -43, 135, 16, 13);
+
+                // 내용 채우기: 시설 그림 · 이름 · 차지하는 칸 수
+                card.Find("img_portrait").GetComponent<Image>().sprite = definition.Portrait != null ? definition.Portrait : Art.Get("build");
+                card.Find("txt_name").GetComponent<Text>().text = definition.Name;
+                card.Find("txt_size").GetComponent<Text>().text = definition.Footprint.x + " × " + definition.Footprint.y;
+            }
+        }
+
+        // 카드 슬롯 6장을 만든다 (Build로 프리팹을 새로 만들 때, 또는 슬롯이 없을 때만 쓰임)
+        // 슬롯 이미지 146x142, 간격 153. 만든 뒤에는 프리팹에서 위치를 자유롭게 조정해도 된다
+        private void CreateCardSlots(Transform holder)
+        {
+            for (int i = 0; i < CardsPerPage; i++)
+            {
+                var card = ArtPair(holder, "btn_facility_" + i, "construct_slot", (i - 2.5f) * 153, 0, 146, 142, false);
+                Click(card, null);                                                               // 클릭 반응 (실제 동작은 BuildCards가 연결)
+                Icon(card, "img_portrait", "", 0, 21, 110, 80);                                  // 시설 그림 자리
+                Label(card, "txt_name", "", 0, -37, 136, 24, 18, new Color(.30f, .23f, .18f));   // 시설 이름 (흰색 아웃라인 자동)
+                Label(card, "txt_size", "", 0, -57, 136, 18, 15, new Color(.33f, .26f, .21f));   // 칸 수
             }
         }
 
@@ -445,6 +482,22 @@ namespace ProjectRun.Race
             return rect;
         }
 
+        // 이미지 한 장짜리 틀: bg_surface 하나에 합본 이미지를 넣고 img_frame은 만들지 않는다 (목업 파츠가 프레임+배경 합본이라서)
+        private RectTransform ArtPair(Transform parent, string name, string key, float x, float y, float w, float h, bool preserve = true)
+        {
+            var rect = DemoUI.Rect(parent, name, x, y, w, h);
+            Image(rect, "bg_surface", key, 0, 0, w, h, preserve);
+            return rect;
+        }
+
+        // 이미지 한 장짜리 버튼: ArtPair에 클릭(Button)을 연결한다. action이 null이면 OnOpen의 Bind가 나중에 연결한다
+        private RectTransform ArtButton(Transform parent, string name, string key, float x, float y, float w, float h, UnityEngine.Events.UnityAction action)
+        {
+            var rect = ArtPair(parent, name, key, x, y, w, h);
+            Click(rect, action);
+            return rect;
+        }
+
         private Image Image(Transform parent, string name, string key, float x, float y, float w, float h, bool preserve)
         {
             var image = DemoUI.Rect(parent, name, x, y, w, h).gameObject.AddComponent<Image>();
@@ -476,7 +529,17 @@ namespace ProjectRun.Race
             var text = DemoUI.Rect(parent, name, x, y, w, h).gameObject.AddComponent<Text>();
             text.font = Art.BodyFont; text.fontSize = size; text.text = value; text.color = color ?? ink;
             text.alignment = TextAnchor.MiddleCenter; text.raycastTarget = false;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate; return text;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate;
+            if (name == "txt_name") WhiteOutline(text);   // 이름 글자(txt_name)는 모두 흰색 아웃라인
+            return text;
+        }
+
+        // 글자에 흰색 아웃라인을 붙인다. 프리팹에 넣은 Outline 컴포넌트와 같은 값(흰색, 1.5px)이다
+        private static void WhiteOutline(Text text)
+        {
+            var outline = text.gameObject.AddComponent<UnityEngine.UI.Outline>();
+            outline.effectColor = Color.white;
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
         }
     }
 }
