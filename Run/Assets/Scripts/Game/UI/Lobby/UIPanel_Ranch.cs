@@ -259,10 +259,52 @@ namespace ProjectRun.Race
             ShowTraining();
         }
 
+        // ── 목장 수첩 ────────────────────────────────────────────
+        // 수첩 팝업을 연다. 수첩 전용 프레임/뒤로 버튼 이미지를 쓴다.
         private void ShowNotebook()
         {
-            var panel = OpenModal("목장 수첩");
-            Label(panel, "txt_body", "건설 메뉴에서 시설이나 흙길을 고르고 바닥을 탭하세요.\n초록색 영역에서 배치를 확정할 수 있어요.\n배치한 시설을 탭하면 이동하거나 회수할 수 있어요.\n몬스터는 서로 연결된 길을 따라 돌아다닙니다.\n\n좌클릭 드래그 / 한 손가락 스와이프: 화면 이동\n우클릭 드래그: 좌우 회전 / 우클릭: 원래 각도\n+/− 버튼·휠·두 손가락 벌리기: 5단계 확대·축소\nR: 시설 회전 / Enter: 배치 / Esc: 취소\n\n데모의 배치는 저장하지 않으며 새 실행에 기본 배치로 시작합니다.", 0, -16, 935, 335, 22);
+            var panel = OpenNotebookModal();
+
+            // 본문을 3묶음(기본 조작 / 화면·카메라 조작 / 데모 안내)으로 나누고, 묶음 사이에 점선을 넣는다.
+            // 좌표(x, y)는 프레임 중앙 기준이다. 위치가 어긋나면 이 숫자만 조정하면 된다.
+            Label(panel, "txt_guide_basic",  "건설 메뉴에서 시설이나 흙길을 고르고 바닥을 탭하세요.\n초록색 영역에서 배치를 확정할 수 있어요.\n배치한 시설을 탭하면 이동하거나 회수할 수 있어요.\n몬스터는 서로 연결된 길을 따라 돌아다닙니다.", -19,   85, 800, 130, 23).lineSpacing = 1.15f;
+            DashedLine(panel, "line_1", 10, 540);
+            Label(panel, "txt_guide_input",  "좌클릭 드래그 / 한 손가락 스와이프: 화면 이동\n우클릭 드래그: 좌우 회전 / 우클릭: 원래 각도\n+/− 버튼·휠·두 손가락 벌리기: 5단계 확대·축소\nR: 시설 회전 / Enter: 배치 / Esc: 취소", -19,  -67, 800, 130, 23).lineSpacing = 1.15f;
+            DashedLine(panel, "line_2", -139, 540);
+            Label(panel, "txt_guide_demo",   "데모의 배치는 저장하지 않으며 새 실행에 기본 배치로 시작합니다.", -19, -168, 800,  40, 23).lineSpacing = 1.15f;
+        }
+
+        // 수첩 전용 팝업 틀을 만든다.
+        // 공용 OpenModal은 panel 프레임 + 제목 글자를 쓰지만, 수첩 프레임 이미지에는
+        // "목장 수첩" 제목이 이미 그려져 있어서 제목 Label은 만들지 않는다.
+        private RectTransform OpenNotebookModal()
+        {
+            Placement.Cancel(); Placement.InputBlocked = true; Navigation.gameObject.SetActive(false); // 배치 중이면 취소하고 뒤쪽 화면 입력을 막는다
+            DemoUI.Clear(Modal); Modal.gameObject.SetActive(true);                                       // 이전 팝업 내용을 지우고 팝업 영역을 켠다
+            var shade = DemoUI.Shade(Modal, "bg_dim", new Color(.10f,.15f,.10f,.62f)); shade.raycastTarget = true; // 뒷배경을 어둡게 + 클릭 차단
+
+            // 프레임 원본 비율(1511x814)을 유지한 크기 1120x603
+            var panel = DemoUI.Rect(Modal, "popup_content", 0, -4, 1120, 603);
+            Image(panel, "img_frame", "notebook_frame", 0, 0, 1120, 603, false);
+
+            // 뒤로 버튼: 프레임 좌상단에 걸치게 배치 (누르면 팝업 닫기)
+            var back = IconButton(panel, "btn_close", "notebook_back", -428, 215, 175, 85);
+            back.onClick.AddListener(CloseModal);
+            Refresh(); return panel;
+        }
+
+        // 점선 한 줄을 만든다. 작은 가로 막대(dash)를 일정 간격으로 나열한다.
+        private void DashedLine(Transform parent, string name, float y, float width)
+        {
+            var line = DemoUI.Rect(parent, name, -19, y, width, 2);          // 점선 전체를 묶는 빈 오브젝트
+            const float dash = 12f, gap = 8f;                                // 점 길이 / 점 사이 간격
+            int count = Mathf.FloorToInt(width / (dash + gap));              // 폭 안에 들어가는 점 개수
+            float startX = -(count * (dash + gap) - gap) / 2f + dash / 2f;   // 가운데 정렬을 위한 첫 점 위치
+            for (int i = 0; i < count; i++)
+            {
+                var d = DemoUI.Rect(line, "dash_" + i, startX + i * (dash + gap), 0, dash, 2).gameObject.AddComponent<UnityEngine.UI.Image>();
+                d.color = new Color(.86f,.66f,.42f,.9f); d.raycastTarget = false;
+            }
         }
 
         private void ShowSettings()
