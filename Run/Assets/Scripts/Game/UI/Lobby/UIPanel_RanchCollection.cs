@@ -73,6 +73,7 @@ namespace ProjectRun.Race
         {
             if (!Application.isPlaying || BackButton == null) return;
             BindRosterArt();
+            FitRosterCards();
             if (TrainingActor != null) trainingActorHome = TrainingActor.rectTransform.anchoredPosition;
             Bind(BackButton, ReturnToRanch);
             Bind(PreviousButton, () => Scroll(-1));
@@ -131,6 +132,64 @@ namespace ProjectRun.Race
             if (SkillPopup != null) SkillPopup.SetActive(false);
             Refresh();
             EnsureSelectedVisible();
+        }
+
+        // Keep all three cards, their painted borders and both text rows inside the
+        // viewport. Older scene overrides had larger artwork than the clickable cards.
+        public void FitRosterCards()
+        {
+            if (TrainingMode || Roster == null) return;
+            const float width = 166, height = 170, gap = 10, inset = 5;
+            Roster.StopMovement();
+            PlaceRosterRect(Roster.content, 0, 0, width, 540);
+            for (int i = 0; i < RosterButtons.Length; i++)
+            {
+                var card = RosterButtons[i].transform;
+                PlaceRosterRect((RectTransform)card, 0, inset + i * (height + gap), width, height);
+                foreach (string name in new[] { "bg_surface", "img_frame", "img_selected" })
+                {
+                    var border = card.Find(name) as RectTransform;
+                    if (border != null) PlaceRosterRect(border, 0, 0, width, height);
+                }
+                var portrait = card.Find("obj_portrait") as RectTransform;
+                if (portrait != null)
+                {
+                    PlaceRosterRect(portrait, 6, 6, 154, 158);
+                    PlaceRosterRect(portrait.Find("bg_scene") as RectTransform, 0, 0, 154, 112);
+                    PlaceRosterRect(portrait.Find("img_face") as RectTransform, 0, 0, 154, 112);
+                    var face = portrait.Find("img_face").GetComponent<Image>();
+                    face.preserveAspect = true;
+                    face.rectTransform.pivot = new Vector2(.5f, .5f);
+                    face.rectTransform.anchoredPosition = new Vector2(77, -56);
+                    PlaceRosterRect(portrait.Find("bg_name_strip") as RectTransform, 0, 110, 154, 48);
+                }
+                var nameLabel = RosterNames[i];
+                PlaceRosterRect(nameLabel.rectTransform, 10, 115, 136, 24);
+                nameLabel.fontSize = 17;
+                nameLabel.resizeTextForBestFit = true;
+                nameLabel.resizeTextMinSize = 15;
+                nameLabel.resizeTextMaxSize = 17;
+                nameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                nameLabel.verticalOverflow = VerticalWrapMode.Truncate;
+                nameLabel.alignment = TextAnchor.MiddleCenter;
+                var levelLabel = RosterLevels[i];
+                PlaceRosterRect(levelLabel.rectTransform, 10, 136, 146, 21);
+                levelLabel.fontSize = 16;
+                levelLabel.resizeTextForBestFit = false;
+                levelLabel.alignment = TextAnchor.MiddleCenter;
+                nameLabel.transform.SetAsLastSibling();
+                levelLabel.transform.SetAsLastSibling();
+            }
+            Roster.verticalNormalizedPosition = 1;
+        }
+
+        private static void PlaceRosterRect(RectTransform rect, float x, float y, float width, float height)
+        {
+            if (rect == null) return;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
+            rect.anchoredPosition = new Vector2(x, -y);
+            rect.sizeDelta = new Vector2(width, height);
+            rect.localScale = Vector3.one;
         }
 
         // Resolve by table ID on every open so a roster replacement cannot keep old art or films.

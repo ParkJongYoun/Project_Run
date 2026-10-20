@@ -1,0 +1,53 @@
+목장 UI와 전체 무음 수정
+
+요청: 전체 플레이 사운드 제거, 로비 설정 비활성, 몬스터 목록 정렬,
+흙길 미화, 출전 팝업 전체 딤드, 미노타우르스 얼굴·어깨 초상 공통 적용.
+
+적용
+- Unity AudioManager의 Disable Audio 활성화.
+- Mgr_Sound는 발소리·바람·알림 AudioSource를 생성하거나 재생하지 않음.
+- Mgr_Game은 최초 부팅과 씬 전환 때 AudioListener.volume=0 적용.
+- 로비 및 경기장 톱니바퀴는 표시를 유지하고 설정창을 열지 않음.
+- 몬스터 목록: 카드 166×170, 간격 10, 상하 여백 5. 실제 이미지 테두리도 같은 영역에 맞춤.
+- 이름 15~17pt 자동 맞춤, 레벨 16pt, 각 한 줄. 하단 프레임과 글자 사이 여백 확보.
+- 출전 팝업은 전체 패널 아래로 이동하고 검은 딤드 alpha=0.82 적용.
+  내용만 기존 Safe Area와 0.94 배율을 따름.
+- 미노타우르스의 기존 얼굴 특징을 유지한 어깨 초상 제작.
+  Minorous_face.png의 GUID를 유지하여 몬스터/훈련/출전 공통 참조 교체.
+- PathSoftAlbedo.png 제작. 실제 목장 길과 배치 미리보기 및 건설 흙길 아이콘 연결.
+  길 반복 배율 0.18, 경계 폭 0.13으로 잔디와 부드럽게 연결.
+- 기존 미노 얼굴은 이전원본/미노타우르스_기존얼굴.png에 보존.
+  기존 흙길 텍스처와 사운드 원본 에셋도 보존.
+
+실행 검증
+- Unity 6000.3.23f1, Game View 1920×1080.
+- 타이틀 GAME START → Scene_LobbyTest → 출전 확정 → Scene_OvalToon 실제 진입 확인.
+- 타이틀/로비/진행 중 경기 AudioListener.volume=0.
+- 진행 중 경기 AudioSource=0개.
+- PlayFoot(1), PlayAccent(true), SetWind(1) 호출 후에도 AudioSource=0개.
+- 훈련 VideoPlayer와 경기 VideoPlayer 2개 모두 audioOutputMode=None.
+- 로비와 경기장 설정 버튼 호출 후 설정창 미표시.
+- 몬스터/훈련/출전 화면에서 새 초상 참조와 실제 표시 확인.
+- 출전 팝업 딤드 좌표 (0,0)~(1920,1080), alpha=0.82 확인.
+- 목록 3장 전체와 이름/레벨, 건설 화면 흙길을 캡처하여 시각 검수.
+- 코드 컴파일 성공. 웹 빌드 재생성 및 브라우저 플레이는 이번 작업에서 수행하지 않음.
+
+진단 구분
+- 콘솔의 generators.ai.unity.com NoSubscription 오류는 최초 검사부터 있던 Unity AI 서비스 오류.
+- MCP manage_camera 캡처 도구가 ScreenshotUtility.cs:197에서 PlayerLoop 재귀 오류를 냈고
+  카메라만 캡처했음. 이후 Unity ScreenCapture.CaptureScreenshot으로 UI 포함 캡처에 성공.
+- 프로젝트 게임 코드의 컴파일 오류와 위 도구/서비스 오류를 구분함.
+
+캡처
+- 04_몬스터목록_최종.png: 세 카드 동일 간격, 이름/레벨 여백, 새 미노 초상.
+- 02_출전선택_UI.png: 전체 딤드와 어깨 초상.
+- 03_훈련_UI.png: 훈련 선택 카드의 동일 미노 초상.
+- 05_흙길_최종.png: 실제 길/잔디 경계 및 건설 아이콘.
+
+생성 방식: 내장 image_gen. 최종 이미지 원본은 DataBundles/아트/목장UI보정_20261020.
+
+미노타우르스 최종 프롬프트
+Use case: identity-preserve. Edit the referenced minotaur face into a polished game UI bust portrait. Reference 1 is the exact face identity to preserve: stern warm brown minotaur, swept dark brown mane, ivory curled horns, red eyes, gold nose ring, same three-quarter view facing slightly right. Reference 2 supplies the existing shoulder anatomy and brown fur, no armor added. Extend the portrait only down to just below the shoulders, showing a small amount of upper chest, no waist, hands or weapons. Large face dominant like the Pecopeco portrait in the supplied game UI. Keep both horns and hair fully inside image with a slim transparent margin. Attractive hand-painted fantasy game illustration matching the current art, not chibi, not childish. Square composition, centered bust, clean transparent alpha background, no scenery, no frame, no letters, no glow or shadow outside silhouette. Preserve character identity and expression.
+
+흙길 최종 프롬프트
+Use case: stylized-concept. A single finished tileable square albedo texture for an attractive hand-painted fantasy ranch dirt path viewed orthographically straight down. Warm golden tan compacted soil, broad subtle painted color variation, smooth well-trodden earth with sparse tiny rounded beige pebbles and a few tiny shallow cracks. Polished whimsical farm game environment consistent with a colorful wooden medieval village. All parts of the image are dirt, no grass border or road silhouette because game shader supplies edges. Calm soft brushwork and readable texture at distant gameplay camera scale. Avoid noisy dense gravel, large rocks, paving slabs, grids, footprints, objects, shadows, directional lighting, vignettes, borders, gradients toward edges, text. Equal brightness at all edges, seamless repetition in both axes, flat texture fills entire image. Opaque 1024x1024.

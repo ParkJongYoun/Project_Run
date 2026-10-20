@@ -64,7 +64,7 @@ namespace ProjectRun.Editor
                 var item=catalog.Find(ids[i]);
                 if(item!=null)item.Portrait=AssetDatabase.LoadAssetAtPath<Sprite>(portraitRoot+"/"+ids[i]+".png");
             }
-            ImportPortrait(artRoot+"/Textures/PathDetailAlbedo.png","road");
+            ImportPortrait(artRoot+"/Textures/PathSoftAlbedo.png","road");
             var road=catalog.Find("road")??new Data_RanchFacility();
             road.Id="road";road.Name="흙길";road.Description="잔디 위에 놓는 길. 연결된 길을 따라 몬스터가 이동합니다.";
             road.Footprint=Vector2Int.one;road.IsRoad=true;road.Category="길";
@@ -100,8 +100,8 @@ namespace ProjectRun.Editor
             string materialPath=artRoot+"/Materials/M_RanchRoadPreview.mat";
             var material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             if(material==null) { material=new Material(Shader.Find("ProjectRun/Ranch/GroundPatch"));AssetDatabase.CreateAsset(material,materialPath); }
-            material.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(artRoot+"/Textures/PathDetailAlbedo.png"));
-            material.SetColor("_BaseColor",new Color(.97f,.93f,.83f));EditorUtility.SetDirty(material);
+            material.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(artRoot+"/Textures/PathSoftAlbedo.png"));
+            material.SetColor("_BaseColor",new Color(1f,.98f,.94f));EditorUtility.SetDirty(material);
             var root=new GameObject("P_Ranch_road",typeof(MeshFilter),typeof(MeshRenderer),typeof(BoxCollider));
             try
             {

@@ -16,6 +16,7 @@ namespace ProjectRun.Race
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
+            AudioListener.volume = 0;
             if (Instance != null) return;
             var root = new GameObject("[Managers] Demo");
             Instance = root.AddComponent<Mgr_Game>(); DontDestroyOnLoad(root);
@@ -23,7 +24,7 @@ namespace ProjectRun.Race
         }
         private void SceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            AudioListener.volume = Mgr_User.Data.Volume;
+            AudioListener.volume = 0;
             var ui=FindFirstObjectByType<Mgr_UI>();
             var title=FindFirstObjectByType<UIPanel_DemoTitle>();if(ui!=null&&title!=null)ui.Register(E_PanelType.DemoTitle,title);
             if (scene.name == Define_Scene.Title || scene.name == Define_Scene.Lobby) IsDemoRace = false;

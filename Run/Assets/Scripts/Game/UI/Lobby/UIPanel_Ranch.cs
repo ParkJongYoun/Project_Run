@@ -462,16 +462,7 @@ namespace ProjectRun.Race
 
         private void ShowSettings()
         {
-            var panel = OpenModal("목장 설정");
-            Label(panel, "txt_body", "이번 데모에서는 시설과 길의 배치를 저장하지 않습니다.\n\n새 실행에는 가로지르는 길 하나와 축사·먹이창고로 시작합니다.", 0, 65, 900, 135, 23);
-            PlainButton(panel, "btn_reset_view", "카메라 원위치", -205, -76, 310, 57, () => { RanchCamera.ResetView(); CloseModal(); });
-            PlainButton(panel, "btn_reset_layout", "기본 배치로", 205, -76, 310, 57, () =>
-            {
-                var confirmation = OpenModal("기본 배치로 돌아갈까요?");
-                Label(confirmation, "txt_warning", "현재 배치한 시설과 길이 기본 배치로 바뀝니다.", 0, 37, 900, 96, 25);
-                PlainButton(confirmation, "btn_keep", "유지하기", -173, -98, 260, 58, ShowSettings);
-                PlainButton(confirmation, "btn_reset_confirm", "초기화", 173, -98, 260, 58, () => { Placement.ResetLayout(); CloseModal(); });
-            });
+            // The lobby gear remains visible but opens no panel.
         }
 
         private RectTransform Pair(Transform parent, string name, string key, float x, float y, float w, float h)

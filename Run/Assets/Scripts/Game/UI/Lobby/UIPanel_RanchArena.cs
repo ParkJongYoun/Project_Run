@@ -51,17 +51,18 @@ namespace ProjectRun.Race
             }
             SkinNotebook();   // 경기장 수첩 팝업을 새 이미지로 꾸민다 (최초 1회)
             SkinEntrants();   // 출전할 친구 팝업을 새 이미지로 꾸민다 (최초 1회)
+            ConfigureEntryOverlay();
             PrepareHitArea(ConfirmEntry);
             Bind(BackButton, ReturnToRanch);
             Bind(EntryButton, ShowEntrants);
             Bind(NotebookButton, () => { ClosePopups(); NotebookPopup.SetActive(true); });
-            Bind(SettingsButton, () => { ClosePopups(); RefreshSound(); SettingsPopup.SetActive(true); });
+            Bind(SettingsButton, () => { });
             Bind(EntryClose, ClosePopups);
             Bind(NotebookClose, ClosePopups);
             Bind(NotebookCloseX, ClosePopups);
             Bind(SettingsClose, ClosePopups);
             Bind(ConfirmEntry, ConfirmSelection);
-            Bind(SoundButton, ToggleSound);
+            Bind(SoundButton, () => { });
             for (int i = 0; i < EntrantButtons.Length; i++)
             {
                 int id = i;
@@ -97,6 +98,39 @@ namespace ProjectRun.Race
             DemoUI.SafeArea(SafeArea);
             if (SafeArea != null && Layout != null)
                 Layout.localScale = Vector3.one * LayoutScale * Mathf.Min(1, SafeArea.rect.width / 1280f, SafeArea.rect.height / 720f);
+            if (EntryPopup != null && EntryPopup.activeSelf) FitEntryContent();
+        }
+
+        // The dim layer belongs to the full panel, outside the inset/scaled page.
+        // Only the illustrated popup content follows the page's safe-area scale.
+        public void ConfigureEntryOverlay()
+        {
+            if (EntryPopup == null) return;
+            var popup = (RectTransform)EntryPopup.transform;
+            popup.SetParent(transform, false);
+            popup.SetAsLastSibling();
+            popup.anchorMin = Vector2.zero;
+            popup.anchorMax = Vector2.one;
+            popup.offsetMin = popup.offsetMax = Vector2.zero;
+            popup.localScale = Vector3.one;
+            var shade = popup.Find("bg_dim").GetComponent<UnityEngine.UI.Image>();
+            shade.color = new Color(0, 0, 0, .82f);
+            shade.raycastTarget = true;
+            AbsStretch(shade);
+            FitEntryContent();
+        }
+
+        private void FitEntryContent()
+        {
+            if (Layout == null) return;
+            var body = EntryPopup.transform.Find("group_content") as RectTransform;
+            if (body == null) return;
+            body.anchorMin = body.anchorMax = body.pivot = new Vector2(.5f, .5f);
+            body.sizeDelta = new Vector2(1280, 720);
+            body.position = Layout.TransformPoint(Layout.rect.center);
+            Vector3 parentScale = body.parent.lossyScale;
+            Vector3 pageScale = Layout.lossyScale;
+            body.localScale = new Vector3(pageScale.x / parentScale.x, pageScale.y / parentScale.y, 1);
         }
 
         // ── 경기장 수첩 스킨 ─────────────────────────────────────
@@ -519,16 +553,6 @@ namespace ProjectRun.Race
             Mgr_User.Select(selectedId);
             ConfirmEntry.interactable = false;
             Mgr_Game.Instance.EnterRace(Define_Scene.OvalToon);
-        }
-
-        private void RefreshSound() => SoundLabel.text = "소리  " + (Mgr_User.Data.Volume > 0 ? "켜짐" : "꺼짐");
-
-        private void ToggleSound()
-        {
-            Mgr_User.Data.Volume = Mgr_User.Data.Volume > 0 ? 0 : .65f;
-            AudioListener.volume = Mgr_User.Data.Volume;
-            Mgr_User.Save();
-            RefreshSound();
         }
 
         public void ReturnToRanch()

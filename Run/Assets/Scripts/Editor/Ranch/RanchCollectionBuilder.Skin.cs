@@ -19,7 +19,7 @@ namespace ProjectRun.Editor
             art=AssetDatabase.LoadAssetAtPath<Data_DemoArt>(resourcePath);
             var list=art.Images.ToList();
             foreach(string suffix in new[]{"body","face"})
-                PutArt(list,"Minorous_"+suffix,ImportTrimmed(artRoot+"/Illustrations/Minorous_"+suffix+".png"));
+                PutArt(list,"Minorous_"+suffix,ImportTrimmed(artRoot+(suffix=="face"?"/":"/Illustrations/")+"Minorous_"+suffix+".png"));
             art.Images=list.ToArray();EditorUtility.SetDirty(art);
             BuildPrefab(false);BuildPrefab(true);
             AssetDatabase.SaveAssets();
@@ -45,7 +45,7 @@ namespace ProjectRun.Editor
                 Region("Pecopeco_body",128,0,1060,1254), Region("Pecopeco_face",245,0,560,560) });
             foreach(var sprite in poring.Concat(peco)) PutArt(list,sprite.name,sprite);
             foreach(string suffix in new[]{"body","face"})
-                PutArt(list,"Minorous_"+suffix,ImportTrimmed(artRoot+"/Illustrations/Minorous_"+suffix+".png"));
+                PutArt(list,"Minorous_"+suffix,ImportTrimmed(artRoot+(suffix=="face"?"/":"/Illustrations/")+"Minorous_"+suffix+".png"));
             PutArt(list,"icon_speed",ImportRegions("SpeedWing.png",new[]{Region("SpeedWing",140,96,1104,1048)})[0]);
             foreach(var sprite in ImportRegions("WoodTitleFrame.png",new[] {
                 new SpriteMetaData{name="title_post_left",rect=new Rect(18,230,164,364),alignment=9,pivot=new Vector2(.5f,.5f)},

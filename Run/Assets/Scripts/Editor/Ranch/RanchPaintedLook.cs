@@ -24,7 +24,7 @@ namespace ProjectRun.Editor
             if (Application.isPlaying || scene.path != RanchSceneBuilder.ScenePath)
                 throw new InvalidOperationException("Open Scene_LobbyTest in Edit mode first.");
             if (!IsAvailable) throw new InvalidOperationException("Painted ground textures are missing.");
-            foreach (string file in new[] { "MeadowAlbedo", "PathAlbedo", "MeadowDetailAlbedo", "PathDetailAlbedo" })
+            foreach (string file in new[] { "MeadowAlbedo", "PathAlbedo", "MeadowDetailAlbedo", "PathDetailAlbedo", "PathSoftAlbedo" })
             {
                 var importer = (TextureImporter)AssetImporter.GetAtPath(ArtRoot + "/Textures/" + file + ".png");
                 bool changed = importer.textureType != TextureImporterType.Default || !importer.sRGBTexture ||
@@ -118,14 +118,14 @@ namespace ProjectRun.Editor
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (material == null) { material = new Material(shader); AssetDatabase.CreateAsset(material, path); }
             material.SetTexture("_GrassMap", AssetDatabase.LoadAssetAtPath<Texture2D>(ArtRoot + "/Textures/MeadowDetailAlbedo.png"));
-            material.SetTexture("_PathMap", AssetDatabase.LoadAssetAtPath<Texture2D>(ArtRoot + "/Textures/PathDetailAlbedo.png"));
+            material.SetTexture("_PathMap", AssetDatabase.LoadAssetAtPath<Texture2D>(ArtRoot + "/Textures/PathSoftAlbedo.png"));
             material.SetColor("_GrassTint", new Color(.94f, 1, .96f));
-            material.SetColor("_PathTint", new Color(.97f, .93f, .83f));
+            material.SetColor("_PathTint", new Color(1f, .98f, .94f));
             material.SetColor("_ShadeColor", new Color(.37f, .45f, .43f));
             material.SetFloat("_GrassScale", .24f);
             material.SetFloat("_GrassDetail", .72f);
-            material.SetFloat("_PathScale", .22f);
-            material.SetFloat("_EdgeWidth", .035f);
+            material.SetFloat("_PathScale", .18f);
+            material.SetFloat("_EdgeWidth", .13f);
             material.SetFloat("_EdgeVariation", .10f);
             material.SetFloat("_ShadowStrength", 1);
             grass.GetComponent<Renderer>().sharedMaterial = material;

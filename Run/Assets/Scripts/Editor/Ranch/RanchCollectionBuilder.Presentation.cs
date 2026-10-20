@@ -36,6 +36,7 @@ namespace ProjectRun.Editor
             SetRect(panel.BackButton.transform.Find("img_arrow"),17,16,33,32);
             var backText=panel.BackButton.GetComponentInChildren<Text>();SetRect(backText.transform,52,10,115,44);Style(backText,24,paper,TextAnchor.MiddleCenter,true);
             RepairRoster(panel);
+            panel.FitRosterCards();
             panel.CharacterSprites=Mgr_Table.Demo.Monsters.Select(m=>art.Get(m.Id+"_body")).ToArray();
             if(panel.TrainingMode) RepairTraining(panel);else RepairMonsterDetails(panel);
             PreviewDefaults(panel);
