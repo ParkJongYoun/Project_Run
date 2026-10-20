@@ -26,6 +26,8 @@ namespace ProjectRun.Race.CameraRig
         [Tooltip("Lines only appear while the protagonist has run less than this fraction of the first lap (start only). " +
                  "The start and finish share the same spot, so this keeps the effect from reappearing at the finish. 1+ = no limit.")]
         [Min(0f)] public float StartOnlyLapFraction = 0.5f;
+        [Tooltip("Also show (centered on the protagonist's face) while the skill camera holds after the skill video ends. Ignores the start-only limit.")]
+        public bool AfterSkillVideo = true;
 
         [Header("Look")]
         [Tooltip("World offset from the protagonist's face anchor.")]
@@ -52,7 +54,8 @@ namespace ProjectRun.Race.CameraRig
         private void LateUpdate()
         {
             if (Brain == null || Lines == null || outputCamera == null) return;
-            bool want = IsTargetLive() && !IsRaceFrozen() && IsStartPhase();
+            bool afterVideo = AfterSkillVideo && Rig != null && Rig.IsSkillVideoReturning;
+            bool want = ((IsTargetLive() && IsStartPhase()) || afterVideo) && !IsRaceFrozen();
             float dt = Time.unscaledDeltaTime;
             intensity = Mathf.MoveTowards(intensity, want ? 1f : 0f, dt / (want ? FadeInSeconds : FadeOutSeconds));
 
