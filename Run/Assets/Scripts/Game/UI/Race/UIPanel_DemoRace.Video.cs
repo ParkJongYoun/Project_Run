@@ -11,9 +11,6 @@ namespace ProjectRun.Race
         [SerializeField] private CanvasGroup VideoOpacity;
         [SerializeField] private RawImage VideoImage;
         [SerializeField] private Text VideoTitle;
-        [SerializeField] private Button VideoSkipButton;
-        [SerializeField] private Button VideoPauseButton;
-        [SerializeField] private Text VideoPauseLabel;
         private Sys_DemoSkillVideo skillVideo;
         public bool IsVideoPlaying => skillVideo != null && skillVideo.IsActive;
 
@@ -33,13 +30,11 @@ namespace ProjectRun.Race
             if (visible) VideoRoot.SetAsLastSibling();
         }
 
-        private void UpdateVideoControls()
+        private void UpdateVideoLayout()
         {
             DemoUI.SafeArea(VideoSafeArea);
-            VideoPauseLabel.text = race.Paused ? "재개" : "정지";
         }
 
-        private void SkipVideo() => skillVideo?.Skip();
         private void CancelSkillPresentation()
         {
             if (skillVideo != null) skillVideo.Cancel();

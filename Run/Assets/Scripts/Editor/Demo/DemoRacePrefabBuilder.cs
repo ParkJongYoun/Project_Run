@@ -177,8 +177,6 @@ namespace ProjectRun.Race.Editor
             var title = Bind(view, "VideoTitle", DemoUI.Text(safe, "txt_skill", "포링 점프", 0, -45, 900, 65, 36, DemoUI.Paper, TextAnchor.MiddleCenter, true));
             Anchor(title, .5f, 1, 0, -45);
             title.gameObject.AddComponent<Outline>().effectDistance = new Vector2(2, -2);
-            Anchor(Button(view, "VideoSkipButton", safe, "btn_skip_video", "연출 건너뛰기", -145, 43, 245, 46, false), 1, 0, -145, 43);
-            Anchor(Button(view, "VideoPauseButton", safe, "btn_pause_video", "정지", 75, 43, 110, 46, false, "VideoPauseLabel"), 0, 0, 75, 43);
             video.gameObject.SetActive(false);
         }
     }

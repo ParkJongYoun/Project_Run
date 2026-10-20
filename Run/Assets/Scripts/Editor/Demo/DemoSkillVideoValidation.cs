@@ -158,10 +158,10 @@ namespace ProjectRun.Race.Editor
                 Capture(label + "_영상초반");
                 if (id == 0)
                 {
-                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke(); yield return .2f;
+                    race.Paused = true; yield return .2f;
                     double media = video.MediaTime; yield return .35f;
                     Check(race.Paused && race.Simulation.Time == held && Math.Abs(media - video.MediaTime) < .09, label + " pause freezes media and race");
-                    GameObject.Find("btn_pause_video").GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                    race.Paused = false;
                 }
                 yield return 3; Capture(label + "_영상후반");
                 while (video.IsActive && opacity.alpha > .98f) yield return .02f;

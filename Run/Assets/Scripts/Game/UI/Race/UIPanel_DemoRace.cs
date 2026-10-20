@@ -109,8 +109,6 @@ namespace ProjectRun.Race
             LobbyButton.onClick.AddListener(ReturnToLobby);
             ReplayButton.onClick.AddListener(Replay);
             EndDemoButton.onClick.AddListener(EndDemo);
-            VideoSkipButton.onClick.AddListener(SkipVideo);
-            VideoPauseButton.onClick.AddListener(TogglePause);
         }
 
         private void UnbindButtons()
@@ -121,8 +119,6 @@ namespace ProjectRun.Race
             LobbyButton.onClick.RemoveListener(ReturnToLobby);
             ReplayButton.onClick.RemoveListener(Replay);
             EndDemoButton.onClick.RemoveListener(EndDemo);
-            VideoSkipButton.onClick.RemoveListener(SkipVideo);
-            VideoPauseButton.onClick.RemoveListener(TogglePause);
         }
 
         private void ToggleSpeed() => race.PlaybackSpeed = race.PlaybackSpeed > 1 ? 1 : 2;
@@ -159,7 +155,7 @@ namespace ProjectRun.Race
         {
             if (!opened || race == null || race.Simulation == null) return;
             DemoUI.SafeArea(SafeArea);
-            UpdateVideoControls();
+            UpdateVideoLayout();
             if (generation != race.Generation)
             {
                 generation = race.Generation;
