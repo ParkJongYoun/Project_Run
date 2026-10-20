@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 249759519141843429}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.123220205, y: -0.6832695, z: 0.118605584, w: 0.7098537}
+  m_LocalRotation: {x: 0.08918097, y: -0.8187161, z: 0.13237509, w: 0.55156827}
   m_LocalPosition: {x: 66, y: 6.97, z: -61.95}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -54,7 +54,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -232,8 +232,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1718218863761261834}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.036103018, y: -0.30473316, z: 0.011560345, w: 0.9516831}
-  m_LocalPosition: {x: 50.66, y: 1.46, z: -63.43}
+  m_LocalRotation: {x: 0.04018799, y: -0.40687189, z: 0.017920779, w: 0.91242486}
+  m_LocalPosition: {x: 51.5, y: 1.46, z: -70.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -259,8 +259,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -300,7 +300,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 0, y: 0.6, z: 0}
     QuaternionDamping: 1
-  FollowOffset: {x: 2.12, y: 1.32, z: 1.66}
+  FollowOffset: {x: 2.12, y: 1.32, z: 2.5}
 --- !u!114 &7307563394702138718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -690,9 +690,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectRun.Race.CameraRig.RaceCameraPassShake
   Race: {fileID: 0}
   OnlyWhenLive: 1
-  Strength: 1.8
+  Strength: 1
   Duration: 0.5
-  MaxDistance: 15
+  MaxDistance: 12
   Velocity: {x: 0.85, y: 1.3, z: 0.45}
   RandomizeDirection: 1
   ShakeCurve:
@@ -701,6 +701,37 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &2527654056241103510
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 207415312932163149}
+  m_Layer: 0
+  m_Name: Target_Placeholder_Face
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &207415312932163149
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2527654056241103510}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.04, z: 0.84}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2087666979130692466}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2696638940059319585
 GameObject:
   m_ObjectHideFlags: 0
@@ -727,7 +758,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2696638940059319585}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0075797928, y: 0.82184577, z: -0.010937353, w: 0.5695547}
+  m_LocalRotation: {x: 0.007363655, y: 0.82916427, z: -0.010925441, w: 0.55884975}
   m_LocalPosition: {x: -190, y: 8, z: 28.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -755,7 +786,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 50
@@ -832,7 +863,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2727008813498790290}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0025948419, y: -0.78999114, z: 0.0033434834, w: 0.6131037}
+  m_LocalRotation: {x: 0.002520275, y: -0.7997095, z: 0.0033570626, w: 0.60037255}
   m_LocalPosition: {x: 258, y: 3, z: -8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -860,7 +891,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 34
@@ -1013,8 +1044,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3407996782023699283}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.08437976, y: 0.7029542, z: -0.08459972, w: 0.7011266}
-  m_LocalPosition: {x: 41, y: 3.3400002, z: -61.31}
+  m_LocalRotation: {x: 0.084525846, y: 0.7020366, z: -0.084525846, w: 0.7020367}
+  m_LocalPosition: {x: 41, y: 3.3400002, z: -68.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1040,8 +1071,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -1175,6 +1206,7 @@ Transform:
   - {fileID: 7814202780202209650}
   - {fileID: 1862429432869416840}
   - {fileID: 5874822052587079088}
+  - {fileID: 2087666979130692466}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3635052197045559755
@@ -1723,7 +1755,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4293609167934876982}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.016298115, y: 0.92277396, z: -0.03926868, w: 0.3829891}
+  m_LocalRotation: {x: 0.014648182, y: 0.9315497, z: -0.037762478, w: 0.36135104}
   m_LocalPosition: {x: -23.4, y: 10, z: 11.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1751,7 +1783,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 30
@@ -2227,7 +2259,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6870637396071307166}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.021016601, y: 0.56695163, z: -0.014471747, w: 0.8233558}
+  m_LocalRotation: {x: 0.020959439, y: 0.6043881, z: -0.01590901, w: 0.7962554}
   m_LocalPosition: {x: -20, y: 5, z: -88}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2255,7 +2287,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 45
@@ -2333,8 +2365,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6881009612673217033}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.015883628, y: -0.7614104, z: 0.018669091, w: 0.64780664}
-  m_LocalPosition: {x: 51.829998, y: 1.28, z: -61.010002}
+  m_LocalRotation: {x: 0.016190773, y: -0.75774765, z: 0.018814571, w: 0.6520754}
+  m_LocalPosition: {x: 51.829998, y: 1.28, z: -68.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2360,8 +2392,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -2532,8 +2564,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7027164889808158130}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.039315186, y: -0.84565324, z: 0.062901944, w: 0.52855307}
-  m_LocalPosition: {x: 54.4, y: 1.9399999, z: -59.11}
+  m_LocalRotation: {x: 0.039576482, y: -0.84456515, z: 0.06303559, w: 0.5302546}
+  m_LocalPosition: {x: 54.4, y: 1.9399999, z: -66.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2559,8 +2591,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 40
@@ -2884,8 +2916,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7535588222126940639}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.096602395, y: -0.47513, z: -0.05257491, w: 0.87301517}
-  m_LocalPosition: {x: 51.829998, y: 0.65, z: -62.620003}
+  m_LocalRotation: {x: -0.09615342, y: -0.47158346, z: -0.05182033, w: 0.8750304}
+  m_LocalPosition: {x: 51.829998, y: 0.65, z: -69.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2911,8 +2943,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -3113,6 +3145,38 @@ MonoBehaviour:
   Rig: {fileID: 0}
   ActivePriority: 20
   InactivePriority: 0
+--- !u!1 &8126162184047209632
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2087666979130692466}
+  m_Layer: 0
+  m_Name: Target_Placeholder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2087666979130692466
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8126162184047209632}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 49, y: 0.14, z: -68.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 207415312932163149}
+  m_Father: {fileID: 7199790007485573953}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8618701927087300492
 GameObject:
   m_ObjectHideFlags: 0
@@ -3296,8 +3360,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8774361073242519087}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.15995577, y: -0.69928086, z: 0.16525964, w: 0.67683804}
-  m_LocalPosition: {x: 59.739998, y: 6.14, z: -61.010002}
+  m_LocalRotation: {x: 0.16019207, y: -0.69848394, z: 0.16511978, w: 0.6776387}
+  m_LocalPosition: {x: 59.739998, y: 6.14, z: -68.200005}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3323,8 +3387,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -3421,8 +3485,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9192691730789505484}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.03492798, y: -0.70909935, z: -0.03521288, w: 0.7033621}
-  m_LocalPosition: {x: 51.65, y: 0.8, z: -61.31}
+  m_LocalRotation: {x: -0.00894856, y: -0.70705014, z: -0.00894856, w: 0.7070502}
+  m_LocalPosition: {x: 53, y: 0.8, z: -68.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3448,8 +3512,8 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 0}
-    LookAtTarget: {fileID: 0}
+    TrackingTarget: {fileID: 2087666979130692466}
+    LookAtTarget: {fileID: 207415312932163149}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 48
@@ -3489,7 +3553,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 0, y: 0.6, z: 0}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 0.66, z: 2.65}
+  FollowOffset: {x: 0, y: 0.66, z: 4}
 --- !u!114 &4107764353179177448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3512,7 +3576,7 @@ MonoBehaviour:
       Size: {x: 0.8, y: 0.8}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
-  TargetOffset: {x: 0, y: -0.2, z: 0}
+  TargetOffset: {x: 0, y: -0.3, z: 0}
   Damping: {x: 0.3, y: 0.3}
   Lookahead:
     Enabled: 0
