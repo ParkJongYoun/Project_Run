@@ -1,0 +1,60 @@
+Unity MCP execute_code 검증 본문 2
+Scene_LobbyTest Play 상태에서 실행. 테스트 대상 파일은 프로젝트의 C# 코드이며 이 문서는 재현용 본문입니다.
+
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();var ui=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+Action<string,object[]> call=(name,args)=>p.GetType().GetMethod(name,flags).Invoke(p,args);
+p.SetBuildMode(true);p.BeginNew("feed_store");var cameraPosition=c.transform.position;var cameraRotation=c.transform.rotation;float cameraSize=c.WorldCamera.orthographicSize;
+var target=new ProjectRun.Ranch.Data_RanchPlacement{InstanceId="verify",FacilityId="feed_store",X=13,Y=0};
+var start=c.WorldCamera.WorldToScreenPoint(p.Position(p.Preview));var end=c.WorldCamera.WorldToScreenPoint(p.Position(target));
+call("BeginConstructionPointer",new object[]{(Vector2)start,false,0});call("MoveConstructionPointer",new object[]{(Vector2)end});call("ClearPointer",new object[0]);
+check(p.Preview.X==13&&p.Preview.Y==0,"Mouse drag moves new facility to pointer grid cell");
+check(c.transform.position==cameraPosition&&c.transform.rotation==cameraRotation&&c.WorldCamera.orthographicSize==cameraSize,"Facility drag leaves camera completely fixed");
+check(p.CanConfirm&&ui.ConfirmButton.interactable,"Valid dragged position enables placement");
+int count=p.Layout.Facilities.Count;string id=p.Preview.InstanceId;
+check(p.Confirm()&&p.Layout.Facilities.Count==count+1,"Explicit confirm installs exactly one dragged facility");
+p.BeginMove(id);p.RemoveSelected();check(p.Layout.Facilities.Count==count,"Remove restores facility count");
+p.BeginNew("feed_store");var blocked=p.Layout.Facilities.First(x=>x.FacilityId=="shelter");p.DragPreviewToScreen(c.WorldCamera.WorldToScreenPoint(p.Position(blocked)));
+check(!p.CanConfirm&&!ui.ConfirmButton.interactable&&p.FootprintMarker.GetComponent<Renderer>().sharedMaterial==p.InvalidMaterial,"Overlapping drag shows red footprint and blocks placement");
+check(!p.Confirm()&&p.Layout.Facilities.Count==count,"Invalid release and confirm do not mutate layout");
+var before=JsonUtility.ToJson(p.Preview);var uiPoint=RectTransformUtility.WorldToScreenPoint(null,ui.Drawer.position);
+call("BeginConstructionPointer",new object[]{uiPoint,false,0});call("MoveConstructionPointer",new object[]{(Vector2)end});call("ClearPointer",new object[0]);
+check(JsonUtility.ToJson(p.Preview)==before,"Drag beginning on construction UI cannot move preview");
+p.InputBlocked=true;p.DragPreviewToScreen(end);check(JsonUtility.ToJson(p.Preview)==before,"Modal blocks catalog dragging");p.InputBlocked=false;
+p.Cancel();Physics.SyncTransforms();var original=p.Layout.Facilities.First(x=>x.FacilityId=="shelter");var originalObject=p.FindActivitySpot(original.InstanceId).transform;
+var grab=c.WorldCamera.WorldToScreenPoint(originalObject.GetComponent<Collider>().bounds.center);
+call("BeginConstructionPointer",new object[]{(Vector2)grab,true,71});
+check(p.IsMoving&&p.Preview.InstanceId==original.InstanceId,"Touch press selects existing facility directly without focusing camera");
+call("MoveConstructionPointer",new object[]{(Vector2)grab+new Vector2(60,-30)});call("ClearPointer",new object[0]);
+check(p.Preview.X!=original.X||p.Preview.Y!=original.Y,"Touch drag moves existing facility");
+check(c.transform.position==cameraPosition&&c.transform.rotation==cameraRotation,"Selecting and dragging existing facility keeps top view fixed");
+p.Cancel();check(originalObject.gameObject.activeSelf&&p.Layout.Facilities.First(x=>x.InstanceId==original.InstanceId).X==original.X,"Cancel restores original facility after drag");
+return new {checks};
+
+검증 결과
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "checks": [
+        "Mouse drag moves new facility to pointer grid cell",
+        "Facility drag leaves camera completely fixed",
+        "Valid dragged position enables placement",
+        "Explicit confirm installs exactly one dragged facility",
+        "Remove restores facility count",
+        "Overlapping drag shows red footprint and blocks placement",
+        "Invalid release and confirm do not mutate layout",
+        "Drag beginning on construction UI cannot move preview",
+        "Modal blocks catalog dragging",
+        "Touch press selects existing facility directly without focusing camera",
+        "Touch drag moves existing facility",
+        "Selecting and dragging existing facility keeps top view fixed",
+        "Cancel restores original facility after drag"
+      ]
+    },
+    "compiler": "codedom"
+  }
+}
+

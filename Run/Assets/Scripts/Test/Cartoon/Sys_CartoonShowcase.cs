@@ -13,12 +13,17 @@ namespace ProjectRun.Race
         public Animator Animator;
         public AnimationClip Idle;
         public AnimationClip Run;
+        public AnimationClip Walk;
+        public AnimationClip Clap;
+        public bool KeepAppearance;
         public Vector3 Focus;
         public float Radius;
         public Transform CartoonRoot;
         public GameObject OriginalPrefab;
         public AnimationClip OriginalIdle;
         public AnimationClip OriginalRun;
+        public AnimationClip OriginalWalk;
+        public AnimationClip OriginalClap;
         public Vector3 OriginalPosition;
         public Quaternion OriginalRotation = Quaternion.identity;
         public Vector3 OriginalScale = Vector3.one;
@@ -39,8 +44,10 @@ namespace ProjectRun.Race
         public float OverviewSize = 11;
         private PlayableGraph[] graphs;
         private int selected = -1;
-        private bool running;
+        private enum PreviewMotion { Idle, Run, Walk, Clap }
+        private PreviewMotion motion;
         private bool showOriginal;
+        private bool comparingMinotaurus;
         private double animationTime;
         public bool ShowingOriginal => showOriginal;
 
@@ -61,12 +68,14 @@ namespace ProjectRun.Race
             foreach (var graph in graphs) if (graph.IsValid()) graph.Evaluate(Time.unscaledDeltaTime);
         }
 
-        public void PlayIdle() { Play(false); }
-        public void PlayRun() { Play(true); }
+        public void PlayIdle() { Play(PreviewMotion.Idle); }
+        public void PlayRun() { Play(PreviewMotion.Run); }
+        public void PlayWalk() { Play(PreviewMotion.Walk); }
+        public void PlayClap() { Play(PreviewMotion.Clap); }
 
-        private void Play(bool run)
+        private void Play(PreviewMotion value)
         {
-            running = run; animationTime = 0;
+            motion = value; animationTime = 0;
             RebuildAnimation();
         }
 
@@ -77,9 +86,18 @@ namespace ProjectRun.Race
             for (int i = 0; i < Exhibits.Length; i++)
             {
                 var entry = Exhibits[i];
-                var animator = showOriginal ? entry.OriginalAnimator : entry.Animator;
-                var clip = showOriginal ? (running ? entry.OriginalRun : entry.OriginalIdle) : (running ? entry.Run : entry.Idle);
+                bool original = showOriginal && !entry.KeepAppearance;
+                var animator = original ? entry.OriginalAnimator : entry.Animator;
+                var clip = original ? (motion == PreviewMotion.Run ? entry.OriginalRun
+                    : motion == PreviewMotion.Walk ? (entry.OriginalWalk != null ? entry.OriginalWalk : entry.OriginalIdle)
+                    : motion == PreviewMotion.Clap ? (entry.OriginalClap != null ? entry.OriginalClap : entry.OriginalIdle) : entry.OriginalIdle)
+                    : motion == PreviewMotion.Run ? entry.Run
+                    : motion == PreviewMotion.Walk ? (entry.Walk != null ? entry.Walk : entry.Idle)
+                    : motion == PreviewMotion.Clap ? (entry.Clap != null ? entry.Clap : entry.Idle) : entry.Idle;
                 if (animator == null || clip == null) continue;
+                // This preview owns the pose. A prefab's Idle controller would otherwise
+                // overwrite the manually evaluated clip later in the same frame.
+                animator.runtimeAnimatorController = null;
                 animator.applyRootMotion = false;
                 // Legacy sound callbacks belong to the original game, not this visual preview.
                 animator.fireEvents = false;
@@ -101,14 +119,16 @@ namespace ProjectRun.Race
             if (!showOriginal)
             {
                 foreach (var entry in Exhibits)
+                    if (!entry.KeepAppearance)
                     if (entry.OriginalPrefab == null || entry.CartoonRoot == null || entry.OriginalIdle == null || entry.OriginalRun == null)
                     { Debug.LogError("Missing original comparison source: " + entry.Name, this); return; }
-                foreach (var entry in Exhibits) PrepareOriginal(entry);
+                foreach (var entry in Exhibits) if (!entry.KeepAppearance) PrepareOriginal(entry);
             }
             StopGraphs();
             showOriginal = !showOriginal;
             foreach (var entry in Exhibits)
             {
+                if (entry.KeepAppearance) continue;
                 entry.CartoonRoot.gameObject.SetActive(!showOriginal);
                 if (entry.OriginalInstance != null) entry.OriginalInstance.SetActive(showOriginal);
             }
@@ -146,11 +166,32 @@ namespace ProjectRun.Race
 
         public void ShowAll()
         {
+            comparingMinotaurus = false;
             selected = -1;
             foreach (var entry in Exhibits) entry.Root.gameObject.SetActive(true);
             foreach (var label in NameLabels) label.SetActive(true);
             PreviewCamera.transform.SetPositionAndRotation(OverviewPosition, Quaternion.Euler(OverviewEuler));
             PreviewCamera.orthographicSize = OverviewSize;
+            UpdateStatus();
+        }
+        public void CompareMinotaurus()
+        {
+            Data_CartoonExhibit old = null, added = null;
+            foreach (var entry in Exhibits)
+            {
+                if (entry.Root.name == "V_Cartoon_Minorous") old = entry;
+                if (entry.Root.name == "V_Cartoon_NewMinotaurus") added = entry;
+            }
+            if (old == null || added == null) return;
+            selected = -1;
+            comparingMinotaurus = true;
+            foreach (var entry in Exhibits) entry.Root.gameObject.SetActive(entry == old || entry == added);
+            foreach (var label in NameLabels)
+                label.SetActive(label.name == "txt_name_Minorous" || label.name == "txt_name_NewMinotaurus");
+            Vector3 center = (old.Focus + added.Focus) * .5f;
+            PreviewCamera.transform.position = center + new Vector3(0, 1.5f, -10);
+            PreviewCamera.transform.LookAt(center);
+            PreviewCamera.orthographicSize = Mathf.Max(3.6f, Mathf.Max(old.Radius, added.Radius) * 1.4f);
             UpdateStatus();
         }
         public void Next() { Focus((selected + 1) % Exhibits.Length); }
@@ -164,6 +205,7 @@ namespace ProjectRun.Race
         {
             if (index < 0 || index >= Exhibits.Length) return;
             selected = index;
+            comparingMinotaurus = false;
             for (int i = 0; i < Exhibits.Length; i++) Exhibits[i].Root.gameObject.SetActive(i == index);
             foreach (var label in NameLabels) label.SetActive(false);
             var entry = Exhibits[index];
@@ -175,8 +217,11 @@ namespace ProjectRun.Race
         }
         private void UpdateStatus()
         {
-            if (Status != null) Status.text = (selected < 0 ? "전체 " + Exhibits.Length + "종" : Exhibits[selected].Name)
-                + "  ·  " + (showOriginal ? "원본" : "카툰") + "  ·  " + (running ? "달리기" : "대기");
+            if (Status != null) Status.text = (comparingMinotaurus ? "미노타우루스 · 기존 / 신규 비교"
+                : selected < 0 ? "전체 " + Exhibits.Length + "종" : Exhibits[selected].Name)
+                + "  ·  " + (showOriginal ? "원본" : "카툰") + "  ·  "
+                + (motion == PreviewMotion.Run ? "달리기" : motion == PreviewMotion.Walk ? "걷기 (신규 미노)"
+                    : motion == PreviewMotion.Clap ? "박수 (신규 미노)" : "대기");
         }
         public void ReturnToTitle() { Mgr_Scene.Load(Define_Scene.Title); }
     }

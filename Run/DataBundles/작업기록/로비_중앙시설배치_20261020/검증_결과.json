@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-20",
+  "scene": "Scene_LobbyTest",
+  "checks": 37,
+  "results": [
+    {
+      "stage": 1,
+      "checks": [
+        "New facility starts at view center within grid snapping",
+        "Overlap at center disables confirm",
+        "Overlap uses red footprint",
+        "Footprint uses alpha 0.42 and transparent surface",
+        "Invalid confirm preserves preview and layout",
+        "Ground tap does not teleport active preview",
+        "Four rotations preserve original center and orientation"
+      ],
+      "preview": "{\"InstanceId\":\"59ead5ce084e4592b26a1419eab46e5a\",\"FacilityId\":\"shelter\",\"X\":9,\"Y\":5,\"Rotation\":0}",
+      "uiActions": true
+    },
+    {
+      "stage": 2,
+      "checks": [
+        "Swipe is handled as camera navigation without tap selection"
+      ],
+      "start": "(1.08, 23.35, -28.55)",
+      "velocity": "(8.86, 0.00, -7.64)"
+    },
+    {
+      "stage": 3,
+      "checks": [
+        "Preview tracks actual camera center after swipe and inertia",
+        "Blocked UI freezes preview",
+        "Existing selection starts smooth focus without teleporting camera",
+        "Existing facility stays at original location while focus begins",
+        "Original is hidden only during move preview",
+        "Existing facility rotates four times without center drift"
+      ],
+      "focusId": "garden_shelter_5_12",
+      "ground": "(-4.05, 0.00, 7.43)"
+    },
+    {
+      "stage": 4,
+      "checks": [
+        "Edge facility converges to screen center",
+        "Automatic focus does not drag the facility",
+        "Cancel restores installed facility",
+        "Installed facility hit lies outside UI",
+        "World tap ray hits the intended installed facility",
+        "Normal lobby tap only starts smooth camera focus"
+      ],
+      "normalFocus": "garden_fountain_9_8",
+      "viewport": "(0.50, 0.50, 35.00)"
+    },
+    {
+      "stage": 5,
+      "checks": [
+        "Normal lobby tap converges to facility center",
+        "Empty target is available"
+      ],
+      "target": "(6.08, 0.00, -8.78)"
+    },
+    {
+      "stage": 6,
+      "checks": [
+        "New facility respects the current camera center after navigation",
+        "Empty center enables confirm",
+        "Empty center uses green footprint",
+        "Confirm places exactly one facility at the preview position",
+        "Out of bounds movement cannot replace the installed facility",
+        "Invalid move cancel preserves installed cell",
+        "Remove works after camera focus"
+      ]
+    },
+    {
+      "stage": 7,
+      "checks": [
+        "Test gesture begins on construction UI",
+        "Drag beginning over UI changes neither camera target nor preview",
+        "Moving swipe creates inertia",
+        "Stationary hold dissipates old swipe velocity",
+        "Single-touch swipe preserves active facility selection"
+      ]
+    },
+    {
+      "stage": 8,
+      "checks": [
+        "World click selects installed facility for moving in construction mode",
+        "Re-enable restores complete facility selection registry",
+        "Re-enable leaves no ghost preview or hidden facility"
+      ]
+    }
+  ]
+}

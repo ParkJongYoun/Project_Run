@@ -1,0 +1,55 @@
+신규 미노타우루스와 목장 튜토리얼 적용 — 2026-10-20
+
+작업 환경
+- 「로비 시설물 배치 조작 수정」 채팅이 완료된 것을 확인한 뒤 Unity 에디터와 Assets 수정을 시작했다.
+- 실제 연결된 Unity 프로젝트는 C:/Project_Run/Run, Unity 6000.3.23f1이다. 지침에 적힌 D:/Project_Run/Run은 현재 환경에 존재하지 않는다.
+- 기존 미커밋 변경과 건설 UI 작업을 유지했다. 종료 시 Scene_LobbyTest를 열어 두고 Play를 정지했다.
+
+1. 신규 미노
+- 전시용 V_Cartoon_NewMinotaurus를 정식 Minorous 출전 ID에 연결했다.
+- 경기 전용 Regular 프리팹 P_Runner_CartoonRace_Minorous를 생성하고 새 Idle/Run, Humanoid Avatar, 얼굴·카메라 기준점을 연결했다.
+- 전시 부모와 캐릭터 축척의 곱을 유지하고 목장에는 공통 축척 0.45를 적용했다.
+- 목장은 새 Idle/Walk/Clap을 사용하며 기존 길 이동·시설 방문 코드를 유지한다.
+- 로비와 경기 모두 기존 확정 6종이 각 1마리씩 등장한다. 출전 선택·능력치·필살기 ID는 유지한다.
+- 얼굴 512×512와 전신 1024×1024를 별도로 렌더링해 정보·훈련 목록·출전 선택·경기 HUD·결과 화면의 이미지를 갱신했다.
+- 기존 미노와 신규 미노 원본·전시 프리팹·재질·텍스처는 보존했다. 기존 훈련/필살기 MP4는 이번 작업에서 재생성하지 않았다.
+- 이후 Tools/Project Run/Cartoon monsters/Sync race lineup from showcase를 실행해도 새 미노를 사용한다.
+
+2. 튜토리얼
+- 기존 UIPanel_DemoLobby와 Mgr_Guide의 안내 흐름을 참고해 새 목장 패널에 연결했다.
+- 사용자 첫 첨부의 중앙 캐릭터+하단 대화창 구성을 적용했다. 두 번째 첨부의 환영 포즈를 내장 image_gen으로 투명 PNG로 정리했다.
+- 별도 UIPanel_RanchGuide 프리팹, 팝업 레이어 Canvas, Safe Area, 1280×720 기준을 사용한다.
+- 대화 배경·금색 프레임은 서로 다른 이미지이며 분홍 이름표와 타이핑·클릭 진행·전부 스킵을 제공한다.
+- 흐름: 첫 인사 → 몬스터 버튼 강조 → 몬스터 첫 방문 설명 → 목장 복귀 후 훈련 버튼 강조 → 훈련 설명 → 실제 훈련 완료 축하 → 경기장 안내 → 수첩 강조 → 출전 선택 설명.
+- 대화 중 목장 조작을 막고 종료 시 해제한다. 버튼 강조는 다른 메뉴 이용을 막지 않는다.
+- 안내 상태는 Mgr_Guide의 실행 중 메모리에서만 관리한다. 일반 재진입에서는 반복하지 않으며 새 체험에는 방문 상태를 초기화한다. 전부 스킵은 같은 실행 동안 유지하고 새 Play에는 다시 안내한다.
+- 신규 UI 재생성 메뉴: Tools/Project Run/Ranch/Build character tutorial.
+
+3. 실제 검증 완료
+- RanchGuideVerification 통합 검증 결과 PASSED. 통합흐름_검증.txt 참고.
+- 실제 UI 레이캐스트와 버튼 클릭으로 타이틀→목장→몬스터→훈련 취소→훈련 완료→경기장 수첩→미노 출전→달리기→일반 목장 복귀→재출전→필살기 1회→새 체험→전부 스킵을 확인했다.
+- 훈련 취소 시 성장 미지급, MP4 실제 완료 후 Lv.5와 출전 조건 충족, 메뉴별 선택 독립성을 확인했다.
+- 새 미노의 리그·얼굴/카메라 기준점·실시간 포즈·달리기 재생, 경기 6종 구성을 확인했다.
+- Play를 완전히 정지한 뒤 목장에서 다시 직접 Play하여 스킵 해제와 첫 인사 재표시를 확인했다. 주민 6마리, 누락 스크립트 0.
+- 컴파일 오류 및 이번 작업의 런타임 오류 없음. Unity AI 서비스의 기존 NoSubscription 메시지는 별도 환경 메시지다.
+- 이번 검증은 Unity Editor 실행 검증이다. WebGL 재빌드와 브라우저 검증은 수행하지 않았다.
+
+주요 산출물
+- Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchGuide.prefab
+- Assets/ArtBundles/UI/RanchGuide/RanchGuide_Welcome.png
+- Assets/Resources/Prefabs/Race/CartoonRaceLineup/P_Runner_CartoonRace_Minorous.prefab
+- Assets/ArtBundles/UI/CartoonRaceLineup/Minorous.png 및 Minorous_Body.png
+- 이 폴더/검증/09_최종_목장튜토리얼.png
+- 이 폴더/검증/04_신규미노_몬스터정보.png
+- 이 폴더/검증/07_신규미노_레이스.png
+- 이미지 생성 방식·최종 프롬프트: 원본자료/안내인_이미지생성_기록.txt
+
+변경 전 자료는 변경전/ 아래 원래 Unity 상대 경로로, 사용자 원본과 생성 기록은 원본자료/로 분리했다.
+
+4. 후속 수정: 로비 신규 미노 걷기 충돌
+- 사용자가 지적한 대기 자세로 미끄러지는 현상을 실제 로비 실행에서 재현했다. 이전 검증은 Walk 연결을 확인했지만 최종 렌더 프레임의 보행까지 확인하지 못했다.
+- Sys_RanchResident가 Update에서 걷기 포즈를 평가한 뒤, 신규 미노의 기본 Animator Controller가 Idle 포즈로 다시 덮어쓰고 있었다.
+- 목장 애니메이션 그래프가 작동하는 동안 기본 Controller를 분리하고, 컴포넌트 비활성화 시 원래 Controller를 복원하도록 수정했다. 원본 클립·프리팹·외형·이동 경로와 속도는 변경하지 않았다.
+- 수정 후 실제 로비 프레임 188개에서 양발의 번갈아 내딛기를 측정했다. 좌/우 발의 모델 기준 전후 이동 폭은 각각 0.3826 / 0.3684다.
+- 실제 이동, 조작 차단 시 대기 전환, 비활성화 시 Controller 복원, 재활성화 시 그래프 재생, 주민 6종의 유효 그래프를 확인했다. 걷기_수정후_검증.txt 결과 PASSED.
+- 확대 화면은 검증/12_걷기수정_실제포즈.png에 보관했다. 이번 후속 수정도 Unity Editor에서 검증했으며 웹 재빌드는 수행하지 않았다.

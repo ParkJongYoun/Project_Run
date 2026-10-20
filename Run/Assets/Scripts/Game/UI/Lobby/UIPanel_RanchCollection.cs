@@ -98,11 +98,13 @@ namespace ProjectRun.Race
             Refresh();
             Canvas.ForceUpdateCanvases();
             UpdateScrollControls();
+            owner?.Guide?.EnterCollection(this);
         }
 
         public override void OnClose()
         {
             if (!Application.isPlaying) return;
+            owner?.Guide?.Clear();
             training = false;
             if (trainingVideo != null) trainingVideo.Shutdown();
             if (TrainingFilm != null) TrainingFilm.SetPlaying(false);
@@ -171,7 +173,7 @@ namespace ProjectRun.Race
             }
             var monster = table.Monsters[selectedId];
             var progress = Mgr_User.Data.Monsters[selectedId];
-            if (MonsterName != null) MonsterName.text = monster.Name + "  Lv." + progress.Level;
+            if (MonsterName != null) MonsterName.text = monster.Name + " <size=24><color=#B06E3C>Lv." + progress.Level + "</color></size>";
             if (TrainingMode)
             {
                 if (TrainingFilm != null) { TrainingFilm.SetPlaying(false); TrainingFilm.gameObject.SetActive(false); }
@@ -353,6 +355,7 @@ namespace ProjectRun.Race
             training = false;
             Mgr_User.Train(selectedId);
             Refresh();
+            owner?.Guide?.TrainingCompleted();
         }
 
         public void ReturnToRanch()

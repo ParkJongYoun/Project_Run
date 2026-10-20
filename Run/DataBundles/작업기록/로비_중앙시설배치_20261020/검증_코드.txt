@@ -1,0 +1,140 @@
+Unity MCP execute_code 검증 본문입니다. Scene_LobbyTest Play 상태에서 1→2→3→4→5→6 순서로 실행합니다.
+각 단계 사이에는 카메라가 수렴하도록 1초 이상 진행합니다. 8은 6 다음에, 7은 1을 다시 실행한 다음 실행합니다.
+카메라 제스처 검증은 실제 런타임 입력 처리 메서드를 리플렉션으로 호출합니다. OS 마우스나 휴대폰의 물리 입력 검증을 뜻하지 않습니다.
+초기화 후 목장 배치를 변경하고 회수하므로 개발용 Play 세션에서 사용합니다.
+
+===== 검증 1: Unity MCP execute_code 본문 =====
+var p = UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();
+var c = UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var ui = UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var checks = new System.Collections.Generic.List<string>();
+Action<bool, string> check = (ok, name) => { if (!ok) throw new Exception(name); checks.Add(name); };
+c.ResetView();
+ui.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(b => b.name == "btn_build").onClick.Invoke();
+ui.GetComponentsInChildren<UnityEngine.UI.Button>(true).First(b => b.name == "btn_facility_shelter").onClick.Invoke();
+var ray = c.WorldCamera.ViewportPointToRay(new Vector3(.5f,.5f,0)); float distance;
+new Plane(Vector3.up, p.GridOrigin).Raycast(ray, out distance);
+var offset = p.Position(p.Preview) - ray.GetPoint(distance);
+check(Mathf.Abs(offset.x) <= p.CellSize*.501f && Mathf.Abs(offset.z) <= p.CellSize*.501f, "New facility starts at view center within grid snapping");
+check(!p.CanConfirm && !ui.ConfirmButton.interactable, "Overlap at center disables confirm");
+check(p.FootprintMarker.GetComponent<Renderer>().sharedMaterial == p.InvalidMaterial, "Overlap uses red footprint");
+check(Mathf.Abs(p.InvalidMaterial.GetColor("_BaseColor").a - .42f)<.01f && p.InvalidMaterial.GetFloat("_Surface")==1, "Footprint uses alpha 0.42 and transparent surface");
+int count = p.Layout.Facilities.Count;
+check(!p.Confirm() && p.Layout.Facilities.Count == count && p.Preview != null, "Invalid confirm preserves preview and layout");
+var before = JsonUtility.ToJson(p.Preview);
+p.HandleWorldTap(new Vector2(Screen.width*.3f, Screen.height*.55f));
+check(JsonUtility.ToJson(p.Preview)==before, "Ground tap does not teleport active preview");
+for (int i=0;i<4;i++) p.Rotate();
+check(JsonUtility.ToJson(p.Preview)==before, "Four rotations preserve original center and orientation");
+return new { checks, preview = before, uiActions = ui.Actions.gameObject.activeSelf };
+
+===== 검증 2: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();
+var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var point=new Vector2(Screen.width*.5f,Screen.height*.5f);
+var oldPosition=c.transform.position;
+var oldPreview=JsonUtility.ToJson(p.Preview);
+typeof(ProjectRun.Ranch.Sys_RanchCamera).GetMethod("BeginPointer",flags).Invoke(c,new object[]{point,false,0});
+typeof(ProjectRun.Ranch.Sys_RanchCamera).GetMethod("MovePointer",flags).Invoke(c,new object[]{point+new Vector2(-260,150),1f/60});
+typeof(ProjectRun.Ranch.Sys_RanchCamera).GetMethod("EndPointer",flags).Invoke(c,new object[]{point+new Vector2(-260,150)});
+if(p.Preview==null || JsonUtility.ToJson(p.Preview)!=oldPreview) throw new Exception("Swipe must not select or teleport before camera smoothing");
+return new { checks=new[]{"Swipe is handled as camera navigation without tap selection"}, start=oldPosition.ToString(), velocity=typeof(ProjectRun.Ranch.Sys_RanchCamera).GetField("inertiaVelocity",flags).GetValue(c).ToString() };
+
+===== 검증 3: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();
+var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var ui=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var checks=new System.Collections.Generic.List<string>();
+Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+var ray=c.WorldCamera.ViewportPointToRay(new Vector3(.5f,.5f,0));float d;new Plane(Vector3.up,p.GridOrigin).Raycast(ray,out d);
+var offset=p.Position(p.Preview)-ray.GetPoint(d);
+check(Mathf.Abs(offset.x)<=p.CellSize*.501f && Mathf.Abs(offset.z)<=p.CellSize*.501f,"Preview tracks actual camera center after swipe and inertia");
+p.InputBlocked=true;var frozen=JsonUtility.ToJson(p.Preview);c.transform.position+=new Vector3(1,0,0);p.SyncPreviewToViewCenter();
+check(JsonUtility.ToJson(p.Preview)==frozen,"Blocked UI freezes preview");p.InputBlocked=false;c.transform.position-=new Vector3(1,0,0);
+p.Cancel();c.ResetView();
+var entry=p.Layout.Facilities.First(x=>x.FacilityId=="shelter");var cameraBefore=c.transform.position;
+p.BeginMove(entry.InstanceId);
+check(c.transform.position==cameraBefore,"Existing selection starts smooth focus without teleporting camera");
+check(p.Preview.X==entry.X && p.Preview.Y==entry.Y,"Existing facility stays at original location while focus begins");
+check(!p.FindActivitySpot(entry.InstanceId).gameObject.activeSelf,"Original is hidden only during move preview");
+for(int i=0;i<4;i++)p.Rotate();
+check(p.Preview.X==entry.X && p.Preview.Y==entry.Y && p.Preview.Rotation==entry.Rotation,"Existing facility rotates four times without center drift");
+return new {checks, focusId=entry.InstanceId, ground=p.Position(entry).ToString()};
+
+===== 검증 4: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+var entry=p.Layout.Facilities.First(x=>x.FacilityId=="shelter");
+var viewport=c.WorldCamera.WorldToViewportPoint(p.Position(entry));
+check(Vector2.Distance(new Vector2(viewport.x,viewport.y),new Vector2(.5f,.5f))<.002f,"Edge facility converges to screen center");
+check(p.Preview.X==entry.X && p.Preview.Y==entry.Y,"Automatic focus does not drag the facility");
+p.Cancel();check(p.FindActivitySpot(entry.InstanceId).gameObject.activeSelf,"Cancel restores installed facility");
+p.SetBuildMode(false);c.ResetView();Physics.SyncTransforms();
+var target=p.Layout.Facilities.First(x=>x.FacilityId=="fountain");
+var targetObject=p.FacilitiesRoot.Find("obj_" + target.FacilityId + "_" + target.InstanceId).gameObject;
+var collider=targetObject.GetComponent<Collider>();var point=c.WorldCamera.WorldToScreenPoint(collider.bounds.center);
+check(!ProjectRun.Ranch.Sys_RanchPlacement.IsOverUI(point),"Installed facility hit lies outside UI");
+RaycastHit hit;check(Physics.Raycast(c.WorldCamera.ScreenPointToRay(point),out hit,200) && (hit.transform==targetObject.transform||hit.transform.IsChildOf(targetObject.transform)),"World tap ray hits the intended installed facility");
+var start=c.transform.position;p.HandleWorldTap(point);
+check(p.Preview==null && !p.IsBuilding && c.transform.position==start,"Normal lobby tap only starts smooth camera focus");
+return new {checks, normalFocus=target.InstanceId, viewport=viewport.ToString()};
+
+===== 검증 5: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var f=p.Layout.Facilities.First(x=>x.FacilityId=="fountain");var v=c.WorldCamera.WorldToViewportPoint(p.Position(f));if(Vector2.Distance(new Vector2(v.x,v.y),new Vector2(.5f,.5f))>=.002f)throw new Exception("Normal focus did not reach center");
+var candidate=new ProjectRun.Ranch.Data_RanchPlacement {InstanceId="verification_empty",FacilityId="feed_store",X=13,Y=0};
+string reason;if(!ProjectRun.Ranch.RanchGrid.CanPlace(p.Catalog,p.Layout.Facilities,candidate,p.GridSize,out reason))throw new Exception(reason);
+p.SetBuildMode(true);c.FocusOn(p.Position(candidate));
+return new {checks=new[]{"Normal lobby tap converges to facility center","Empty target is available"}, target=p.Position(candidate).ToString()};
+
+===== 검증 6: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();var ui=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+p.BeginNew("feed_store");
+check(p.Preview.X==13 && p.Preview.Y==0,"New facility respects the current camera center after navigation");
+check(p.CanConfirm && ui.ConfirmButton.interactable,"Empty center enables confirm");
+check(p.FootprintMarker.GetComponent<Renderer>().sharedMaterial==p.ValidMaterial,"Empty center uses green footprint");
+int count=p.Layout.Facilities.Count;string id=p.Preview.InstanceId;
+check(p.Confirm() && p.Layout.Facilities.Count==count+1 && p.Preview==null,"Confirm places exactly one facility at the preview position");
+p.BeginMove(id);p.MovePreview(-1,0);
+check(!p.CanConfirm && !p.Confirm() && p.Layout.Facilities.Count==count+1,"Out of bounds movement cannot replace the installed facility");
+p.Cancel();var placed=p.Layout.Facilities.First(x=>x.InstanceId==id);check(placed.X==13 && placed.Y==0,"Invalid move cancel preserves installed cell");
+p.BeginMove(id);p.RemoveSelected();check(p.Layout.Facilities.Count==count,"Remove works after camera focus");
+p.SetBuildMode(false);c.ResetView();return new {checks};
+
+===== 검증 7: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();var ui=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;var t=c.GetType();
+Action<string,object[]> call=(name,args)=>t.GetMethod(name,flags).Invoke(c,args);
+var center=new Vector2(Screen.width*.5f,Screen.height*.5f);var uiPoint=RectTransformUtility.WorldToScreenPoint(null,ui.Drawer.position);
+c.enabled=false;
+try {
+c.StopMotion();var before=JsonUtility.ToJson(p.Preview);var target=(Vector3)t.GetField("targetPosition",flags).GetValue(c);
+check(ProjectRun.Ranch.Sys_RanchPlacement.IsOverUI(uiPoint),"Test gesture begins on construction UI");
+call("BeginPointer",new object[]{uiPoint,false,0});call("MovePointer",new object[]{center,1f/60});call("EndPointer",new object[]{center});
+check((Vector3)t.GetField("targetPosition",flags).GetValue(c)==target && JsonUtility.ToJson(p.Preview)==before,"Drag beginning over UI changes neither camera target nor preview");
+call("BeginPointer",new object[]{center,false,0});call("MovePointer",new object[]{center+new Vector2(100,0),1f/60});
+check(((Vector3)t.GetField("inertiaVelocity",flags).GetValue(c)).sqrMagnitude>1,"Moving swipe creates inertia");
+for(int i=0;i<20;i++)call("MovePointer",new object[]{center+new Vector2(100,0),1f/60});
+check(((Vector3)t.GetField("inertiaVelocity",flags).GetValue(c)).magnitude<.001f,"Stationary hold dissipates old swipe velocity");
+call("EndPointer",new object[]{center+new Vector2(100,0)});c.StopMotion();
+call("BeginPointer",new object[]{center,true,101});call("MovePointer",new object[]{center+new Vector2(-120,80),1f/60});call("EndPointer",new object[]{center+new Vector2(-120,80)});
+check(p.Preview!=null && p.Preview.FacilityId=="shelter","Single-touch swipe preserves active facility selection");
+} finally {c.enabled=true;}
+return new {checks};
+
+===== 검증 8: Unity MCP execute_code 본문 =====
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+p.SetBuildMode(true);c.ResetView();Physics.SyncTransforms();
+var entry=p.Layout.Facilities.First(x=>x.FacilityId=="fountain");var instance=p.FacilitiesRoot.Find("obj_"+entry.FacilityId+"_"+entry.InstanceId);var point=c.WorldCamera.WorldToScreenPoint(instance.GetComponent<Collider>().bounds.center);
+p.HandleWorldTap(point);
+check(p.Preview!=null && p.Preview.InstanceId==entry.InstanceId && p.IsMoving,"World click selects installed facility for moving in construction mode");
+p.Cancel();p.enabled=false;p.enabled=true;
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+check(((System.Collections.IDictionary)p.GetType().GetField("instances",flags).GetValue(p)).Count==p.Layout.Facilities.Count,"Re-enable restores complete facility selection registry");
+check(p.Preview==null && instance.gameObject.activeSelf,"Re-enable leaves no ghost preview or hidden facility");
+p.SetBuildMode(false);c.ResetView();return new {checks};
+

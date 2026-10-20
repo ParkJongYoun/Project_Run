@@ -30,6 +30,7 @@ namespace ProjectRun.Ranch
         private E_RanchActivity lastActivity = (E_RanchActivity)(-1);
         private readonly List<Vector3> route = new List<Vector3>();
         private System.Random random;
+        private RuntimeAnimatorController originalController;
         private PlayableGraph graph;
         private AnimationClipPlayable idle, move, action;
         private AnimationMixerPlayable mixer;
@@ -58,6 +59,10 @@ namespace ProjectRun.Ranch
             if (Placement != null) Placement.Changed += InvalidateRoute;
             foreach (var collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
             if (TargetAnimator == null || IdleClip == null || LocomotionClip == null) return;
+            // The resident graph owns the pose. A prefab's Idle controller otherwise
+            // overwrites this manually evaluated walking pose later in the frame.
+            originalController = TargetAnimator.runtimeAnimatorController;
+            TargetAnimator.runtimeAnimatorController = null;
             animatorPosition = TargetAnimator.transform.localPosition;
             animatorRotation = TargetAnimator.transform.localRotation;
             TargetAnimator.applyRootMotion = false;
@@ -419,7 +424,12 @@ namespace ProjectRun.Ranch
             residents.Remove(this);
             ReleaseVisit();
             if (Placement != null) Placement.Changed -= InvalidateRoute;
-            if (graph.IsValid()) graph.Destroy();
+            if (graph.IsValid())
+            {
+                graph.Destroy();
+                if (TargetAnimator != null) TargetAnimator.runtimeAnimatorController = originalController;
+                originalController = null;
+            }
         }
     }
 }

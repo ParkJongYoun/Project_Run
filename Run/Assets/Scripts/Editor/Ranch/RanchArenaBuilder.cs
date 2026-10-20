@@ -17,6 +17,16 @@ namespace ProjectRun.Editor
         private static readonly Color ink = new Color(.27f, .13f, .065f);
         private static readonly Color cream = new Color(1, .95f, .78f);
 
+        // ── 코스 카드(프론테라컵) 목업 설정값 ─────────────────────
+        // 일러스트6 시트를 3조각으로 잘라 쓴다: 헤더(트로피+제목) / 지도 금테 / 메모·참가조건 카드.
+        // 아래 좌표들은 "잘라낸 원본 PNG 픽셀" 기준이고, CardScale 을 곱해 캔버스 크기로 바꾼다.
+        private const string courseSpriteDir = "Assets/ArtBundles/UI/Ranch/";
+        private static readonly string[] courseSpriteNames = { "arena_course_header", "arena_course_map_frame", "arena_course_body" };
+        private const float CardScale = 0.677f;     // 3조각 세로 합(687px)을 코스 카드 그룹 높이(465)에 맞추는 배율
+        private const float CardFrameTop = 232f;    // 지도 금테가 시작하는 세로 위치 (헤더와 살짝 겹쳐서 이음새를 숨김)
+        private const float CardBodyTop = 397f;     // 메모 카드가 시작하는 세로 위치
+        private static readonly Color softInk = new Color(.43f, .28f, .18f);   // 메모 본문용 연한 갈색
+
         [MenuItem("Tools/Project Run/Ranch/Build Arena UI")]
         public static void BuildAndConnect()
         {
@@ -24,6 +34,7 @@ namespace ProjectRun.Editor
             art = AssetDatabase.LoadAssetAtPath<Data_DemoArt>("Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset");
             if (art == null) throw new InvalidOperationException("Ranch collection art is required.");
             ranchArt = Resources.Load<Data_DemoArt>("UI/Ranch/Data_RanchArt");
+            foreach (var spriteName in courseSpriteNames) SetupCourseSprite(courseSpriteDir + spriteName + ".png");   // 코스 카드 조각 임포트
             if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) == null) CreatePrefab();
             var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath);
             bool temporary = !scene.isLoaded;
@@ -48,6 +59,58 @@ namespace ProjectRun.Editor
             AssetDatabase.SaveAssets();
             if (temporary) EditorSceneManager.CloseScene(scene, true);
             Debug.Log("Ranch arena UI: wood frame, course notebook and animated sprite exhibition connected.");
+        }
+
+        // 이미 만들어진 UIPanel_RanchArena 프리팹의 "코스 카드"만 새 목업 이미지로 갈아끼우는 메뉴.
+        // (BuildAndConnect 는 프리팹이 없을 때만 새로 만들기 때문에, 기존 프리팹에는 이 메뉴를 쓴다.)
+        [MenuItem("Tools/Project Run/Ranch/Apply Course Card Mockup")]
+        public static void ApplyCourseCardMockup()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play mode before applying the course card.");
+
+            // 1) 새 PNG 3장을 UI 스프라이트로 임포트
+            foreach (var spriteName in courseSpriteNames) SetupCourseSprite(courseSpriteDir + spriteName + ".png");
+
+            // 2) 폰트/아트 데이터 불러오기 (BuildAndConnect 와 같은 방식)
+            art = AssetDatabase.LoadAssetAtPath<Data_DemoArt>("Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset");
+            if (art == null) throw new InvalidOperationException("Ranch collection art is required.");
+            ranchArt = Resources.Load<Data_DemoArt>("UI/Ranch/Data_RanchArt");
+
+            // 3) 프리팹을 메모리에 열어서 코스 카드 그룹을 찾는다
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            try
+            {
+                var panel = root.GetComponent<UIPanel_RanchArena>();
+                var note = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "group_course_notebook");
+                if (panel == null || note == null) throw new InvalidOperationException("group_course_notebook 을(를) 프리팹에서 찾지 못했습니다.");
+
+                // 4) 옛 카드 구성물(배경, 작은 트로피, 글자 등)을 모두 지우고 새로 만든다
+                for (int i = note.childCount - 1; i >= 0; i--) UnityEngine.Object.DestroyImmediate(note.GetChild(i).gameObject);
+                BuildCourseCard(panel, (RectTransform)note);
+
+                // 5) 저장
+                EditorUtility.SetDirty(panel);
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+            AssetDatabase.SaveAssets();
+            Debug.Log("Ranch arena UI: 코스 카드를 목업(트로피 헤더 / 지도 금테 / 메모 카드)으로 교체했습니다.");
+        }
+
+        // PNG 를 "Sprite (2D and UI)" 로 설정한다. 번짐/압축 없이 선명하게 쓰기 위한 옵션들.
+        private static void SetupCourseSprite(string path)
+        {
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) throw new InvalidOperationException("이미지를 찾을 수 없습니다: " + path);
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.spritePixelsPerUnit = 100;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = true;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.SaveAndReimport();
         }
 
         private static void CreatePrefab()
@@ -109,24 +172,65 @@ namespace ProjectRun.Editor
 
         private static void BuildNotebook(UIPanel_RanchArena panel, Transform layout)
         {
-            var note = Pair(layout, "group_course_notebook", "info", 926, 104, 323, 465, true);
-            var trophy = ranchArt != null ? ranchArt.Get("arena") : null;
-            if (trophy == null) trophy = art.Get("icon_entry");
-            Pic(note, "img_trophy", trophy, 127, 20, 70, 64, true);
-            Label(note, "txt_cup", "프론테라컵", 24, 89, 275, 42, 29, ink, true);
-            var mapClip = Rect(note, "obj_map_clip", 37, 151, 250, 122);
-            mapClip.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
-            Pic(mapClip, "img_course", DemoUI.Art.Get("arena"), 0, -9, 250, 141);
-            Pic(note, "img_map_frame", art.Get("preview_frame"), 23, 137, 278, 150, false, true);
-            Pic(note, "img_memo", art.Get("icon_encyclopedia"), 27, 295, 29, 30, true);
-            Label(note, "txt_memo_heading", "코스 메모", 68, 295, 224, 30, 23, ink, true, TextAnchor.MiddleLeft);
-            Label(note, "txt_course_memo", "완만한 커브\n마지막 직선 승부", 30, 332, 267, 50, 20, ink, false, TextAnchor.MiddleLeft);
-            Pic(note, "img_entry", art.Get("icon_entry"), 27, 390, 28, 27, true);
-            Label(note, "txt_requirement_heading", "참가 조건", 66, 390, 222, 27, 21, ink, true, TextAnchor.MiddleLeft);
-            panel.Requirements = Label(note, "txt_requirements", "Lv.5 · 스피드 260", 30, 421, 267, 24, 19, ink, true);
+            // 코스 카드가 들어갈 빈 그룹. (배경/테두리는 이제 이미지 조각이 담당하므로 Pair 대신 Rect 를 쓴다)
+            var note = Rect(layout, "group_course_notebook", 926, 104, 323, 465);
+            BuildCourseCard(panel, note);
+
+            // 출전 준비 버튼 (기존과 동일)
             panel.EntryButton = Button(layout, "btn_entry", "train_button", "출전 준비", 926, 580, 323, 80, 30);
             Pic(panel.EntryButton.transform, "img_flag", art.Get("icon_entry"), 24, 20, 40, 39, true);
             SetRect(panel.EntryButton.GetComponentInChildren<UnityEngine.UI.Text>().rectTransform, 76, 14, 216, 49);
+        }
+
+        // 코스 카드 본체: 헤더(트로피+제목) → 지도 금테 → 메모/참가조건 카드를 위에서 아래로 쌓는다.
+        private static void BuildCourseCard(UIPanel_RanchArena panel, RectTransform note)
+        {
+            var header = LoadCourseSprite("arena_course_header");
+            var frame = LoadCourseSprite("arena_course_map_frame");
+            var body = LoadCourseSprite("arena_course_body");
+            float s = CardScale;
+
+            // 각 조각의 크기(캔버스 단위)와 가로 가운데 정렬 위치
+            float headerW = header.rect.width * s, headerH = header.rect.height * s;
+            float headerX = (note.sizeDelta.x - headerW) / 2f;
+            float frameX = headerX + (header.rect.width - frame.rect.width) / 2f * s;
+            float bodyX = headerX + (header.rect.width - body.rect.width) / 2f * s;
+            float frameY = CardFrameTop * s, bodyY = CardBodyTop * s;
+
+            // ① 배경 카드 두 장 (아래층)
+            Pic(note, "img_card_header", header, headerX, 0, headerW, headerH);
+            Pic(note, "img_card_body", body, bodyX, bodyY, body.rect.width * s, body.rect.height * s);
+
+            // ② 지도 사진: 금테 안쪽 구멍(원본 기준 x22 y18 크기 358x128)보다 6px 크게 잘라서 테두리 밑으로 깔끔하게 숨긴다
+            var mapClip = Rect(note, "obj_map_clip", frameX + 16 * s, frameY + 12 * s, 370 * s, 140 * s);
+            mapClip.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
+            var arena = DemoUI.Art.Get("arena");
+            float clipW = mapClip.sizeDelta.x, clipH = mapClip.sizeDelta.y;
+            float ratio = arena.rect.width / arena.rect.height;
+            float imgH = ratio > clipW / clipH ? clipH : clipW / ratio;     // 빈틈 없이 꽉 차게(cover)
+            float imgW = imgH * ratio;
+            Pic(mapClip, "img_course", arena, (clipW - imgW) / 2f, (clipH - imgH) / 2f - imgH * .06f, imgW, imgH);
+
+            // ③ 금테 (지도 위에 덮는다)
+            Pic(note, "img_map_frame", frame, frameX, frameY, frame.rect.width * s, frame.rect.height * s);
+
+            // ④ 글자들 (맨 위층) - 위치는 메모 카드 그림의 줄(rule) 간격에 맞춰 둠
+            Label(note, "txt_cup", "프론테라컵", headerX + 82 * s, 168 * s, 240 * s, 56 * s, 28, ink, true);
+            float textX = bodyX + 92 * s, textW = 270 * s;
+            Label(note, "txt_memo_heading", "코스 메모", textX, bodyY + 18 * s, textW, 44 * s, 19, ink, true, TextAnchor.MiddleLeft);
+            Label(note, "txt_course_memo", "완만한 커브", textX, bodyY + 72 * s, textW, 26 * s, 14, softInk, false, TextAnchor.MiddleLeft);
+            Label(note, "txt_course_memo_2", "마지막 직선 승부", textX, bodyY + 98 * s, textW, 26 * s, 14, softInk, false, TextAnchor.MiddleLeft);
+            Label(note, "txt_requirement_heading", "참가 조건", textX, bodyY + 170 * s, textW, 44 * s, 19, ink, true, TextAnchor.MiddleLeft);
+            // 이 글자는 UIPanel_RanchArena.OnOpen 이 "Lv.X · 스피드 Y" 로 덮어쓰므로 panel.Requirements 에 꼭 연결한다
+            panel.Requirements = Label(note, "txt_requirements", "Lv.5 · 스피드 260", textX, bodyY + 222 * s, textW, 26 * s, 14, softInk, true, TextAnchor.MiddleLeft);
+        }
+
+        // 잘라낸 카드 조각을 불러온다. 없으면 메뉴를 먼저 실행하라고 알려준다.
+        private static Sprite LoadCourseSprite(string spriteName)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(courseSpriteDir + spriteName + ".png");
+            if (sprite == null) throw new InvalidOperationException("스프라이트가 없습니다: " + courseSpriteDir + spriteName + ".png (Tools > Project Run > Ranch > Apply Course Card Mockup 으로 실행하세요)");
+            return sprite;
         }
 
         private static void BuildEntrants(UIPanel_RanchArena panel, Transform layout)

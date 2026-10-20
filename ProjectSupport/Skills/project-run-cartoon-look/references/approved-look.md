@@ -1,5 +1,24 @@
 # 승인된 카툰 외형 기준
 
+## 2026-10-20 신규 Mixamo 미노 재수정 — Editor 검증, 사용자 외형 승인 전
+
+- 아래 최초 카툰 시안은 사용자가 원본보다 품질이 떨어진다고 지적하여 교체했다. 기존 2026-10-17 승인 미노와 구분한다.
+- 신규 미노의 원본 4096×4096 알베도와 2048×2048 노멀맵을 전용 파일로 그대로 복제했다. Unity 실제 임포트도 각각 4096×4096, 2048×2048이다. 원본 에셋과 UV·메시는 보존한다.
+- 표면은 대상 전용 `ProjectRun/CartoonMonsters/NewMinotaurusAnime`로 교체했다. 노멀맵 TBN 변환을 Forward/DepthNormals 양쪽에 적용하고 공용 셰이더는 그대로 둔다.
+- 재현 값: `_BumpScale=.7`, `_Specular=.035`, `_Gloss=48`, `_Softness=.16`, `_Threshold=.18`, `_ShadeColor=(.66,.60,.63,1)`, `_AmbientStrength=.1`, `_FillStrength=.2`, `_RimStrength=.025`, `_RimPower=3.5`, 윤곽선 1.1픽셀.
+- 동일 구도 원본 비교·얼굴 근접·측면·후면·실시간 걷기/달리기/박수·대기·원본 전환을 확인했다. 전시의 기본 Idle Controller가 PlayableGraph를 덮어쓰던 문제도 전시 런타임에서 수정했다. WebGL·실제 경기 연결·모바일 성능은 미검증이다.
+- 원인과 다음 작업의 판단 절차는 [품질 복구 사례](new-minotaurus-quality-recovery.md), 실제 화면·해시·검증 수치는 `Run/DataBundles/아트/신규미노타우루스_카툰재수정_20261020`에 있다.
+
+## 2026-10-20 신규 Mixamo 미노 최초 비교형 — 품질 거절·교체된 이력
+
+- 실제 연결 프로젝트는 `C:/Project_Run/Run`, 전시 씬은 `Assets/Scenes/Scene_CartoonTest.unity`다.
+- 원본형 `Assets/Resources/Prefabs/Showcase/V_NewMinotaurus.prefab`을 보존하고 독립 Regular 카툰형 `V_Cartoon_NewMinotaurus.prefab`을 같은 폴더에 추가했다. 전시의 신규 미노 자리에서 원본↔카툰으로 전환한다. 기존 미노와 경기·로비 편성은 변경하지 않았다.
+- 카툰 전용 리소스는 `Assets/ArtBundles/Characters/CartoonMonsters/NewMinotaurus`다. 표면은 독립 카툰 미노의 공용 `MinorousAnime`, 윤곽선은 공용 `MonsterOutline` 셰이더를 사용한다. 원본 메시·UV·애니메이션 내용을 유지하고 별도 리소스로 복제했다.
+- 새 알베도는 원본 4096×4096 atlas를 image_gen으로 편집한 1254×1254 불투명 PNG다. 현재 Unity 임포트는 1024×1024다. 요청 크기와 실제 파일/임포트 크기를 구분한다.
+- 당시 표면 보정은 `_Specular=.015`, `_Softness=.075`, `_Threshold=.18`, `_ShadeColor=(.55,.51,.52,1)`, 윤곽선은 1.3픽셀이었다. 현재 재현값으로 사용하지 않는다.
+- 원본/카툰 각각 대기·걷기·달리기·박수 8개 재생, 루트 이동 0, 메시/UV 동일, 독립 의존성, 정면·측면·후면·근접 화면을 Editor에서 확인했다. WebGL 및 경기 연결은 수행하지 않았다.
+- 생성 프롬프트, 원본 보존 해시, 당시 검증 기록과 화면은 `DataBundles/아트/신규미노타우루스_카툰형_20261020`에 있다. 화면에 보이는 얼룩·디테일 손실을 통과시킨 검수 판단이 잘못됐으며, 당시 수동 뼈 변화 검사는 실제 프레임의 동작 재생을 증명하지 못했다.
+
 기준일: 2026-10-17. 미노 외형은 사용자가 선호한다고 명시한 기준이며, 나머지 5종은 그 방향으로 확장해 적용한 결과다. 아래 숫자는 해당 씬의 재현 기준이다. 새로운 모델·카메라의 최종값을 일괄 확정하는 규칙은 아니다.
 
 이 문서의 `Assets/...`와 `DataBundles/...`는 Unity 루트 `D:/Project_Run/Run` 기준이다.
