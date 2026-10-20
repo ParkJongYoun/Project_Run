@@ -503,6 +503,7 @@ namespace ProjectRun.Race
             var image = DemoUI.Rect(parent, name, x, y, w, h).gameObject.AddComponent<Image>();
             image.sprite = Art.Get(key); image.raycastTarget = false; image.preserveAspect = preserve;
             if (image.sprite != null && image.sprite.border.sqrMagnitude > 0 && !key.StartsWith("menu_")) { image.type = UnityEngine.UI.Image.Type.Sliced; image.pixelsPerUnitMultiplier = 4; }
+            if (key.StartsWith("construction_card_")) image.pixelsPerUnitMultiplier = 10;
             return image;
         }
         private Image Icon(Transform parent, string name, string key, float x, float y, float w, float h) => Image(parent, name, key, x, y, w, h, true);

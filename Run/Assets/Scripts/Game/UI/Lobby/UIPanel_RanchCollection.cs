@@ -48,6 +48,9 @@ namespace ProjectRun.Race
         public Text TrainLabel;
         public Button TrainButton;
         public Image TrainingProgress;
+        public float TrainingProgressWidth = 704;
+        public GameObject TrainingOverlay;
+        public Text TrainingOverlayLabel;
         public Image TrainingActor;
         public Image TrainingShadow;
         public Image TrainingScene;
@@ -106,6 +109,8 @@ namespace ProjectRun.Race
             if (!Application.isPlaying) return;
             owner?.Guide?.Clear();
             training = false;
+            if (TrainingOverlay != null) TrainingOverlay.SetActive(false);
+            if (TrainingProgress != null) TrainingProgress.transform.parent.gameObject.SetActive(false);
             if (trainingVideo != null) trainingVideo.Shutdown();
             if (TrainingFilm != null) TrainingFilm.SetPlaying(false);
             if (TrainingFilm != null) TrainingFilm.gameObject.SetActive(false);
@@ -194,13 +199,14 @@ namespace ProjectRun.Race
                 TrainingStatus.text = progress.Trained ? "훈련 완료 · 출전 조건 충족" : "선택한 몬스터만 성장해요";
                 TrainLabel.text = progress.Trained ? "훈련 완료" : "훈련 시작";
                 TrainButton.interactable = !training && !progress.Trained;
-                TrainingProgress.fillAmount = 0;
+                SetTrainingProgress(0);
+                if (TrainingOverlay != null) TrainingOverlay.SetActive(false);
                 TrainingProgress.transform.parent.gameObject.SetActive(false);
             }
             else
             {
                 Character.sprite = CharacterSprites[selectedId];
-                ConfigureActor(Character, monster.Id, false);
+                ConfigureCharacterPortrait(Character, monster.Id);
                 if (HeaderPortrait != null) HeaderPortrait.sprite = FindArt(monster.Id + "_face");
                 if (UniqueSkillIcon != null) UniqueSkillIcon.sprite = monster.Id == "Poring"
                     ? FindArt("icon_poring_skill") : FindArt(monster.Id + "_face");
@@ -228,18 +234,27 @@ namespace ProjectRun.Race
             return end < 0 ? value : value.Substring(0, end + 1);
         }
 
-        private static void ConfigureActor(Image image, string id, bool trainingView)
+        public static void ConfigureCharacterPortrait(Image image, string id)
         {
+            if (image == null || image.sprite == null) return;
             var rect = image.rectTransform;
-            Vector2 size = id == "Poring" ? new Vector2(300, 242) : id == "Pecopeco" ? new Vector2(280, 334) : new Vector2(315, 340);
-            Vector2 position = new Vector2((450 - size.x) * .5f, -(391 - size.y));
-            if (trainingView)
-            {
-                size = id == "Poring" ? new Vector2(218, 175) : id == "Pecopeco" ? new Vector2(186, 220) : new Vector2(205, 227);
-                position = new Vector2(425 - size.x * .5f, -(252 - size.y));
-            }
-            rect.sizeDelta = size; rect.anchoredPosition = position; rect.localScale = Vector3.one;
+            Vector2 bounds = id == "Poring" ? new Vector2(300, 242) : id == "Pecopeco" ? new Vector2(280, 334) : new Vector2(315, 340);
+            Vector2 spriteSize = image.sprite.rect.size;
+            Vector2 size = spriteSize * Mathf.Min(bounds.x / spriteSize.x, bounds.y / spriteSize.y);
+            // Center the trimmed sprite itself, including when its aspect differs from the display box.
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = Vector2.zero;
+            rect.localScale = Vector3.one;
             rect.localRotation = Quaternion.identity;
+            image.preserveAspect = true;
+            var shadow = rect.parent.Find("img_ground_shadow") as RectTransform;
+            if (shadow != null)
+            {
+                shadow.anchorMin = shadow.anchorMax = shadow.pivot = new Vector2(.5f, .5f);
+                shadow.sizeDelta = new Vector2(size.x * .85f, 28);
+                shadow.anchoredPosition = new Vector2(0, -size.y * .5f + 4);
+            }
         }
 
         private void Scroll(int direction)
@@ -322,7 +337,9 @@ namespace ProjectRun.Race
             TrainLabel.text = "훈련 중";
             TrainingStatus.text = "준비, 출발!";
             TrainingProgress.transform.parent.gameObject.SetActive(true);
-            TrainingProgress.fillAmount = 0;
+            SetTrainingProgress(0);
+            if (TrainingOverlay != null) TrainingOverlay.SetActive(true);
+            if (TrainingOverlayLabel != null) TrainingOverlayLabel.text = "훈련중....";
             if (trainingVideo == null) trainingVideo = gameObject.AddComponent<UIItem_RanchTrainingVideo>();
             if (trainingVideo.HasFailed || string.IsNullOrEmpty(trainingVideo.VideoPath))
                 trainingVideo.Prepare(TrainingScene, Mgr_Table.Demo.Monsters[selectedId].Id);
@@ -349,13 +366,22 @@ namespace ProjectRun.Race
             }
             trainingElapsed = (float)trainingVideo.MediaTime;
             float ratio = trainingVideo.Progress;
-            TrainingProgress.fillAmount = ratio;
+            SetTrainingProgress(ratio);
             TrainingStatus.text = ratio < .2f ? "준비, 출발!" : ratio < .7f ? "리듬에 맞춰 달려요" : "마지막 스퍼트!";
             if (!trainingVideo.IsComplete) return;
             training = false;
             Mgr_User.Train(selectedId);
             Refresh();
             owner?.Guide?.TrainingCompleted();
+        }
+
+        private void SetTrainingProgress(float ratio)
+        {
+            ratio = Mathf.Clamp01(ratio);
+            TrainingProgress.fillAmount = ratio;
+            TrainingProgress.type = Image.Type.Sliced;
+            TrainingProgress.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, TrainingProgressWidth * ratio);
+            TrainingProgress.enabled = ratio > 0;
         }
 
         public void ReturnToRanch()

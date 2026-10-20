@@ -1,0 +1,19 @@
+미노타우루스 화풍 통일 · 2026-10-20
+생성 방식: Codex 내장 image_gen, 기존 PNG 참고 편집, transparent_background=true
+전신과 얼굴을 각각 한 번 생성. 생성 PNG의 픽셀/알파는 변경하지 않고 Unity Sprite의 투명 여백만 임포트 영역에서 제외한다.
+
+[전신 참고 이미지]
+1. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PecopecoIllustration.png
+2. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PoringIllustration.png
+3. Assets/ArtBundles/UI/CartoonRaceLineup/Minorous_Body.png
+
+[전신 프롬프트]
+Create a replacement full-body MINOTAUR collectible monster illustration for the same game as reference images 1 and 2. The first image (Pecopeco bird) and second image (Poring slime) are the STRICT rendering/style references: friendly rounded fantasy game creature, rich softly blended painted volumes, warm thin colored outlines, bright clean surfaces, broad gentle highlights, appealing expressive eyes, the same polished inviting Korean fantasy monster collection artwork. The third image is ONLY the bull monster identity/costume reference, NOT a rendering or anatomy style reference. Make this minotaur belong naturally next to that bird and slime. A compact stocky bull monster with a noticeably larger rounded bovine head, short broad muzzle, big expressive warm brown eyes, curved pale ivory/gray ram horns, little dark chestnut upright mane and chin tuft, gold nose ring, warm chestnut brown fur, brown leather chest straps with silver fasteners, wrist bracers and waistcloth, cloven hooves. Cheerfully stubborn, dependable, slightly mischievous determined expression; relaxed broad brow and an approachable mouth. Retain monster/bull anatomy, not a handsome human face. Rounded chunky limbs and a sturdy plump torso, subtle simple muscle volume, NO carved six-pack or angular bodybuilder muscles, NO menacing red eyes, NO dark angry scowl. Avoid angular flat comic-book shading, heavy black outlines, harsh brown vector facets, metallic golden skin, realistic superhero anatomy. Match the bird's soft lush illustration finish, lively warm colors and gentle high quality shading. Single full-body creature standing naturally, three-quarter front view but nearly facing viewer, both hands resting by sides, complete horns and hooves fully visible, no weapon. Compose the ACTUAL visible silhouette precisely at horizontal and vertical canvas center with even transparent breathing room. No ground or shadow, no scenery, no panel, no lettering, no extra character. Clean transparent RGBA cutout suitable for Unity. The first two reference creatures must not be reproduced; generate only the minotaur.
+
+[얼굴 참고 이미지]
+1. 위에서 생성한 미노타우루스 전신
+2. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PecopecoIllustration.png
+3. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PoringIllustration.png
+
+[얼굴 프롬프트]
+Make a matching HEAD AND SHOULDERS portrait of the exact friendly bull minotaur in image 1, for a monster collection UI. Preserve his exact rounded bovine head, broad short cream-brown muzzle, large friendly warm brown eyes, cheerful determined smile, curved cream ivory ram horns, chestnut upright tuft and little beard, golden nose ring, warm honey-chestnut fur and brown leather shoulder straps with silver studs. Same character, same colors, same softly blended high-quality fantasy game illustration, rounded warmly shaded forms and thin warm outlines as image 1. Images 2 and 3 show the other characters in the same game and are style consistency references only. Pose close to front-facing, balanced left/right, face and nose centered on canvas, both horns fully included with small equal transparent margins, head large and dominant, shoulders at bottom. Face must occupy most of the square, only a little upper chest, NO full body. Do not change him into a human, angry bodybuilder or realistic bull. No scenery, no frame, no lettering, no shadow, no extra creature. Clean transparent RGBA silhouette, exactly centered portrait on square canvas.

@@ -12,7 +12,7 @@ namespace ProjectRun.Editor
 {
     public static class RanchCollectionVerification
     {
-        private const string folder="DataBundles/UI/목장/훈련개별장면_작업기록_20261020/최종검증";
+        private const string folder="DataBundles/UI/목장/시설목록_몬스터삽화_훈련개선_20261020/작업기록/Unity검증";
         private static readonly StringBuilder report=new StringBuilder();
         public static string Status {get;private set;}
         public static void Run()
@@ -34,6 +34,18 @@ namespace ProjectRun.Editor
             {
                 Mgr_User.Data.Monsters=new[]{new Data_MonsterProgress(),new Data_MonsterProgress(),new Data_MonsterProgress()};
                 Mgr_User.Data.SelectedMonster=-1;
+                ranch.Guide.Clear();
+                ranch.Placement.SetBuildMode(true);yield return null;yield return new WaitForEndOfFrame();
+                Check(ranch.Drawer.sizeDelta==new Vector2(1200,126),"시설 목록 로비 공통 목재 받침 적용");
+                Check(ranch.Drawer.Find("group_catalog/group_cards").childCount==6,"시설 목록 6칸 표시");
+                Capture("시설목록_첫페이지.png");
+                ranch.Drawer.GetComponentsInChildren<Button>().Single(b=>b.name=="btn_next").onClick.Invoke();
+                yield return null;yield return new WaitForEndOfFrame();Capture("시설목록_둘째페이지.png");
+                Check(ranch.Drawer.Find("group_catalog/group_cards").childCount==6,"시설 목록 다음 페이지");
+                ranch.Drawer.GetComponentsInChildren<Button>().Single(b=>b.name=="btn_previous").onClick.Invoke();
+                ranch.Drawer.GetComponentsInChildren<Button>().Single(b=>b.name=="btn_facility_feed_store").onClick.Invoke();
+                Check(ranch.Placement.Preview!=null,"시설 카드 클릭으로 배치 시작");
+                ranch.Placement.Cancel();ranch.Placement.SetBuildMode(false);
                 ranch.CloseCollection();showMonsters.onClick.Invoke();
                 yield return null;yield return new WaitForEndOfFrame();
                 Check(ranch.Placement.InputBlocked && ranch.GetComponent<CanvasGroup>().alpha==0,"전체화면에서 목장 조작 및 하단 메뉴 차단");
@@ -51,12 +63,14 @@ namespace ProjectRun.Editor
                     Capture("수첩_"+id+"_1280.png");
                     for(int category=0;category<3;category++) {monsters.SkillButtons[category].onClick.Invoke();Check(monsters.SkillPopup.activeSelf,"스킬 정보 열기 "+id+"/"+category);monsters.SkillClose.onClick.Invoke();}
                 }
-                monsters.NextButton.onClick.Invoke();Check(monsters.SelectedId==0,"수첩 아래 화살표 순환 선택");
+                Check(monsters.PreviousButton==null && monsters.NextButton==null,"수첩 이전 화살표 오브젝트 제거");
+                Check(monsters.RosterScrollbar.GetComponent<RectTransform>().rect.height==540,"수첩 스크롤바 상하 잔여 영역까지 확장");
+                monsters.SelectMonster(0);
                 monsters.RosterScrollbar.value=0;Check(monsters.SelectedId==2,"수첩 스크롤 손잡이 선택");
                 monsters.ReturnToRanch();Check(!ranch.Placement.InputBlocked && ranch.GetComponent<CanvasGroup>().alpha==1,"목장으로 돌아가기 복구");
                 showTraining.onClick.Invoke();yield return null;
                 Check(training.SelectedId==0 && monsters.SelectedId==2 && Mgr_User.Data.SelectedMonster==-1,"수첩·훈련·경기 선택 독립");
-                Check(!training.PreviousButton.gameObject.activeSelf && !training.NextButton.gameObject.activeSelf,"훈련 카드 양옆 화살표 제거");
+                Check(training.PreviousButton==null && training.NextButton==null,"훈련 카드 양옆 화살표 제거");
                 training.RosterButtons[1].onClick.Invoke();Check(training.SelectedId==1,"훈련 카드 직접 선택");
                 training.RosterScrollbar.value=1;Check(training.SelectedId==2,"훈련 스크롤 손잡이 선택");
                 Check(training.TrainButton.transform.Find("img_frame").GetComponent<Image>().sprite.name=="TrainFrame" && training.TrainButton.transform.Find("img_speed").GetComponent<Image>().sprite.name=="TrainWing","시안형 녹색 버튼 테두리·흰 날개");
@@ -78,9 +92,15 @@ namespace ProjectRun.Editor
                     while(!training.TrainingVideo.HasStarted && !training.TrainingVideo.HasFailed && Time.realtimeSinceStartup<startDeadline)yield return null;
                     yield return new WaitForSecondsRealtime(.4f);
                     Check(training.IsTraining && training.TrainingVideo.HasStarted && training.TrainingProgress.fillAmount>0,id+" 전용 영상 재생·훈련 진행도");
+                    Check(training.TrainingOverlay.activeInHierarchy && training.TrainingOverlayLabel.text=="훈련중....",id+" 중앙 훈련중 문구");
+                    Check(training.TrainingProgress.type==Image.Type.Sliced && Mathf.Abs(training.TrainingProgress.rectTransform.rect.width-training.TrainingProgressWidth*training.TrainingProgress.fillAmount)<1,id+" 9-slice 진행바 너비");
+                    var decoder=training.GetComponent<UnityEngine.Video.VideoPlayer>();
+                    Check(Math.Abs(decoder.length-2.8)<.08,id+" 원본 7초 대비 2.5배속");
+                    yield return new WaitForEndOfFrame();Capture("훈련중_"+id+".png");
                     training.SelectMonster((i+1)%3);Check(training.SelectedId==i && !training.RosterScrollbar.interactable,id+" 훈련 중 대상 변경 차단");
                     training.ReturnToRanch();yield return null;
                     Check(!training.IsTraining && !Mgr_User.Data.Monsters[i].Trained,id+" 중도 복귀 시 성장 미지급");
+                    Check(!training.TrainingOverlay.activeSelf,id+" 중도 복귀 시 중앙 문구 제거");
                     showTraining.onClick.Invoke();training.SelectMonster(i);training.TrainButton.onClick.Invoke();
                     float timeout=Time.realtimeSinceStartup+15;
                     while(training.IsTraining && Time.realtimeSinceStartup<timeout)yield return null;

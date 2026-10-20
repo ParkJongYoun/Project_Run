@@ -1,0 +1,28 @@
+제작 방식: Codex 내장 image_gen. CLI/API 대체 경로 미사용.
+사용자 수정 요청: 첫 시안의 꽃미남·과한 미형 느낌을 제거하고 기존 포링·페코페코 초상화 화풍에 맞춤.
+첫 미형 시안은 미채택시안 폴더에만 보존. 현재 연결본은 아래 수정 프롬프트 결과.
+투명 배경: RGBA alpha 보존. 별도 수동 픽셀 편집 없이 Unity Sprite 경계만 설정.
+
+전신 입력:
+1. Assets/ArtBundles/UI/CartoonRaceLineup/Minorous_Body.png — 원래 미노타우루스 정체성·의상
+2. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PecopecoIllustration.png — 화풍
+3. Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PoringIllustration.png — 화풍
+
+전신 최종 프롬프트:
+Use case: style-transfer. Redraw IMAGE 1's ORIGINAL GAME MINOTAUR as a clean 2D game illustration, taking ONLY the flat, readable cartoon brushwork and outlined shading from images 2 and 3. This is a restrained conversion of the existing character, NOT a character redesign. Identity must stay that of image 1: large heavy broad bovine muzzle, thick bull neck, small stern deep-set eyes, heavy brows, short coarse dark brown mohawk, short pointed beard, compact curled light-gray horns, gold nose ring, dark chestnut-brown fur and warm brown skin, muscular stocky body, the SAME brown leather harness, metal-trim bracers, waist leather and dark cloven hooves. Face must be a rugged unmistakable BULL monster, not a handsome human, not a smiling pretty-boy, not Disney/romance art. CLOSED mouth, plain firm expression. Do not add golden fur, amber cosmetic highlights, long flowing hair, eyelashes, eyebrow styling, glossy lips, giant anime eyes or heroic gesture. Match the Pecopeco/Poring assets in SIMPLE crisp linework, broad clean cel-shaded color planes, modest highlights and softly painted edges, not hyperdetailed hair or exaggerated shiny musculature. Stand neutrally like the reference, arms relaxed at sides, three-quarter front. Entire character including both horns and both hooves with margin, centered on a truly transparent RGBA canvas. Single full-body illustration, no scenery, no shadow disc, no glow, no text, no frame.
+
+얼굴 입력:
+1. 위 최종 전신 생성물
+2. 기존 PecopecoIllustration.png — 화풍
+
+얼굴 최종 프롬프트:
+Use case: identity-preserve. Create a square roster FACE ICON of image 1, the exact rugged MINOTAUR monster, matching the simple outlined 2D game illustration style of the Pecopeco face in image 2. Keep the minotaur's stern small red eyes under HEAVY broad brows, very broad blunt bovine muzzle, thick neck, compact curled ivory-gray horns, short rough brown crest, gold nose ring, small coarse beard and brown leather straps. This must look like a strong BULL monster, NOT a human pretty-boy. NO smile, NO big anime eyes, NO golden blond fur, NO flowing mane, NO beauty lighting, NO glossy cosmetics, NO added details. Warm medium-brown skin and darker brown hair, restrained matte broad cel-shaded shapes, crisp clean brown contours and modest highlights, not elaborate painterly realism. Close-up head plus top shoulders only; square canvas; head centered, both horns fit fully, upper hair fits, chest cropped at bottom. Real transparent alpha background, no scenery, no halo, no text, no frame. Maintain the exact face and design of the first reference.
+
+원본 경로:
+최종이미지/미노타우루스_전신.png
+최종이미지/미노타우루스_얼굴.png
+
+Unity 연결:
+Assets/ArtBundles/UI/RanchCollection/Illustrations/Minorous_body.png
+Assets/ArtBundles/UI/RanchCollection/Illustrations/Minorous_face.png
+Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset

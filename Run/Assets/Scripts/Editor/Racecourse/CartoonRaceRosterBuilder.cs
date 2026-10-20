@@ -84,6 +84,10 @@ namespace ProjectRun.EditorTools
                     {
                         string key = "Minorous" + suffix;
                         var image = collectionImages.Find(e => e.Key == key);
+                        // Authored collection illustrations are independent of race model captures.
+                        if (image != null && image.Sprite != null &&
+                            AssetDatabase.GetAssetPath(image.Sprite).StartsWith("Assets/ArtBundles/UI/RanchCollection/Illustrations/"))
+                            continue;
                         if (image == null) { image = new Data_DemoSprite { Key = key }; collectionImages.Add(image); }
                         image.Sprite = suffix == "_face" ? entries[1].FacePortrait : entries[1].Portrait;
                     }

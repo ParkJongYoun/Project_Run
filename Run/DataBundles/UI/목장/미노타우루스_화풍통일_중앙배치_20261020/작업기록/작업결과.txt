@@ -1,0 +1,48 @@
+미노타우루스 화풍 통일 및 중앙 배치 · 2026-10-20
+
+사용자 요청
+- 현재 미노타우루스가 포링·페코페코와 어울리지 않으므로 다시 생성.
+- 수첩 전신 이미지의 중앙 배치를 수정.
+- 앞선 피드백의 과한 미형 표현을 피하고 다른 초상화의 화풍에 맞춤.
+
+완료한 변경
+- 포링·페코페코 삽화를 직접 참고하여 미노타우루스 전신·얼굴을 각각 새로 생성.
+- 둥근 소 얼굴, 큰 갈색 눈, 부드러운 털 명암과 밝은 표정으로 조정.
+- 뿔·코걸이·가죽 장비·갈라진 발굽의 캐릭터 특징 유지.
+- 최종이미지의 전신·얼굴 PNG를 기존 Minorous_body.png / Minorous_face.png에 복사.
+- 생성 원본 픽셀과 알파는 유지. Unity 임포트 시 Sprite 영역만 투명 여백 기준으로 정리.
+- 수첩 전신과 목록, 상단 얼굴, 고유 스킬 아이콘, 훈련 선택 카드에 연결.
+- 세 몬스터 전신은 Sprite 실제 비율에 맞춘 크기와 중앙 앵커·피벗을 사용.
+- 중앙 기준으로 바닥 그림자 위치·너비도 조정.
+- 프리팹 생성 도구도 동일 배치 함수를 사용하므로 재생성 후 배치 유지.
+
+수정한 주요 파일
+Assets/ArtBundles/UI/RanchCollection/Illustrations/Minorous_body.png 및 .meta
+Assets/ArtBundles/UI/RanchCollection/Illustrations/Minorous_face.png 및 .meta
+Assets/Scripts/Game/UI/Lobby/UIPanel_RanchCollection.cs
+Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Presentation.cs
+Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset
+Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab
+Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab
+
+실제 검증 완료
+- Scene_LobbyTest, Unity Play, 1920×1080 Game View.
+- 수첩에서 포링·미노타우루스·페코페코를 각각 선택한 화면 검수.
+- 세 전신의 부모 표시 영역 대비 중심 오차 (0, 0), 비율 오차 0.000001 미만.
+- 수첩과 훈련의 새 얼굴 Sprite 일치 확인.
+- 훈련 선택 카드에서 얼굴·뿔 표시 확인.
+- 기존 위치 밀림, 전신 잘림 없이 표시되는 스크린샷 4장 보존.
+- 수정 스크립트 git diff --check 통과. 컴파일 및 해당 화면 동작 오류 없음.
+- 콘솔에 작업 전부터 존재한 Unity AI 생성 서비스 NoSubscription 오류 1건은 유지됨.
+- 검증 후 Play 종료. 웹 빌드·Git 커밋·푸시는 수행하지 않음.
+
+원본
+내장 image_gen 생성 원본:
+전신 exec-007b3f7a-2779-427a-8485-475b7b1f0575.png
+얼굴 exec-7e2caf54-3d9d-451a-8e22-1166d9bf9201.png
+SHA256 전신 1843C28779633358B699A6BA5FFF0734549914AAFCB6B9FE9D1851A874794D90
+SHA256 얼굴 0DB98C7AFB959097582B7F3D2700446466D1CAC8605FA0FDDC3A9492CDACC42B
+
+생성 프롬프트는 이미지_생성프롬프트.txt, 이전 각진 화풍은 이전삽화 폴더,
+실제 화면과 수치 검증은 Unity검증 폴더에 보존.
+본 폴더의 최종이미지는 현재 프로젝트 적용본이며 사용자 최종 승인 여부와는 구분한다.

@@ -268,7 +268,7 @@ namespace ProjectRun.Editor
                 panel.GrowthLevel.text="Lv.4  →  Lv."+table.RequiredLevel;
                 panel.GrowthSpeed.text="스피드  "+monster.Stats[0]+"  →  "+(monster.Stats[0]+table.TrainingSpeed);
                 panel.GrowthPassive.text="후천 패시브 습득";
-                panel.Requirements.text="Lv."+table.RequiredLevel+" · 스피드 "+table.RequiredSpeed;
+                panel.Requirements.text="훈련 없이도 출전 가능";
                 panel.TrainingStatus.text="선택한 몬스터만 성장해요";
             }
             else

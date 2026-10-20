@@ -42,6 +42,7 @@ namespace ProjectRun.Editor
             if(panel.TrainingMode) {panel.TrainingFilm.gameObject.SetActive(false);panel.TrainingActor.gameObject.SetActive(false);panel.TrainingShadow.gameObject.SetActive(false);panel.TrainingScene.sprite=art.Get("Poring_training");}
             else
             {
+                UIPanel_RanchCollection.ConfigureCharacterPortrait(panel.Character, Mgr_Table.Demo.Monsters[0].Id);
                 panel.Story.text=UIPanel_RanchCollection.StorySummary(Mgr_Table.Demo.Monsters[0].Story);
                 for(int i=0;i<5;i++) panel.StatFills[i].rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,234*Mgr_Table.Demo.Monsters[0].Stats[i]/400f);
             }
@@ -50,9 +51,9 @@ namespace ProjectRun.Editor
         private static void RepairRoster(UIPanel_RanchCollection panel)
         {
             bool horizontal=panel.TrainingMode;int count=panel.RosterButtons.Length;
-            var root=panel.Layout.Find("group_roster");SetRect(root,horizontal?73:66,111,horizontal?770:210,horizontal?128:565);
-            var roster=panel.Roster;float cw=horizontal?250:166,ch=horizontal?92:182,gap=horizontal?10:9;
-            float vw=horizontal?770:166,vh=horizontal?92:564;
+            var root=panel.Layout.Find("group_roster");SetRect(root,horizontal?73:66,111,horizontal?770:210,horizontal?128:540);
+            var roster=panel.Roster;float cw=horizontal?250:166,ch=horizontal?92:174,gap=horizontal?10:9;
+            float vw=horizontal?770:166,vh=horizontal?92:540;
             SetRect(roster.transform,0,0,vw,vh);SetRect(roster.viewport,0,0,vw,vh);
             SetRect(roster.content,0,0,horizontal?count*(cw+gap)-gap:cw,horizontal?ch:count*(ch+gap)-gap);
             panel.RosterPortraits=new Image[count];
@@ -63,30 +64,34 @@ namespace ProjectRun.Editor
                 var face=card.Find("img_face")??card.Find("obj_portrait/img_face");
                 var viewport=card.Find("obj_portrait") as RectTransform;
                 if(viewport==null) {viewport=Rect(card,"obj_portrait",0,0,1,1);var maskImage=viewport.gameObject.AddComponent<Image>();maskImage.sprite=art.Get("ui_paper");maskImage.type=Image.Type.Sliced;maskImage.raycastTarget=false;viewport.gameObject.AddComponent<Mask>().showMaskGraphic=false;}
-                SetRect(viewport,6,6,horizontal?91:154,horizontal?80:170);viewport.SetSiblingIndex(1);
+                SetRect(viewport,6,6,horizontal?91:154,horizontal?80:162);viewport.SetSiblingIndex(1);
                 face.SetParent(viewport,false);var faceImage=face.GetComponent<Image>();faceImage.sprite=art.Get(Mgr_Table.Demo.Monsters[i].Id+"_face");faceImage.preserveAspect=true;
                 panel.RosterPortraits[i]=faceImage;
                 var scenery=EnsurePic(viewport,"bg_scene",art.Get("village"),0,0,horizontal?91:154,horizontal?91:154);scenery.transform.SetAsFirstSibling();
                 SetRect(face,horizontal?-6:-12,horizontal?-4:-5,horizontal?105:178,horizontal?96:160);
-                if(!horizontal && i==1)SetRect(face,-16,-7,188,188);
+                if(i==1)
+                {
+                    SetRect(face,0,horizontal?0:-3,horizontal?91:154,horizontal?80:144);
+                    CenterAspectImage(faceImage);
+                }
                 var oldScene=card.Find("bg_portrait_scene");if(oldScene!=null)oldScene.gameObject.SetActive(false);
                 var oldPlate=card.Find("group_nameplate");if(oldPlate!=null)oldPlate.gameObject.SetActive(false);
-                var strip=EnsurePic(viewport,"bg_name_strip",art.Get("ui_plate"),0,127,154,43);strip.type=Image.Type.Sliced;strip.gameObject.SetActive(!horizontal);strip.transform.SetAsLastSibling();
+                var strip=EnsurePic(viewport,"bg_name_strip",art.Get("ui_plate"),0,119,154,43);strip.type=Image.Type.Sliced;strip.gameObject.SetActive(!horizontal);strip.transform.SetAsLastSibling();
                 var selected=panel.SelectionFrames[i];selected.sprite=art.Get("ui_selected");selected.type=Image.Type.Sliced;SetRect(selected.transform,0,0,cw,ch);selected.transform.SetAsLastSibling();
-                SetRect(panel.RosterNames[i].transform,horizontal?103:7,horizontal?13:135,horizontal?136:152,25);
-                SetRect(panel.RosterLevels[i].transform,horizontal?103:7,horizontal?48:158,horizontal?136:152,23);
+                SetRect(panel.RosterNames[i].transform,horizontal?103:7,horizontal?13:126,horizontal?136:152,25);
+                SetRect(panel.RosterLevels[i].transform,horizontal?103:7,horizontal?48:149,horizontal?136:152,23);
                 Style(panel.RosterNames[i],horizontal?20:19,horizontal?referenceInk:paper,TextAnchor.MiddleCenter,true);
                 Style(panel.RosterLevels[i],horizontal?20:18,horizontal?referenceInk:paper,TextAnchor.MiddleCenter,true);
                 panel.RosterNames[i].transform.SetAsLastSibling();panel.RosterLevels[i].transform.SetAsLastSibling();
             }
-            SetRect(panel.PreviousButton.transform,horizontal?0:173,horizontal?26:0,32,40);
-            SetRect(panel.NextButton.transform,horizontal?750:173,horizontal?26:532,32,40);
-            panel.PreviousButton.gameObject.SetActive(!horizontal);panel.NextButton.gameObject.SetActive(!horizontal);
+            if(panel.PreviousButton!=null)Object.DestroyImmediate(panel.PreviousButton.gameObject);
+            if(panel.NextButton!=null)Object.DestroyImmediate(panel.NextButton.gameObject);
+            panel.PreviousButton=null;panel.NextButton=null;
             var bar=root.Find(horizontal?"scrollbar_horizontal":"scrollbar_vertical").GetComponent<Scrollbar>();
             panel.RosterScrollbar=bar;roster.horizontalScrollbar=null;roster.verticalScrollbar=null;
-            SetRect(bar.transform,horizontal?0:177,horizontal?100:40,horizontal?770:23,horizontal?24:486);
+            SetRect(bar.transform,horizontal?0:177,horizontal?100:0,horizontal?770:23,horizontal?24:540);
             var rail=bar.GetComponent<Image>();rail.sprite=art.Get("ui_rail");rail.type=Image.Type.Sliced;
-            var area=bar.transform.Find("obj_sliding_area") as RectTransform;SetRect(area,4,4,horizontal?762:15,horizontal?16:478);
+            var area=bar.transform.Find("obj_sliding_area") as RectTransform;SetRect(area,4,4,horizontal?762:15,horizontal?16:532);
             var handle=bar.handleRect.GetComponent<Image>();handle.sprite=art.Get("ui_thumb");handle.type=Image.Type.Sliced;
             bar.handleRect.anchorMin=Vector2.zero;bar.handleRect.anchorMax=Vector2.one;bar.handleRect.offsetMin=bar.handleRect.offsetMax=Vector2.zero;
             bar.size=horizontal?.10f:.14f;bar.value=horizontal?0:1;
@@ -103,6 +108,7 @@ namespace ProjectRun.Editor
             PreviewFrame(display,458,433);
             var stats=layout.Find("group_stats");SetRect(stats,772,113,447,271);ApplyPaper(stats,447,271);
             panel.HeaderPortrait=EnsurePic(stats,"img_monster",art.Get("Poring_face"),22,13,69,55,true);
+            CenterAspectImage(panel.HeaderPortrait);
             SetRect(panel.MonsterName.transform,112,15,321,48);Style(panel.MonsterName,31,referenceInk,TextAnchor.MiddleLeft,true);
             Rule(stats,"img_divider",21,68,405);
             string[] keys={"speed","stamina","strength","intelligence","spirit"};
@@ -122,27 +128,28 @@ namespace ProjectRun.Editor
             Rule(story,"img_divider",19,51,409);SetRect(panel.Story.transform,29,72,391,63);Style(panel.Story,20,referenceInk,TextAnchor.UpperLeft);panel.Story.lineSpacing=1.12f;
             for(int i=0;i<3;i++)
             {
-                var card=panel.SkillButtons[i].transform;SetRect(card,302+i*311,554,295,124);ApplyPaper(card,295,124);
-                Heading(card,295,45,i==0?"ui_red":i==1?"ui_blue":"ui_brown");
-                SetRect(card.Find("txt_heading"),12,4,271,36);Style(card.Find("txt_heading").GetComponent<Text>(),25,paper,TextAnchor.MiddleCenter,true);
-                SetRect(card.Find("img_icon"),37,52,63,63);SetRect(panel.SkillLabels[i].transform,112,52,170,62);Style(panel.SkillLabels[i],21,referenceInk,TextAnchor.MiddleCenter,true);
+                var card=panel.SkillButtons[i].transform;SetRect(card,302+i*311,554,295,98);ApplyPaper(card,295,98);
+                Heading(card,295,36,i==0?"ui_red":i==1?"ui_blue":"ui_brown");
+                SetRect(card.Find("txt_heading"),12,4,271,30);Style(card.Find("txt_heading").GetComponent<Text>(),23,paper,TextAnchor.MiddleCenter,true);
+                SetRect(card.Find("img_icon"),38,43,48,48);SetRect(panel.SkillLabels[i].transform,100,43,183,45);Style(panel.SkillLabels[i],20,referenceInk,TextAnchor.MiddleCenter,true);
             }
             panel.UniqueSkillIcon=panel.SkillButtons[0].transform.Find("img_icon").GetComponent<Image>();
+            CenterAspectImage(panel.UniqueSkillIcon);
         }
 
         private static void RepairTraining(UIPanel_RanchCollection panel)
         {
-            var layout=panel.Layout;var preview=layout.Find("group_training_preview");SetRect(preview,73,247,770,431);
-            var clip=preview.Find("obj_clip");SetRect(clip,4,4,762,423);
-            var backdrop=EnsurePic(clip,"bg_training",art.Get("Poring_training"),0,0,762,429);backdrop.transform.SetAsFirstSibling();panel.TrainingScene=backdrop;
-            SetRect(panel.TrainingFilm.transform,0,0,762,423);panel.TrainingFilm.ConfigureStates(null,null);panel.TrainingFilm.SetPlaying(false);panel.TrainingFilm.gameObject.SetActive(false);
+            var layout=panel.Layout;var preview=layout.Find("group_training_preview");SetRect(preview,101,247,714,405);
+            var clip=preview.Find("obj_clip");SetRect(clip,4,4,706,397);
+            var backdrop=EnsurePic(clip,"bg_training",art.Get("Poring_training"),0,0,706,397,true);backdrop.type=Image.Type.Simple;backdrop.transform.SetAsFirstSibling();panel.TrainingScene=backdrop;
+            SetRect(panel.TrainingFilm.transform,0,0,706,397);panel.TrainingFilm.ConfigureStates(null,null);panel.TrainingFilm.SetPlaying(false);panel.TrainingFilm.gameObject.SetActive(false);
             if(panel.TrainingClips==null || panel.TrainingClips.Length!=3)panel.TrainingClips=new Data_LobbyAnimation[3];
             panel.TrainingFilm.UseIllustrationLayout=false;
             panel.TrainingPosters=Mgr_Table.Demo.Monsters.Select(m=>art.Get(m.Id+"_training")).ToArray();
             panel.TrainingStartFrames=Mgr_Table.Demo.Monsters.Select(m=>art.Get(m.Id+"_training_start")).ToArray();
             panel.TrainingShadow=EnsurePic(clip,"img_training_shadow",art.Get("ui_shadow"),340,310,212,34);
             panel.TrainingActor=EnsurePic(clip,"img_training_actor",art.Get("Poring_body"),316,77,218,175,true);panel.TrainingActor.gameObject.SetActive(true);
-            PreviewFrame(preview,770,431);
+            PreviewFrame(preview,714,405);
             var growth=layout.Find("group_growth");SetRect(growth,863,111,350,243);ApplyPaper(growth,350,243);Heading(growth,350,57,"ui_blue");
             SetRect(growth.Find("img_heading"),21,13,37,34);SetRect(growth.Find("txt_heading"),75,10,252,39);Style(growth.Find("txt_heading").GetComponent<Text>(),27,paper,TextAnchor.MiddleLeft,true);
             SetRect(panel.GrowthLevel.transform,18,70,314,43);Style(panel.GrowthLevel,31,referenceInk,TextAnchor.MiddleCenter,true);
@@ -154,17 +161,25 @@ namespace ProjectRun.Editor
             SetRect(panel.Requirements.transform,15,61,320,42);Style(panel.Requirements,24,referenceInk,TextAnchor.MiddleCenter,true);
             var note=layout.Find("group_note");SetRect(note,863,493,350,54);ApplyPaper(note,350,54);SetRect(note.Find("img_notice"),28,12,31,31);
             SetRect(panel.TrainingStatus.transform,69,10,264,35);Style(panel.TrainingStatus,17,referenceInk,TextAnchor.MiddleLeft);
-            SetRect(panel.TrainButton.transform,863,568,350,98);ResizePair(panel.TrainButton.transform,350,98);
+            SetRect(panel.TrainButton.transform,863,554,350,98);ResizePair(panel.TrainButton.transform,350,98);
             ApplyReferenceButton(panel.TrainButton,"reference_train_bg","reference_TrainFrame",350,98,8);
             var colors=panel.TrainButton.colors;colors.disabledColor=new Color(.65f,.85f,.65f,1);panel.TrainButton.colors=colors;
             var trainWing=panel.TrainButton.transform.Find("img_speed").GetComponent<Image>();trainWing.sprite=art.Get("reference_TrainWing");SetRect(trainWing.transform,55,23,59,55);
             SetRect(panel.TrainLabel.transform,124,17,207,65);Style(panel.TrainLabel,38,Color.white,TextAnchor.MiddleCenter,true);AddTextShadow(panel.TrainLabel,new Vector2(0,-2));
             var outline=panel.TrainLabel.GetComponent<Outline>()??panel.TrainLabel.gameObject.AddComponent<Outline>();outline.effectColor=new Color(.03f,.18f,.04f,1);outline.effectDistance=new Vector2(1,-1);
-            SetRect(preview.Find("group_progress"),24,396,722,19);
-            foreach(RectTransform child in preview.Find("group_progress")) SetRect(child,0,0,722,19);
-            var progressTrack=preview.Find("group_progress/bg_gauge").GetComponent<Image>();progressTrack.sprite=art.Get("ui_gauge");progressTrack.type=Image.Type.Sliced;
-            panel.TrainingProgress.sprite=art.Get("ui_fill_speed");SetRect(panel.TrainingProgress.transform,2,2,718,15);
-            preview.Find("group_progress/img_frame").gameObject.SetActive(false);
+            var progress=preview.Find("group_progress");SetRect(progress,24,365,666,26);
+            var progressTrack=progress.Find("bg_gauge").GetComponent<Image>();progressTrack.sprite=art.Get("ui_rail");progressTrack.type=Image.Type.Sliced;SetRect(progressTrack.transform,0,0,666,26);
+            panel.TrainingProgress.sprite=art.Get("ui_thumb");panel.TrainingProgress.type=Image.Type.Sliced;
+            panel.TrainingProgressWidth=658;SetRect(panel.TrainingProgress.transform,4,4,658,18);
+            progress.Find("img_frame").gameObject.SetActive(false);
+            var status=preview.Find("group_training_status") as RectTransform;
+            if(status==null)status=Rect(preview,"group_training_status",245,167,280,68);
+            SetRect(status,217,167,280,68);
+            var statusBack=EnsurePic(status,"bg_shade",art.Get("ui_paper"),0,0,280,68);statusBack.type=Image.Type.Sliced;statusBack.color=new Color(.12f,.06f,.025f,.76f);
+            var statusText=status.Find("txt_training");
+            panel.TrainingOverlayLabel=statusText!=null?statusText.GetComponent<Text>():Label(status,"txt_training","훈련중....",12,8,256,52,32,paper,TextAnchor.MiddleCenter,true);
+            Style(panel.TrainingOverlayLabel,32,paper,TextAnchor.MiddleCenter,true);AddTextShadow(panel.TrainingOverlayLabel,new Vector2(0,-2));
+            panel.TrainingOverlay=status.gameObject;status.SetAsLastSibling();status.gameObject.SetActive(false);
             panel.GrowthLevel.supportRichText=panel.GrowthSpeed.supportRichText=true;
         }
 
@@ -205,5 +220,12 @@ namespace ProjectRun.Editor
         }
         private static void SetRect(Transform transform,float x,float y,float width,float height)
         {var rect=(RectTransform)transform;rect.anchorMin=rect.anchorMax=new Vector2(0,1);rect.pivot=new Vector2(0,1);rect.anchoredPosition=new Vector2(x,-y);rect.sizeDelta=new Vector2(width,height);}
+        private static void CenterAspectImage(Image image)
+        {
+            var rect=image.rectTransform;
+            rect.anchoredPosition+=new Vector2(rect.sizeDelta.x*.5f,-rect.sizeDelta.y*.5f);
+            rect.pivot=new Vector2(.5f,.5f);
+            image.preserveAspect=true;
+        }
     }
 }
