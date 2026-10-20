@@ -40,9 +40,20 @@ namespace ProjectRun.Race.CameraRig
         public bool EnableVolumePulse = true;
         [Min(0.01f)] public float VolumeAttack = 0.08f;
         [Min(0.01f)] public float VolumeRelease = 0.45f;
+        [Tooltip("On: post-processing stays at full weight after the attack until ReleaseHold() is called (VolumeRelease unused).")]
+        public bool HoldVolume = false;
 
         private float[] baseFov;
         private float t = -1f;
+        private bool volumeReleased;
+        private bool fovDone;
+
+        /// <summary>Ends a held post-processing pulse immediately (e.g. when the skill movie covers the screen).</summary>
+        public void ReleaseHold()
+        {
+            volumeReleased = true;
+            if (ImpactVolume != null) ImpactVolume.weight = 0f;
+        }
 
         private void OnEnable()
         {
@@ -83,6 +94,8 @@ namespace ProjectRun.Race.CameraRig
                 Source.ImpulseDefinition.ImpulseDuration = ShakeDuration;
                 Source.GenerateImpulseWithVelocity(ShakeVelocity * ShakeStrength);
             }
+            volumeReleased = false;
+            fovDone = false;
             t = 0f;
         }
 
@@ -91,16 +104,23 @@ namespace ProjectRun.Race.CameraRig
             if (t < 0f) return;
             t += Time.unscaledDeltaTime;
 
-            if (EnableFovPunch && Cameras != null && baseFov != null)
+            if (EnableFovPunch && !fovDone && Cameras != null && baseFov != null)
             {
                 float k = Envelope(t, FovAttack, FovRelease);
                 for (int i = 0; i < Cameras.Length && i < baseFov.Length; i++)
                     if (Cameras[i] != null) Cameras[i].Lens.FieldOfView = baseFov[i] + FovKick * k;
+                fovDone = t >= FovAttack + FovRelease; // last write restored the base FOV
             }
+            bool holding = HoldVolume && !volumeReleased;
             if (EnableVolumePulse && ImpactVolume != null)
-                ImpactVolume.weight = Envelope(t, VolumeAttack, VolumeRelease);
+            {
+                if (volumeReleased) ImpactVolume.weight = 0f;
+                else if (holding) ImpactVolume.weight = t < VolumeAttack ? 1f - (1f - t / VolumeAttack) * (1f - t / VolumeAttack) : 1f;
+                else ImpactVolume.weight = Envelope(t, VolumeAttack, VolumeRelease);
+            }
 
-            if (t >= Mathf.Max(FovAttack + FovRelease, VolumeAttack + VolumeRelease)) StopImpact();
+            float volumeEnd = holding ? float.PositiveInfinity : volumeReleased ? 0f : VolumeAttack + VolumeRelease;
+            if (t >= Mathf.Max(FovAttack + FovRelease, volumeEnd)) StopImpact();
         }
 
         /// <summary>Fast ease-out rise, smooth fall. Returns 0..1.</summary>
@@ -114,7 +134,7 @@ namespace ProjectRun.Race.CameraRig
 
         private void StopImpact()
         {
-            if (t >= 0f && Cameras != null && baseFov != null)
+            if (t >= 0f && !fovDone && Cameras != null && baseFov != null)
                 for (int i = 0; i < Cameras.Length && i < baseFov.Length; i++)
                     if (Cameras[i] != null) Cameras[i].Lens.FieldOfView = baseFov[i];
             if (ImpactVolume != null) ImpactVolume.weight = 0f;

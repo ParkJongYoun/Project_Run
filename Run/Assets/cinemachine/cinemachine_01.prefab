@@ -1583,7 +1583,7 @@ MonoBehaviour:
   priority: 200
   blendDistance: 0
   weight: 0
-  sharedProfile: {fileID: 11400000, guid: 45905dc103db4b34ab61d1e5a93b610e, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 975eb7f0b3c027a40ab28a1c02773700, type: 2}
 --- !u!114 &7336377145352330662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1644,7 +1644,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3507592779324300602}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 638637b9253d3c64a85c188e3266a134, type: 3}
   m_Name: 
@@ -1655,17 +1655,18 @@ MonoBehaviour:
   Source: {fileID: 7336377145352330662}
   ImpactVolume: {fileID: 7101914798984519879}
   PlayOnRaceStart: 0
-  EnableShake: 1
-  ShakeStrength: 1.3
-  ShakeDuration: 0.35
+  EnableShake: 0
+  ShakeStrength: 1
+  ShakeDuration: 0.3
   ShakeVelocity: {x: 0.6, y: 1, z: 0.35}
   EnableFovPunch: 1
-  FovKick: 10
-  FovAttack: 0.12
-  FovRelease: 0.4
+  FovKick: -6
+  FovAttack: 0.06
+  FovRelease: 0.2
   EnableVolumePulse: 1
-  VolumeAttack: 0.06
-  VolumeRelease: 0.8
+  VolumeAttack: 0.02
+  VolumeRelease: 0.5
+  HoldVolume: 1
 --- !u!1 &3589500297627125617
 GameObject:
   m_ObjectHideFlags: 0
@@ -1736,6 +1737,7 @@ Transform:
   - {fileID: 1862429432869416840}
   - {fileID: 5874822052587079088}
   - {fileID: 8690256424027126482}
+  - {fileID: 3575533939048759964}
   - {fileID: 2087666979130692466}
   - {fileID: 7811508649134998196}
   - {fileID: 1506305696390187057}
@@ -1864,7 +1866,7 @@ MonoBehaviour:
   Camera: {fileID: 9135696859743567392}
   Target: {fileID: 1862429432869416840}
   LastHoldSeconds: 1
-  MoveSeconds: 2.5
+  MoveSeconds: 4
   MoveCurve:
     serializedVersion: 2
     m_Curve:
@@ -2056,7 +2058,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineFollow
   TrackerSettings:
     BindingMode: 1
-    PositionDamping: {x: 0.25, y: 0.25, z: 0.25}
+    PositionDamping: {x: 0, y: 0, z: 0}
     AngularDampingMode: 0
     RotationDamping: {x: 0, y: 0.6, z: 0}
     QuaternionDamping: 1
@@ -2084,7 +2086,7 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: -0.2, z: 0}
-  Damping: {x: 0.3, y: 0.3}
+  Damping: {x: 0.05, y: 0.05}
   Lookahead:
     Enabled: 0
     Time: 0
@@ -2569,10 +2571,19 @@ MonoBehaviour:
   SkillImpact: {fileID: 5557194268205602306}
   SkillActivePriority: 30
   SkillPushIn: 1
-  PushInStartScale: 5
+  PushInStartScale: 3.5
   PushInEndScale: 1
-  PushInSeconds: 0.5
-  PushInEase: 1.5
+  PushInSeconds: 0.45
+  PushInEase: 2.2
+  ArrivalImpact: {fileID: 6449488376873382066}
+  ArrivalEffectPrefab: {fileID: 5765138749499797054, guid: 76c491f1c36e85b4f98d905d5f221312, type: 3}
+  ArrivalEffectOffset: {x: 0, y: 0.05, z: 0}
+  ArrivalEffectScale: 1.5
+  ArrivalToVideoSeconds: 0.12
+  ArrivalLeadSeconds: 0.15
+  SkillFocusBlur: 1
+  FocusBlurStartOffset: 1.5
+  FocusBlurRange: 6
   SkillIntroSeconds: 0.35
   VideoFramingScale: 1.35
   VideoReturnSeconds: 1.6
@@ -2809,6 +2820,140 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7199790007485573953}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6032511447431998815
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3575533939048759964}
+  - component: {fileID: 164768508694374038}
+  - component: {fileID: 3023839353848835167}
+  - component: {fileID: 6449488376873382066}
+  m_Layer: 0
+  m_Name: Sys_RaceSkillArrivalImpact
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3575533939048759964
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6032511447431998815}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7199790007485573953}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &164768508694374038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6032511447431998815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 200
+  blendDistance: 0
+  weight: 0
+  sharedProfile: {fileID: 11400000, guid: 45905dc103db4b34ab61d1e5a93b610e, type: 2}
+--- !u!114 &3023839353848835167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6032511447431998815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 4
+    ImpulseShape: 2
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &6449488376873382066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6032511447431998815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 638637b9253d3c64a85c188e3266a134, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectRun.Race.CameraRig.RaceStartImpact
+  Race: {fileID: 0}
+  Cameras:
+  - {fileID: 913039414176337048}
+  Source: {fileID: 3023839353848835167}
+  ImpactVolume: {fileID: 164768508694374038}
+  PlayOnRaceStart: 0
+  EnableShake: 1
+  ShakeStrength: 1.8
+  ShakeDuration: 0.35
+  ShakeVelocity: {x: 0.6, y: 1, z: 0.35}
+  EnableFovPunch: 1
+  FovKick: 8
+  FovAttack: 0.05
+  FovRelease: 0.35
+  EnableVolumePulse: 1
+  VolumeAttack: 0.03
+  VolumeRelease: 0.4
+  HoldVolume: 0
 --- !u!1 &6254018720136689117
 GameObject:
   m_ObjectHideFlags: 0
@@ -3543,6 +3688,7 @@ MonoBehaviour:
   EnableVolumePulse: 1
   VolumeAttack: 0.06
   VolumeRelease: 0.8
+  HoldVolume: 0
 --- !u!1 &7461678745988929566
 GameObject:
   m_ObjectHideFlags: 0
