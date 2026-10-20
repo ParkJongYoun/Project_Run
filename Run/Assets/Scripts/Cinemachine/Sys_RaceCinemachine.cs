@@ -164,6 +164,8 @@ namespace ProjectRun.Race.CameraRig
             if (ArrivalImpact != null) ArrivalImpact.Play();
             if (ArrivalEffectPrefab == null) return;
             var view = Presentation.Views[skillTarget];
+            // The optional race FX module starts its burst after the movie's return fade.
+            if (view.SuppressSkillParticles) return;
             if (arrivalEffect == null)
             {
                 arrivalEffect = Instantiate(ArrivalEffectPrefab);

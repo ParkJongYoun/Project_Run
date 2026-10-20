@@ -105,6 +105,9 @@ namespace ProjectRun.Race
             var demoVideo=gameObject.AddComponent<Sys_DemoSkillVideo>();
             demoVideo.Configure(race,panel,Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster].Id);
             gameObject.AddComponent<Sys_DemoSkillEffects>();
+            // Optional six-runner purchased FX; removing this hook restores the legacy presentation.
+            if (gameObject.scene.name == Define_Scene.OvalToon)
+                gameObject.AddComponent<Sys_RaceSkillEffects>();
         }
         private void Update()
         {

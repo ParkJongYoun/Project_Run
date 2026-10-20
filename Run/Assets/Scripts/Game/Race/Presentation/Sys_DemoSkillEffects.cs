@@ -6,6 +6,7 @@ namespace ProjectRun.Race
     [DefaultExecutionOrder(110)]
     public sealed class Sys_DemoSkillEffects : MonoBehaviour
     {
+        public bool SuppressGeneratedEffects { get; set; }
         private Sys_Race race;
         private Transform actor;
         private Transform origin;
@@ -42,7 +43,7 @@ namespace ProjectRun.Race
         {
             if(actor==null||race.Simulation==null||viewCamera==null)return;
             var sim=race.Simulation;var runner=sim.Runners[hero];float age=runner.SkillAge;
-            bool active=age>=0&&age<race.Entrants[hero].SurgeDuration&&!runner.Finished&&sim.Phase!=E_RacePhase.Result;
+            bool active=!SuppressGeneratedEffects&&age>=0&&age<race.Entrants[hero].SurgeDuration&&!runner.Finished&&sim.Phase!=E_RacePhase.Result;
             if(sim.IsAirborne(hero))
             {
                 previousLift=Vector3.up*Mathf.Sin((age-.7f)/1.5f*Mathf.PI)*(flat?2.2f:3.4f);

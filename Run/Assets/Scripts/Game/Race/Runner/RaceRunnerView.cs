@@ -74,6 +74,7 @@ namespace ProjectRun.Race
         public Vector3 Focus => CameraTarget.position;
         public bool HasRider => RiderAnimator != null && RiderRoot != null && RidingClip != null;
         public bool HasPose { get; private set; }
+        public bool SuppressSkillParticles { get; set; }
         public float CurrentAnimationRate { get; private set; }
         public float GaitPhase => activeRunClip == null ? 0 : Mathf.Repeat((float)(gaitClock / activeRunClip.length * GallopsPerClip), 1);
         private Sys_Race race;
@@ -319,7 +320,7 @@ namespace ProjectRun.Race
             }
             else FaceTarget.SetPositionAndRotation(MonsterFaceTarget.position, MonsterFaceTarget.rotation);
             CameraTarget.position = transform.position + Vector3.up * CameraFocusHeight;
-            bool boosted = s.SkillAge >= 0 && s.SkillAge < race.Entrants[RunnerId].SurgeDuration;
+            bool boosted = !SuppressSkillParticles && s.SkillAge >= 0 && s.SkillAge < race.Entrants[RunnerId].SurgeDuration;
             if (Dust != null) { var dustEmission = Dust.emission; dustEmission.rateOverTime = race.Paused || race.PresentationHeld || s.Speed < 2 ? 0 : (boosted ? 32 : 14); }
             if (Sparks != null) { var sparkEmission = Sparks.emission; sparkEmission.rateOverTime = boosted && !race.Paused && !race.PresentationHeld ? 28 : 0; }
             foreach (var trail in Trails) trail.emitting = boosted && !race.Paused && !race.PresentationHeld;
