@@ -15,18 +15,19 @@ namespace ProjectRun.Editor
     // Exercises real button raycasts, video completion and the title/lobby/race round trip.
     public static class RanchGuideVerification
     {
-        public const string Folder = "DataBundles/UI/목장/신규안내인_튜토리얼_20261020/검증";
+        public const string Folder = "DataBundles/UI/목장/메뉴설명_간단튜토리얼_20261020/검증";
         public static string Status { get; private set; }
         private static readonly List<string> notes = new List<string>();
         private static Sys_RanchUI Lobby => UnityEngine.Object.FindFirstObjectByType<Sys_RanchUI>();
-        public static void Run()
+        public static void Run(bool overviewOnly = false)
         {
             if (!Application.isPlaying || SceneManager.GetActiveScene().name != Define_Scene.Title)
                 throw new InvalidOperationException("Run from title Play mode.");
             notes.Clear(); Directory.CreateDirectory(Folder); Status = "RUNNING";
-            Mgr_Game.Instance.StartCoroutine(Verify());
+            UnityEditor.SessionState.SetString("RanchGuideVerification.UserSave", JsonUtility.ToJson(Mgr_User.Data));
+            Mgr_Game.Instance.StartCoroutine(Verify(overviewOnly));
         }
-        private static IEnumerator Verify()
+        private static IEnumerator Verify(bool overviewOnly)
         {
             string saved = JsonUtility.ToJson(Mgr_User.Data);
             float volume = Mgr_User.Data.Volume;
@@ -39,18 +40,26 @@ namespace ProjectRun.Editor
                 Check(Lobby.GuidePanel.CharacterSprite.texture.width >= 1024, "안내 캐릭터 고해상도 스프라이트 연결");
                 Check(Mgr_User.Data.SelectedMonster == -1 && Mgr_User.Data.Monsters.All(m => !m.Trained), "새 체험 초기화");
                 yield return new WaitForSecondsRealtime(2.5f); yield return new WaitForEndOfFrame(); Capture("03_타이틀진입_첫인사.png");
-                Dismiss(); yield return null;
-                Check(!Lobby.Panel.Placement.InputBlocked && Lobby.GuidePanel.Highlight.gameObject.activeSelf, "대화 종료 후 조작 해제·몬스터 강조");
+                yield return VerifyMenuTour();
+                if (overviewOnly)
+                {
+                    yield return VerifyMenuVisits();
+                    Mgr_Game.Instance.StartDemo(); yield return WaitScene(Define_Scene.Lobby); yield return null;
+                    Check(Lobby.GuidePanel.CurrentKey == "ranch_welcome", "새 체험 첫 인사 재시작");
+                    yield return Dismiss(); yield return null;
+                    Check(!Lobby.Panel.Placement.InputBlocked, "새 체험 설명 완료 후 입력 해제");
+                    Status = "PASSED"; yield break;
+                }
                 Click(Home("btn_monsters")); yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_monsters", "몬스터 첫 방문 안내"); Dismiss();
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "몬스터 첫 방문 추가 안내 없음");
                 Lobby.MonsterPanel.SelectMonster(1);
                 Check(Lobby.MonsterPanel.Character.sprite == Resources.Load<Data_CartoonRaceRoster>("Tables/Data_CartoonRaceRoster").Playable[1].Portrait, "신규 미노 정보 이미지 연결");
                 Check(Mgr_User.Data.SelectedMonster == -1, "정보 조회가 출전 선택을 바꾸지 않음");
                 yield return new WaitForEndOfFrame(); Capture("04_신규미노_몬스터정보.png");
                 Click(Lobby.MonsterPanel.BackButton); yield return null; yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_open_training", "목장 복귀 후 훈련 안내"); Dismiss();
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "목장 복귀 후 추가 안내 없음");
                 Click(Home("btn_training")); yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_training", "훈련 첫 방문 안내"); Dismiss();
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "훈련 첫 방문 추가 안내 없음");
                 Lobby.TrainingPanel.SelectMonster(1);
                 Check(Mgr_User.Data.SelectedMonster == -1, "훈련 선택이 출전 선택을 바꾸지 않음");
                 Click(Lobby.TrainingPanel.TrainButton); yield return new WaitForSecondsRealtime(1);
@@ -62,17 +71,16 @@ namespace ProjectRun.Editor
                 float deadline = Time.realtimeSinceStartup + 30;
                 while (Lobby.TrainingPanel.IsTraining && Time.realtimeSinceStartup < deadline) yield return null;
                 Check(Mgr_User.Data.Monsters[1].Trained && Mgr_User.CanEnter(1), "실제 훈련 영상 완료 후 성장 지급");
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_training_complete", "실제 완료 때 성장 축하 안내");
-                yield return new WaitForSecondsRealtime(2.5f); yield return new WaitForEndOfFrame(); Capture("05_훈련완료_대화.png");
-                Dismiss(); Click(Lobby.TrainingPanel.BackButton); yield return null; yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_ready", "출전 준비 안내"); Dismiss();
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "훈련 완료 추가 안내 없음");
+                yield return new WaitForEndOfFrame(); Capture("05_훈련완료.png");
+                yield return Dismiss(); Click(Lobby.TrainingPanel.BackButton); yield return null; yield return null;
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "출전 준비 추가 안내 없음");
                 Click(Home("btn_arena")); yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_arena", "경기장 첫 방문 안내"); Dismiss();
-                Check(Lobby.GuidePanel.Highlight.gameObject.activeSelf, "경기장 수첩 강조");
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "경기장 첫 방문 추가 안내 없음");
                 Click(Lobby.ArenaPanel.NotebookButton); yield return null;
-                Check(Lobby.ArenaPanel.NotebookPopup.activeSelf, "강조 위에서도 수첩 실제 클릭 가능");
+                Check(Lobby.ArenaPanel.NotebookPopup.activeSelf, "수첩 실제 클릭 가능");
                 Click(Lobby.ArenaPanel.NotebookClose); Click(Lobby.ArenaPanel.EntryButton); yield return null;
-                Check(Lobby.GuidePanel.CurrentKey == "ranch_entry", "출전 선택 안내"); Dismiss();
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "출전 선택 추가 안내 없음");
                 Click(Lobby.ArenaPanel.EntrantButtons[1]);
                 Check(Mgr_User.Data.SelectedMonster == -1, "출전 확정 전 저장 선택 유지");
                 yield return new WaitForEndOfFrame(); Capture("06_신규미노_출전준비.png");
@@ -102,10 +110,10 @@ namespace ProjectRun.Editor
                 while (GameObject.Find("btn_new_session") == null && Time.realtimeSinceStartup < deadline) yield return null;
                 Click(GameObject.Find("btn_new_session").GetComponent<Button>()); yield return WaitScene(Define_Scene.Lobby); yield return null;
                 Check(Lobby.GuidePanel.CurrentKey == "ranch_welcome", "새 체험에서 첫 인사 재시작");
-                Click(Lobby.GuidePanel.SkipButton); yield return null;
-                Check(!Mgr_Guide.Enabled && !Lobby.GuidePanel.IsDialogueOpen && !Lobby.Panel.Placement.InputBlocked, "전부 스킵 시 안내·입력 차단 해제");
+                yield return Dismiss(); yield return null;
+                Check(!Lobby.GuidePanel.IsDialogueOpen && !Lobby.Panel.Placement.InputBlocked, "설명 완료 시 안내·입력 차단 해제");
                 Click(Home("btn_monsters")); yield return null;
-                Check(!Lobby.GuidePanel.IsDialogueOpen, "스킵 뒤 메뉴 안내 억제");
+                Check(!Lobby.GuidePanel.IsDialogueOpen, "설명 완료 뒤 메뉴 안내 없음");
                 Click(Lobby.MonsterPanel.BackButton); yield return null;
                 Check(Mgr_User.Data.Volume == volume, "소리 설정 보존");
                 Status = "PASSED";
@@ -118,10 +126,72 @@ namespace ProjectRun.Editor
             }
         }
         private static Button Home(string name) => Lobby.Panel.Navigation.Find(name).GetComponent<Button>();
-        private static void Dismiss()
+        private static IEnumerator Dismiss()
         {
-            for (int i = 0; i < 8 && Lobby.GuidePanel.IsDialogueOpen; i++) Click(Lobby.GuidePanel.AdvanceButton);
+            for (int i = 0; i < 8 && Lobby.GuidePanel.IsDialogueOpen; i++)
+            {
+                Click(Lobby.GuidePanel.IsTourOpen ? Lobby.GuidePanel.NextButton : Lobby.GuidePanel.AdvanceButton);
+                yield return null;
+            }
             Check(!Lobby.GuidePanel.IsDialogueOpen, "대화 진행 버튼 클릭 완료");
+        }
+        private static IEnumerator VerifyMenuTour()
+        {
+            var guide = Lobby.GuidePanel;
+            Check(!guide.GetComponentsInChildren<Transform>(true).Any(t => t.name == "btn_skip_all"), "전체 스킵 버튼 제거");
+            string before = JsonUtility.ToJson(Mgr_User.Data);
+            Click(guide.AdvanceButton); yield return null;
+            string[] targets = { "btn_monsters", "btn_build", "btn_training", "btn_arena" };
+            string[] captures = { "01_몬스터_설명.png", "02_시설_설명.png", "03_훈련_설명.png", "04_경기장_설명.png" };
+            for (int i = 0; i < targets.Length; i++)
+            {
+                yield return new WaitForEndOfFrame(); Capture(captures[i]);
+                Check(guide.IsTourOpen && guide.CurrentTarget.name == targets[i], "설명 순서: " + targets[i]);
+                Check(!guide.Character.gameObject.activeInHierarchy, "작은 설명창에서는 대형 안내인 숨김");
+                Check(!Lobby.MonsterPanel.gameObject.activeInHierarchy && !Lobby.TrainingPanel.gameObject.activeInHierarchy
+                    && !Lobby.ArenaPanel.gameObject.activeInHierarchy && !Lobby.Panel.Placement.IsBuilding, "실제 기능 실행 없이 설명");
+                Check(Lobby.Panel.Placement.InputBlocked, "설명 중 월드 입력 차단");
+                var targetHit = TopHit(guide.CurrentTarget);
+                Check(targetHit.transform.IsChildOf(guide.Tour), "밝은 메뉴 영역에서도 입력 통과 방지 (" + targetHit.name + ")");
+                Check(guide.TooltipMessage.preferredHeight <= guide.TooltipMessage.rectTransform.rect.height, "설명 글자 잘림 없음");
+                Check(EventSystem.current.currentSelectedGameObject == guide.NextButton.gameObject, "키보드 진행 대상은 설명창");
+                Check(guide.PaperSprite.texture != guide.FrameSprite.texture, "백판·프레임 원본 분리");
+                var cornerPoints = new Vector3[4]; guide.Tooltip.GetWorldCorners(cornerPoints);
+                Check(cornerPoints.All(p => p.x >= 0 && p.x <= Screen.width && p.y >= 0 && p.y <= Screen.height), "설명창이 화면 안에 배치");
+                Click(guide.NextButton); yield return null;
+            }
+            Check(!guide.IsDialogueOpen && !Lobby.Panel.Placement.InputBlocked, "네 설명 완료 후 딤드·입력 차단 해제");
+            Check(JsonUtility.ToJson(Mgr_User.Data) == before, "튜토리얼에서 선택·훈련·경기 데이터 변경 없음");
+            Check(TopHit(Home("btn_monsters").transform as RectTransform).GetComponentInParent<Button>() == Home("btn_monsters"), "완료 후 실제 메뉴 입력 복구");
+        }
+        private static IEnumerator VerifyMenuVisits()
+        {
+            Click(Home("btn_monsters")); yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen, "몬스터 방문에 추가 안내 없음");
+            Click(Lobby.MonsterPanel.BackButton); yield return null; yield return null;
+            Click(Home("btn_build")); yield return null;
+            Check(Lobby.Panel.Placement.IsBuilding && !Lobby.GuidePanel.IsDialogueOpen, "시설 메뉴 자유 진입");
+            Click(Lobby.Panel.GetComponentsInChildren<Button>(true).Single(b => b.name == "btn_close_build")); yield return null;
+            Click(Home("btn_training")); yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen, "훈련 방문에 추가 안내 없음");
+            Click(Lobby.TrainingPanel.BackButton); yield return null; yield return null;
+            Click(Home("btn_arena")); yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen, "경기장 방문에 추가 안내 없음");
+            Click(Lobby.ArenaPanel.NotebookButton); yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen && Lobby.ArenaPanel.NotebookPopup.activeSelf, "수첩 안내·클릭 유도 없음");
+            Click(Lobby.ArenaPanel.NotebookClose);
+            Click(Lobby.ArenaPanel.EntryButton); yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen, "출전 준비에 추가 안내 없음");
+            Click(Lobby.ArenaPanel.EntryClose); Click(Lobby.ArenaPanel.BackButton); yield return null; yield return null;
+            Check(!Lobby.GuidePanel.IsDialogueOpen, "같은 체험의 로비 재진입에 반복 안내 없음");
+        }
+        private static GameObject TopHit(RectTransform rect)
+        {
+            Canvas.ForceUpdateCanvases();
+            var pointer = new PointerEventData(EventSystem.current) { position = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center)) };
+            var hits = new List<RaycastResult>(); EventSystem.current.RaycastAll(pointer, hits);
+            Check(hits.Count > 0, "레이캐스트 결과 존재: " + rect.name);
+            return hits[0].gameObject;
         }
         private static void Click(Button button)
         {

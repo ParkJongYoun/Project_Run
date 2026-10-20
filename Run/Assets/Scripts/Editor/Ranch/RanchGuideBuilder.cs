@@ -34,6 +34,8 @@ namespace ProjectRun.Editor
                 rect.offsetMin = rect.offsetMax = Vector2.zero;
                 var guide = root.AddComponent<UIPanel_RanchGuide>();
                 guide.CharacterSprite = AssetDatabase.LoadAssetAtPath<Sprite>(imagePath);
+                guide.PaperSprite = BuildSurface("menu_bg", "RanchGuide_Paper");
+                guide.FrameSprite = BuildSurface("menu_frame", "RanchGuide_Frame");
                 guide.Build();
                 PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             }
@@ -61,6 +63,23 @@ namespace ProjectRun.Editor
                 EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
             }
             finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
+        }
+
+        private static Sprite BuildSurface(string sourceName, string assetName)
+        {
+            // Reuse the lobby artwork with guide-only slice borders; leave shared import settings intact.
+            var source = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ArtBundles/UI/Ranch/" + sourceName + ".png");
+            if (source == null) throw new InvalidOperationException("Missing ranch UI artwork: " + sourceName);
+            var sprite = Sprite.Create(source.texture, source.rect, new Vector2(.5f, .5f), source.pixelsPerUnit,
+                0, SpriteMeshType.FullRect, new Vector4(184, 140, 184, 140));
+            sprite.name = assetName;
+            string path = "Assets/ArtBundles/UI/RanchGuide/" + assetName + ".asset";
+            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (existing == null) { AssetDatabase.CreateAsset(sprite, path); return sprite; }
+            EditorUtility.CopySerialized(sprite, existing);
+            UnityEngine.Object.DestroyImmediate(sprite);
+            EditorUtility.SetDirty(existing);
+            return existing;
         }
     }
 }

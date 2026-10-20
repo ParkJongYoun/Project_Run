@@ -1,0 +1,31 @@
+목장 안내 대화창 로비 스타일 적용
+작업일: 2026-10-20
+
+반영
+- 오른쪽 위 ‘전부 스킵’ 버튼과 ‘목장 안내인’ 이름판을 짙은 갈색 백판·크림색 글자·로비 공통 테두리로 변경.
+- 대화창은 불투명한 양피지색 백판과 로비 공통 테두리로 변경. 본문·진행 안내 글자를 갈색 계열로 통일.
+- 모든 대상의 백판과 프레임은 서로 다른 원본 PNG를 참조하는 별도 Image/Sprite로 구성.
+- 대화창은 1060×180, 이름판은 244×44, 스킵 버튼은 196×52. 기준 레이아웃은 1280×720과 Safe Area 유지.
+- 안내 캐릭터, 대사, 안내 진행 규칙은 유지.
+
+아트 연결
+- 재사용 원본: Assets/ArtBundles/UI/Ranch/menu_bg.png 및 menu_frame.png
+- 대화창 전용 9-slice: Assets/ArtBundles/UI/RanchGuide/RanchGuide_Paper.asset 및 RanchGuide_Frame.asset
+- 원본 PNG와 공통 임포트 설정은 변경하지 않음. 새 이미지 생성은 사용하지 않음.
+- UIPanel_RanchGuide.Build와 RanchGuideBuilder에 연결하여 재생성 시에도 같은 외형 유지.
+- Resources/Prefabs/UI/Panel/UIPanel_RanchGuide.prefab 및 Scene_LobbyTest 연결 갱신.
+
+검증 완료
+- Unity 6000.3.23f1 스크립트 컴파일 완료. 이번 변경으로 인한 컴파일·게임 오류 없음.
+- Scene_Title의 GAME START에서 Scene_LobbyTest 첫 인사 진입.
+- 실제 1920×1080 Game View에서 두 대사 화면의 외형과 글자 잘림 확인.
+- 대화 진행 버튼과 스킵 버튼의 EventSystem 레이캐스트 확인.
+- 두 번째 대사 진행, 전부 스킵 후 안내 비활성 및 목장 입력 차단 해제 확인.
+- 검증 전 유저 진행 데이터를 보관하고 검증 후 복구.
+- 검증 화면과 동작 결과는 ‘검증’ 폴더에 저장.
+
+검증 범위와 환경
+- 웹 빌드 및 브라우저 실행은 이번 작업에서 수행하지 않음.
+- 에디터에 기존 Unity AI NoSubscription 오류가 남아 있으나 이번 UI 변경과 관련되지 않음.
+- 최초 실행 검수 중 대기 중이던 에디터 재컴파일이 발생하여 Play를 재시작한 뒤 위 검증을 완료.
+- 문서의 D:/Project_Run/Run 경로는 이 환경에 없으며 연결된 Unity 프로젝트 C:/Project_Run/Run에서 작업.

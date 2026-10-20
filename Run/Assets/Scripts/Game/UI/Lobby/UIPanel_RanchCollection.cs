@@ -101,7 +101,6 @@ namespace ProjectRun.Race
             Refresh();
             Canvas.ForceUpdateCanvases();
             UpdateScrollControls();
-            owner?.Guide?.EnterCollection(this);
         }
 
         public override void OnClose()
@@ -372,7 +371,6 @@ namespace ProjectRun.Race
             training = false;
             Mgr_User.Train(selectedId);
             Refresh();
-            owner?.Guide?.TrainingCompleted();
         }
 
         private void SetTrainingProgress(float ratio)
