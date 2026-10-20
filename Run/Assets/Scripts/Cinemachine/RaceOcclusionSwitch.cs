@@ -28,6 +28,9 @@ namespace ProjectRun.Race.CameraRig
         [Tooltip("Fallback priority while active. Keep it just above the watched camera and below zone cameras (20) so zones still win.")]
         public int FallbackPriority = 11;
         public int InactivePriority = 0;
+        [Tooltip("-1 = always allowed. Otherwise the fallback is only allowed while WatchCamera's priority is above this value " +
+                 "(zone cameras: 0 = zone not live), and drops as soon as the watched camera is no longer requested.")]
+        public int WatchRequestedAbove = -1;
 
         [Header("Detection")]
         [Tooltip("Shrinks each blocker's bounds so grazing an edge does not count (0.15 = 15% smaller).")]
@@ -81,6 +84,14 @@ namespace ProjectRun.Race.CameraRig
         private void LateUpdate()
         {
             if (WatchCamera == null || FallbackCamera == null) return;
+            // Zone-driven watch camera turned off (left the zone): the fallback must not outlive it.
+            if (WatchRequestedAbove >= 0 && WatchCamera.Priority.Value <= WatchRequestedAbove)
+            {
+                blockedFor = clearFor = 0f;
+                IsOccluded = false;
+                if (IsSwitched) SetSwitched(false);
+                return;
+            }
             // Only care while the watched shot (or our replacement for it) is the one on screen.
             bool relevant = CinemachineCore.IsLive(WatchCamera) || (IsSwitched && CinemachineCore.IsLive(FallbackCamera));
             IsOccluded = relevant && CheckOccluded();
