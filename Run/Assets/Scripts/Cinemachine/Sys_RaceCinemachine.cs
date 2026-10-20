@@ -38,9 +38,31 @@ namespace ProjectRun.Race.CameraRig
         [Tooltip("Ease power. 1 = linear, 3 = fast start / soft stop.")]
         [Range(1f, 6f)] public float PushInEase = 3f;
 
+        [Header("Skill Camera Arrival Burst (end of push-in)")]
+        [Tooltip("Impact played when the push-in arrives (shake / FOV / post-processing). Optional.")]
+        public RaceStartImpact ArrivalImpact;
+        [Tooltip("One-shot effect attached to the protagonist and burst when the push-in arrives. Optional.")]
+        public GameObject ArrivalEffectPrefab;
+        public Vector3 ArrivalEffectOffset = new Vector3(0f, 0.05f, 0f);
+        [Min(0.01f)] public float ArrivalEffectScale = 1.5f;
+        [Tooltip("Seconds after the arrival burst before the movie starts (movie then fades in over the burst).")]
+        [Min(0f)] public float ArrivalToVideoSeconds = 0.1f;
+        [Tooltip("The arrival burst fires this many seconds before the push-in ends. The movie timing is unchanged.")]
+        [Min(0f)] public float ArrivalLeadSeconds = 0.15f;
+
+        [Header("Skill Camera Focus (depth of field on SkillImpact's volume)")]
+        [Tooltip("Keeps the protagonist sharp while the background blurs during the push-in. Needs a Gaussian DepthOfField override in SkillImpact's volume profile.")]
+        public bool SkillFocusBlur = true;
+        [Tooltip("Blur starts this many meters behind the protagonist.")]
+        [Min(0f)] public float FocusBlurStartOffset = 1.5f;
+        [Tooltip("Blur reaches full strength this many meters behind the start.")]
+        [Min(0.1f)] public float FocusBlurRange = 6f;
+
         [Header("Skill Video")]
-        [Tooltip("Seconds the skill camera plays (race running) before the movie starts and the race holds.")]
+[Tooltip("Seconds before the movie starts when Push-In is off. With Push-In on, the movie starts at arrival + ArrivalToVideoSeconds.")]
         [Min(0f)] public float SkillIntroSeconds = 0.35f;
+        /// <summary>Seconds from skill camera entry to movie start (race keeps running until then).</summary>
+        public float SkillVideoDelay => SkillPushIn ? PushInSeconds + ArrivalToVideoSeconds : SkillIntroSeconds;
         [Tooltip("Distance multiplier while the skill video sequence frames the protagonist.")]
         [Min(0.1f)] public float VideoFramingScale = 1.35f;
         [Tooltip("Seconds the skill camera holds after the movie ends, before returning.")]
@@ -94,7 +116,9 @@ namespace ProjectRun.Race.CameraRig
             UpdateVideoTarget();
         }
         public void EndSkillVideo() { videoPlaying = false; videoReturnUntil = Time.unscaledTime + VideoReturnSeconds; }
-        public void CancelSkillVideo() { videoRunner = -1; videoPlaying = false; videoReturnUntil = 0; }
+        public void CancelSkillVideo() { videoRunner = -1; videoPlaying = false; videoReturnUntil = 0; ReleaseSkillFocus(); if (Race != null && Race.IsSkipping) StopArrivalEffect(); }
+        /// <summary>Removes the held skill post-processing (called when the movie fully covers the screen).</summary>
+        public void ReleaseSkillFocus() { if (SkillImpact != null) SkillImpact.ReleaseHold(); }
         private void OnEnable() { Mgr_Event.Reset += CancelSkillVideo; CacheHeroBase(); }
         private void OnDisable() { Mgr_Event.Reset -= CancelSkillVideo; CancelSkillVideo(); RestoreSkillOffset(); }
 
@@ -122,8 +146,64 @@ namespace ProjectRun.Race.CameraRig
                 float t = Mathf.Clamp01(pushInAge / PushInSeconds);
                 float eased = 1f - Mathf.Pow(1f - t, PushInEase);
                 scale *= Mathf.Lerp(PushInStartScale, PushInEndScale, eased); // t stays 1 afterwards: holds end scale
+                if (!arrivalFired && pushInAge >= Mathf.Max(0f, PushInSeconds - ArrivalLeadSeconds)) { arrivalFired = true; PlayArrivalBurst(); }
             }
             heroFollow.FollowOffset = heroBaseOffset * scale;
+        }
+
+        private bool arrivalFired;
+        private GameObject arrivalEffect;
+        private ParticleSystem[] arrivalParticles;
+
+        /// <summary>End of push-in: impact + one-shot effect on the protagonist, right before the movie.</summary>
+        private void PlayArrivalBurst()
+        {
+            if (Race.IsSkipping || skillTarget < 0 || skillTarget >= Presentation.Views.Length) return;
+            if (ArrivalImpact != null) ArrivalImpact.Play();
+            if (ArrivalEffectPrefab == null) return;
+            var view = Presentation.Views[skillTarget];
+            if (arrivalEffect == null)
+            {
+                arrivalEffect = Instantiate(ArrivalEffectPrefab);
+                arrivalEffect.name = "eff_skill_arrival";
+                arrivalParticles = arrivalEffect.GetComponentsInChildren<ParticleSystem>(true);
+            }
+            arrivalEffect.transform.SetParent(view.transform, false);
+            arrivalEffect.transform.localPosition = ArrivalEffectOffset;
+            arrivalEffect.transform.localRotation = Quaternion.identity;
+            arrivalEffect.transform.localScale = Vector3.one * ArrivalEffectScale;
+            arrivalEffect.SetActive(true);
+            foreach (var ps in arrivalParticles)
+            {
+                if (ps == null) continue;
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                ps.Play(true);
+            }
+        }
+        private UnityEngine.Rendering.Universal.DepthOfField focusDof;
+        private bool focusDofSearched;
+
+        /// <summary>Keeps the DOF focus on the protagonist so only the background blurs as the camera pushes in.</summary>
+        private void UpdateFocusBlur()
+        {
+            if (!SkillFocusBlur || skillTarget < 0 || SkillImpact == null || SkillImpact.ImpactVolume == null) return;
+            if (!focusDofSearched)
+            {
+                focusDofSearched = true;
+                SkillImpact.ImpactVolume.profile.TryGet(out focusDof); // runtime instance; the asset stays untouched
+            }
+            if (focusDof == null || skillTarget >= Presentation.Views.Length) return;
+            var view = Presentation.Views[skillTarget];
+            var target = SkillCamera.LookAt != null ? SkillCamera.LookAt.position : view.Focus;
+            float distance = Vector3.Distance(SkillCamera.transform.position, target);
+            focusDof.gaussianStart.Override(distance + FocusBlurStartOffset);
+            focusDof.gaussianEnd.Override(distance + FocusBlurStartOffset + FocusBlurRange);
+        }
+
+        private void StopArrivalEffect()
+        {
+            if (arrivalParticles == null) return;
+            foreach (var ps in arrivalParticles) if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
         private void UpdateVideoTarget()
         {
@@ -181,7 +261,7 @@ namespace ProjectRun.Race.CameraRig
                     cam.PreviousStateIsValid = false; // cut instead of sweeping across the track
                 }
             if (Probe != null) Probe.SetTarget(view.transform);
-            if (restarted) skillTarget = -1;
+            if (restarted) { skillTarget = -1; StopArrivalEffect(); }
         }
 
         private void UpdateSkillCamera()
@@ -207,8 +287,9 @@ if (SkillImpact != null && !Race.IsSkipping) SkillImpact.Play();
                     SkillCamera.PreviousStateIsValid = false;
                     skillTarget = target;
                 }
-                if (!hero) { skillTarget = -1; pushInAge = -1f; }
+                if (!hero) { if (skillTarget >= 0) ReleaseSkillFocus(); skillTarget = -1; pushInAge = -1f; }
                 ApplyHeroOffset();
+                UpdateFocusBlur();
                 SkillCamera.Priority = hero ? SkillActivePriority : 0;
             }
 

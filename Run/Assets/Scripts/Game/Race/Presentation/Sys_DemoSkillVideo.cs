@@ -10,8 +10,9 @@ namespace ProjectRun.Race
         private enum Phase { Idle, Intro, Waiting, Playing, Returning }
         private const float defaultIntroSeconds = .35f;
         // Tunable on Sys_RaceCinemachine (this component is added at runtime and has no inspector).
-        private float IntroSeconds => cinemachine != null && cinemachine.isActiveAndEnabled ? cinemachine.SkillIntroSeconds : defaultIntroSeconds;
-        private Sys_Race race;
+        private float IntroSeconds => cinemachine != null && cinemachine.isActiveAndEnabled ? cinemachine.SkillVideoDelay : defaultIntroSeconds;
+        private bool focusReleased;
+private Sys_Race race;
         private UIPanel_DemoRace panel;
         private Sys_RacePresentation presentation;
         private Sys_RaceCamera director;
@@ -67,7 +68,7 @@ namespace ProjectRun.Race
                 ||race.IsSkipping||race.PresentationHeld)return false;
             generation=playedGeneration=race.Generation;phase=Phase.Intro;
             age=fadeAge=stalledFor=0;lastMediaTime=0;
-            HasFirstFrame=playRequested=pausedVideo=cameraFocused=false;
+            HasFirstFrame=playRequested=pausedVideo=cameraFocused=focusReleased=false;
             if(presentation!=null)presentation.BeginSkillVideo(Mgr_Game.Instance.HeroRunner);
             // Skill camera first (its entry plays the impact); the race keeps running until the movie starts.
             if(cinemachine!=null&&cinemachine.isActiveAndEnabled)cinemachine.BeginSkillVideo(Mgr_Game.Instance.HeroRunner);
@@ -114,6 +115,8 @@ namespace ProjectRun.Race
             {
                 float opacity=Mathf.SmoothStep(0,1,fadeAge/fadeInSeconds);
                 panel.SetVideoOpacity(opacity);
+                // Post-processing stays full until the movie covers the screen, then is removed underneath it.
+                if(!focusReleased&&opacity>=.999f){focusReleased=true;if(cinemachine!=null)cinemachine.ReleaseSkillFocus();}
                 stalledFor=player.time>lastMediaTime+.001?0:stalledFor+delta;lastMediaTime=player.time;
                 if(stalledFor>5||age>25){Fail("Playback stalled.");return;}
                 if(player.length>0&&player.time>=player.length-.04)BeginReturn();
