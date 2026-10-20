@@ -18,6 +18,7 @@ namespace ProjectRun.Race
         public RectTransform Actions;
         public RectTransform Navigation;
         public Mgr_UI CollectionManager;
+        public UIPanel_RanchGuide Guide;
         private CanvasGroup collectionVisibility;
         public Text Toast;
         public Button ConfirmButton;
@@ -38,7 +39,7 @@ namespace ProjectRun.Race
                 if (surface != null) surface.Find("bg_surface").GetComponent<Image>().raycastTarget = true;
             Bind("btn_home", Home);
             Bind("btn_monsters", ShowMonsters);
-            Bind("btn_build", () => { CloseModal(); Placement.SetBuildMode(!Placement.IsBuilding); });
+            Bind("btn_build", () => { Guide?.Clear(); CloseModal(); Placement.SetBuildMode(!Placement.IsBuilding); });
             Bind("btn_close_build", () => Placement.SetBuildMode(false));
             Bind("btn_training", ShowTraining);
             Bind("btn_arena", ShowArena);
@@ -54,10 +55,12 @@ namespace ProjectRun.Race
             Bind("btn_next", () => { catalogPage = Mathf.Min((Placement.Catalog.Facilities.Length - 1) / 6, catalogPage + 1); BuildCards(); });
             if (!subscribed) { Placement.Changed += Refresh; Placement.Message += Notify; subscribed = true; }
             BuildCards(); Refresh();
+            Guide?.EnterHome();
         }
 
         public override void OnClose()
         {
+            Guide?.Clear();
             if (Placement == null) return;
             catalogDragging = false;
             if (subscribed) { Placement.Changed -= Refresh; Placement.Message -= Notify; subscribed = false; }
@@ -281,12 +284,13 @@ namespace ProjectRun.Race
             if (Placement.IsBuilding) UpdateConstructionView();
         }
 
-        private void Home() { CloseModal(); Placement.SetBuildMode(false); RanchCamera.ResetView(); }
+        private void Home() { CloseModal(); Placement.SetBuildMode(false); RanchCamera.ResetView(); Guide?.EnterHome(); }
         private void Notify(string message) { Toast.text = message; toastUntil = Time.unscaledTime + 3; }
         private void CloseModal() { Modal.gameObject.SetActive(false); Placement.InputBlocked = false; Navigation.gameObject.SetActive(true); Refresh(); }
 
         private RectTransform OpenModal(string title)
         {
+            Guide?.Clear();
             Placement.Cancel(); Placement.InputBlocked = true; Navigation.gameObject.SetActive(false);
             DemoUI.Clear(Modal); Modal.gameObject.SetActive(true);
             var shade = DemoUI.Shade(Modal, "bg_dim", new Color(.10f,.15f,.10f,.62f)); shade.raycastTarget = true;
@@ -334,6 +338,7 @@ namespace ProjectRun.Race
 
         private void OpenCollection(E_PanelType type)
         {
+            Guide?.Clear();
             CloseModal();
             Placement.SetBuildMode(false);
             Placement.Cancel();
@@ -360,6 +365,7 @@ namespace ProjectRun.Race
                 collectionVisibility.interactable = collectionVisibility.blocksRaycasts = true;
             }
             CloseModal();
+            Guide?.EnterHome();
         }
 
         public void ShowTrainingFromArena()

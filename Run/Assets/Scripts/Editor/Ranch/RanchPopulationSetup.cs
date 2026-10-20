@@ -50,9 +50,16 @@ namespace ProjectRun.Editor
                     resident.IdleClip = view.IdleClip; resident.LocomotionClip = view.RunClip;
                     string folder = "Assets/ArtBundles/Characters/CartoonMonsters/" + id + "/Animations/" + id;
                     resident.CelebrationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(folder + "_Reaction.anim");
+                    if (id == "Minorous")
+                    {
+                        const string motions = "Assets/ArtBundles/Characters/CartoonMonsters/NewMinotaurus/Animations/NewMinotaurus_";
+                        resident.LocomotionClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(motions + "Walk.anim");
+                        resident.CelebrationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(motions + "Clap.anim");
+                    }
                     resident.AttackClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(folder + "_Attack.anim");
                     resident.RestClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(folder + "_Rest.anim");
-                    resident.FeedingHead = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "bone_head") ?? resident.TargetAnimator.transform;
+                    resident.FeedingHead = view.MonsterFaceTarget != null ? view.MonsterFaceTarget
+                        : root.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "bone_head") ?? resident.TargetAnimator.transform;
                     resident.MoveSpeed = id == "Minorous" ? .68f : .95f;
                     resident.AnimationRate = id == "Minorous" ? .78f : .65f;
                     resident.Clearance = .64f; resident.Seed = 41 + i * 97;

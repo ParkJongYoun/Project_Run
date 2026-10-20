@@ -41,7 +41,7 @@ namespace ProjectRun.Race
             if (!Application.isPlaying || BackButton == null) return;
             Bind(BackButton, ReturnToRanch);
             Bind(EntryButton, ShowEntrants);
-            Bind(NotebookButton, () => { ClosePopups(); NotebookPopup.SetActive(true); });
+            Bind(NotebookButton, () => { ClosePopups(); NotebookPopup.SetActive(true); owner?.Guide?.EnterNotebook(); });
             Bind(SettingsButton, () => { ClosePopups(); RefreshSound(); SettingsPopup.SetActive(true); });
             Bind(EntryClose, ClosePopups);
             Bind(NotebookClose, ClosePopups);
@@ -55,6 +55,7 @@ namespace ProjectRun.Race
             }
             Requirements.text = "Lv." + Mgr_Table.Demo.RequiredLevel + " · 스피드 " + Mgr_Table.Demo.RequiredSpeed;
             ClosePopups();
+            owner?.Guide?.EnterArena();
         }
 
         public override void OnClose() => ClosePopups();
@@ -75,6 +76,7 @@ namespace ProjectRun.Race
 
         public void ClosePopups()
         {
+            owner?.Guide?.Clear();
             if (EntryPopup != null) EntryPopup.SetActive(false);
             if (NotebookPopup != null) NotebookPopup.SetActive(false);
             if (SettingsPopup != null) SettingsPopup.SetActive(false);
@@ -100,6 +102,7 @@ namespace ProjectRun.Race
             }
             RefreshSelection();
             EntryPopup.SetActive(true);
+            owner?.Guide?.EnterEntry();
         }
 
         public void SelectEntrant(int id)
