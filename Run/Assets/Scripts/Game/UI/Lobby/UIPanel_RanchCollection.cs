@@ -173,7 +173,7 @@ namespace ProjectRun.Race
             }
             var monster = table.Monsters[selectedId];
             var progress = Mgr_User.Data.Monsters[selectedId];
-            if (MonsterName != null) MonsterName.text = monster.Name + "  Lv." + progress.Level;
+            if (MonsterName != null) MonsterName.text = monster.Name + " <size=24><color=#B06E3C>Lv." + progress.Level + "</color></size>";
             if (TrainingMode)
             {
                 if (TrainingFilm != null) { TrainingFilm.SetPlaying(false); TrainingFilm.gameObject.SetActive(false); }
