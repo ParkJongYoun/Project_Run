@@ -68,14 +68,11 @@ namespace ProjectRun.Race.Editor
                     scenes = scenes, target = BuildTarget.WebGL, locationPathName = output, options = BuildOptions.DetailedBuildReport
                 });
                 if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Build result: " + report.summary.result);
-                File.Copy("../Tools/LocalWeb/Serve.ps1",output + "/Serve.ps1",true);
-                File.Copy("Tools/Demo/Play.cmd",output + "/Play.cmd",true);
-                string launcher = "StartDemo.ps1";
-                File.Copy("Tools/Demo/" + launcher,output + "/" + launcher,true);
+                if (!File.Exists(output + "/Play.exe")) throw new InvalidOperationException("Play.exe was not packaged.");
                 File.WriteAllText(output + "/demo-id.txt","project-run-review-demo");
                 string manifest = "심사 데모 웹 빌드\n" + DateTime.Now.ToString("O")
                     + "\n진입 씬: " + scenes[0] + "\n포함 씬:\n" + string.Join("\n",scenes)
-                    + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n실행: Play.cmd\n";
+                    + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n실행: Play.exe\n";
                 File.WriteAllText(output + "/빌드구성.txt",manifest);
                 string status = "Succeeded\n" + DateTime.Now.ToString("O") + "\nBytes: " + report.summary.totalSize
                     + "\nSeconds: " + report.summary.totalTime.TotalSeconds + "\n" + Path.GetFullPath(output) + "\n" + string.Join("\n",scenes);
