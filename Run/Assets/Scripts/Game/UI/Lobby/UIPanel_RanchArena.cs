@@ -7,6 +7,7 @@ namespace ProjectRun.Race
     {
         public RectTransform SafeArea;
         public RectTransform Layout;
+        [Range(.5f, 1f)] public float LayoutScale = .94f;
         public UnityEngine.UI.Button BackButton;
         public UnityEngine.UI.Button EntryButton;
         public UnityEngine.UI.Button NotebookButton;
@@ -77,7 +78,7 @@ namespace ProjectRun.Race
         {
             DemoUI.SafeArea(SafeArea);
             if (SafeArea != null && Layout != null)
-                Layout.localScale = Vector3.one * Mathf.Min(1, SafeArea.rect.width / 1280f, SafeArea.rect.height / 720f);
+                Layout.localScale = Vector3.one * LayoutScale * Mathf.Min(1, SafeArea.rect.width / 1280f, SafeArea.rect.height / 720f);
         }
 
         // ── 경기장 수첩 스킨 ─────────────────────────────────────

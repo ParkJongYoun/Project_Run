@@ -8,7 +8,14 @@ namespace ProjectRun.Race
         [SerializeField] private float LapSeconds = 32f;
         [SerializeField] private float FarRunnerSize = 29f;
         [SerializeField] private float NearRunnerSize = 48f;
-        [SerializeField] private float RunnerSpacing = .009f;
+        [SerializeField] private float LaneWidth = 11f;
+        [SerializeField] private float StartHoldSeconds = 1.2f;
+        [SerializeField] private float AccelerationSeconds = 1.4f;
+        [SerializeField] private UnityEngine.UI.Text StatusLabel;
+        // Scenic preview speeds only. These do not read or change actual race results or growth.
+        private static readonly float[] speedMultipliers = { .95f, 1.04f, 1.09f, .90f, 1.14f, 1f };
+        private const float startProgress = .57f;
+        private const float resetFadeSeconds = .45f;
         private static readonly string[] monsterIds = { "Minorous", "GiantPoring", "Smokie", "Savage", "Lunatic", "Edgar" };
         // Cubic control points measured on the 1672 x 941 arena illustration, from its top-left.
         // This is the dirt course, with long straights and separate end bends, not an ellipse.
@@ -31,25 +38,40 @@ namespace ProjectRun.Race
         private RectTransform courseRect;
         private float elapsed;
         private float courseLength;
+        private bool ready;
+        private int statusPhase = -1;
 
-        public void ConfigurePresentation(float lapSeconds, float farSize, float nearSize, float spacing)
+        public void ConfigurePresentation(float lapSeconds, float farSize, float nearSize, float laneWidth)
         {
             LapSeconds = Mathf.Max(1, lapSeconds);
             FarRunnerSize = Mathf.Max(1, farSize);
             NearRunnerSize = Mathf.Max(1, nearSize);
-            RunnerSpacing = Mathf.Clamp01(spacing);
+            LaneWidth = Mathf.Clamp(laneWidth, 1f, 12f);
         }
+
+        public void SetStatusLabel(UnityEngine.UI.Text label) => StatusLabel = label;
 
         private void OnEnable()
         {
+            ready = false;
+            elapsed = 0;
+            statusPhase = -1;
+            SetStatus(0);
+            for (int i = 0; i < runners.Length; i++)
+                if (runners[i] != null) runners[i].gameObject.SetActive(false);
             if (Application.isPlaying) StartCoroutine(PrepareRunners());
         }
 
-        private void OnDisable() => StopAllCoroutines();
+        private void OnDisable()
+        {
+            StopAllCoroutines();
+            ready = false;
+        }
 
         private IEnumerator PrepareRunners()
         {
             courseRect=(RectTransform)transform;
+            distances[0] = 0;
             Vector2 previous=CoursePoint(0);
             for(int sample=1;sample<=SampleCount;sample++)
             {
@@ -59,37 +81,67 @@ namespace ProjectRun.Race
             courseLength=distances[SampleCount];
             for(int i=0;i<runners.Length;i++)
             {
-                if (runners[i] != null) continue;
+                directions[i] = -1;
+                if (runners[i] != null && sets[i] != null) continue;
                 var request=Resources.LoadAsync<Data_DirectionalRunSprites>("Race2D/AutoSprite/Run_"+monsterIds[i]);
                 yield return request;
                 sets[i]=request.asset as Data_DirectionalRunSprites;
-                if(sets[i]==null)continue;
+                if (sets[i] == null)
+                {
+                    Debug.LogWarning("Arena preview sprite set missing: Race2D/AutoSprite/Run_" + monsterIds[i], this);
+                    continue;
+                }
                 runners[i]=DemoUI.Image(transform,"img_runner_"+i,null,0,0,1,1);
                 runners[i].gameObject.SetActive(false);
                 directions[i]=-1;
             }
+            // Start the common clock only after every asynchronous request has completed.
+            elapsed = 0;
+            ready = true;
+            RenderRunners();
         }
         private void LateUpdate()
         {
-            if(courseRect==null||courseLength<=0)return;
+            if(!ready || courseRect==null || courseLength<=0)return;
             elapsed+=Time.unscaledDeltaTime;
+            if (elapsed >= CycleSeconds) elapsed = Mathf.Repeat(elapsed, CycleSeconds);
+            RenderRunners();
+        }
+
+        private float CycleSeconds => StartHoldSeconds + AccelerationSeconds * .5f + LapSeconds / speedMultipliers[3] + 1.8f;
+
+        private float TravelAt(float seconds, int runner)
+        {
+            float running = Mathf.Max(0, seconds - StartHoldSeconds);
+            float acceleration = Mathf.Max(.01f, AccelerationSeconds);
+            // Integral of linear acceleration: no position jump when full speed is reached.
+            float travel = running < acceleration ? running * running / (2 * acceleration) : running - acceleration * .5f;
+            return travel * speedMultipliers[runner] / Mathf.Max(1, LapSeconds);
+        }
+
+        private void RenderRunners()
+        {
+            float fade = Mathf.Min(Mathf.Clamp01(elapsed / resetFadeSeconds), Mathf.Clamp01((CycleSeconds - elapsed) / resetFadeSeconds));
+            SetStatus(elapsed < StartHoldSeconds ? 1 : TravelAt(elapsed, 3) >= 1 ? 4 : elapsed < 7 ? 2 : 3);
             for(int i=0;i<runners.Length;i++)
             {
                 var image=runners[i];var set=sets[i];if(image==null||set==null)continue;
-                float lap=.57f+elapsed/Mathf.Max(1,LapSeconds)-i*RunnerSpacing+Mathf.Sin(elapsed*.23f+i)*.002f;
+                float lap = startProgress + TravelAt(elapsed, i);
                 float parameter=DistanceParameter(Mathf.Repeat(lap,1)*courseLength);
                 Vector2 point=CoursePoint(parameter);
                 Vector2 tangent=(CoursePoint(Mathf.Repeat(parameter+.0005f,1))-CoursePoint(Mathf.Repeat(parameter-.0005f,1))).normalized;
                 float perspective=Mathf.InverseLerp(345,650,point.y);
                 // Narrow lanes on the far straight become wider toward the viewer.
-                point+=new Vector2(-tangent.y,tangent.x)*((i%3-1)*Mathf.Lerp(3,9,perspective));
+                point+=new Vector2(-tangent.y,tangent.x)*((i - (runners.Length - 1) * .5f)*Mathf.Lerp(LaneWidth * .38f, LaneWidth,perspective));
                 float heading=Mathf.Atan2(tangent.x,-tangent.y)*Mathf.Rad2Deg;
                 directions[i]=set.SelectDirection(heading,directions[i],directions[i]<0);
                 int count=set.FrameCount(directions[i]);
                 if (count <= 0) continue;
-                int frame=(int)((elapsed+i*.137f)/Mathf.Max(.1f,set.ClipDuration)*count)%count;
+                float animationTime = Mathf.Max(0, elapsed - StartHoldSeconds) * speedMultipliers[i];
+                int frame=(int)((animationTime+i*.137f)/Mathf.Max(.1f,set.ClipDuration)*count)%count;
                 var sprite=set.Frame(directions[i],frame);if(sprite==null)continue;
                 image.sprite=sprite;
+                image.color = new Color(1, 1, 1, fade);
                 var rect=image.rectTransform;
                 // uGUI does not apply a SpriteRenderer's ground pivot automatically.
                 rect.pivot=new Vector2(sprite.pivot.x/sprite.rect.width,sprite.pivot.y/sprite.rect.height);
@@ -106,6 +158,21 @@ namespace ProjectRun.Race
                 depthOrder[j+1]=value;
             }
             for(int i=0;i<depthOrder.Length;i++)if(runners[depthOrder[i]]!=null)runners[depthOrder[i]].transform.SetSiblingIndex(i);
+        }
+
+        private void SetStatus(int phase)
+        {
+            if (phase == statusPhase) return;
+            statusPhase = phase;
+            if (StatusLabel == null) return;
+            switch (phase)
+            {
+                case 0: StatusLabel.text = "출발을 준비하고 있어요"; break;
+                case 1: StatusLabel.text = "같은 출발선에서 · 준비!"; break;
+                case 2: StatusLabel.text = "다 함께 출발!"; break;
+                case 3: StatusLabel.text = "속도 차이가 만드는 한 바퀴 승부"; break;
+                default: StatusLabel.text = "한 바퀴 완주! 다시 출발을 준비해요"; break;
+            }
         }
         private float DistanceParameter(float distance)
         {

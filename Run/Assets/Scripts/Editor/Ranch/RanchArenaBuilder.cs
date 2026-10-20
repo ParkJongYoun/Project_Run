@@ -36,6 +36,7 @@ namespace ProjectRun.Editor
             ranchArt = Resources.Load<Data_DemoArt>("UI/Ranch/Data_RanchArt");
             foreach (var spriteName in courseSpriteNames) SetupCourseSprite(courseSpriteDir + spriteName + ".png");   // 코스 카드 조각 임포트
             if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) == null) CreatePrefab();
+            else RanchArenaReferenceStyle.Refresh();
             var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath);
             bool temporary = !scene.isLoaded;
             if (temporary) scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
@@ -149,6 +150,7 @@ namespace ProjectRun.Editor
             BuildEntrants(panel, layout);
             BuildNotebookPopup(panel, layout);
             BuildSettings(panel, layout);
+            RanchArenaReferenceStyle.Apply(panel, art, ranchArt);
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             UnityEngine.Object.DestroyImmediate(root);
         }
@@ -164,7 +166,7 @@ namespace ProjectRun.Editor
             fit.aspectMode = UnityEngine.UI.AspectRatioFitter.AspectMode.EnvelopeParent;
             fit.aspectRatio = arena.sprite.rect.width / arena.sprite.rect.height;
             var exhibition = DemoUI.Fill(arena.transform, "group_exhibition").gameObject.AddComponent<UIItem_ArenaExhibition>();
-            exhibition.ConfigurePresentation(38, 45, 74, .145f);
+            exhibition.ConfigurePresentation(38, 45, 74, 11f);
             Pic(preview, "img_preview_frame", art.Get("preview_frame"), 0, 0, 882, 520, false, true);
             Pic(layout, "img_preview_paw", art.Get("icon_paw"), 187, 631, 24, 24, true);
             Label(layout, "txt_exhibition", "몬스터들이 몸을 풀고 있어요", 222, 629, 515, 29, 20, ink);
