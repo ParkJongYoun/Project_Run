@@ -1,0 +1,46 @@
+메인 타이틀 원화 교체와 정점 연출 적용 기록
+
+요청
+- 사용자가 승인한 웃는 포링 UI 제거 원화를 메인 타이틀에 연결.
+- 여섯 몬스터에 Live2D풍의 작은 정점 변형 움직임 추가.
+- 다른 채팅의 Unity 작업 종료 후 실제 프로젝트 적용.
+
+작업 순서
+- 「레이스·로비 UI와 에셋 수정」 채팅(01a159c7-90ba-7620-8061-f7f6afbf5d46)의 완료 및 idle 상태를 wait_threads로 확인한 뒤 Assets 변경과 Unity 작업을 시작.
+- 대기 중에는 소스 조사와 DataBundles 내부의 준비 코드만 작성.
+
+적용
+- 승인 원화를 Assets/ArtBundles/UI/Demo/Title/title_race_background.png로 그대로 복사. 원본과 복사본 SHA256 일치:
+  AF185FF8B0BA29DF100D18C90F21A100AF1ABACF9EB4BA4591AC6EAA9B79B182
+- UIPanel_DemoTitle.prefab의 bg_title Sprite와 Data_DemoArt의 title 항목 연결.
+- 기존 title.png 및 원본 자료 보존.
+- UIItem_TitleArtworkMotion: 기본 uGUI Image의 정점을 104×60 격자로 분할. 총 6,405정점, 12,480삼각형.
+- 여섯 몬스터 윤곽에 맞춘 영역과 경계 완화 적용. 포링 탄성, 토끼/페코의 작은 기울기, 나머지의 느린 호흡을 서로 다른 주기로 표현.
+- 코드가 외형을 새로 그리는 방식이 아닌, 승인된 실제 Sprite의 정점 애니메이션. Cubism SDK 사용 없이 한 장의 원화를 변형하는 방식이며 분리 파츠 리깅 모델은 아님.
+- 가장자리와 먼 배경은 고정. unscaledDeltaTime 사용, 진입 시 0.8초 동안 진폭을 부드럽게 증가. 비활성화 시 원래 Image 쿼드로 복귀.
+- 배경에 별도 중첩 Canvas를 두어 동적 배경과 기존 UI의 재구축을 분리. 배경 raycastTarget=false 유지.
+- 기존 로고·부제 이미지를 위로 올리고 소폭 축소하여 새 그림의 미노타우르스 얼굴 확보. 버튼·힌트·상단 아이콘은 유지.
+- UI 생성 경로 UIPanel_DemoTitle.Build에도 동일 연출 연결.
+
+실제 검증
+- Unity 6000.3.23f1에서 컴파일 완료 및 해당 타입 로드 확인.
+- Scene_Title 1920×1080 실제 Play 확인. 1280×720 화면 미리보기 캡처 저장.
+- 96 시점, 총 41.28초 구간 정점 검사: 최대 변위 원화 기준 6.112747픽셀, 화면 경계 변위 0, 뒤집힌 삼각형 0, 최소 삼각형 면적 비율 0.696702.
+- 움직임이 확인된 정점 2,374개. 컴포넌트 비활성화 시 기본 4정점으로 정상 복귀.
+- 이 검증 루프 총 109.66ms. GPU 렌더링/모바일 성능 벤치마크 수치가 아님.
+- EventSystem 1개, GAME START 중심의 UI 레이캐스트가 btn_game_start에 도달. pointerClickHandler 실행 후 Scene_LobbyTest 정상 진입, 전환 종료, 남아 있는 타이틀 연출 컴포넌트 0개.
+- Play 종료 후 Scene_Title의 실제 프리팹 연결, 새 Sprite, 등록 에셋 일치, 로고·부제 위치 저장 확인. 씬 자체 미저장 변경 없음.
+- 관련 파일 git diff --check 통과.
+- 콘솔에 기존 Unity AI 서비스의 NoSubscription 오류가 있으나 해당 기능의 컴파일/실행 오류는 관찰되지 않음.
+
+상태
+- Unity 프로젝트 적용 및 에디터 검증 완료.
+- 새 WebGL 빌드 생성/모바일 브라우저 성능 측정은 수행하지 않음.
+- Git 커밋·푸시 수행하지 않음.
+- Unity는 Scene_Title 편집 모드로 남김.
+
+산출물
+- 검증/타이틀_최종배치.png: 최종 UI 배치 실제 화면.
+- 검증/정점검증.txt: 수치 검증 결과.
+- 변경전/: 수정 전 코드·프리팹·등록 에셋.
+- 준비/: Unity 대기 중 작성한 정점 연출 코드.

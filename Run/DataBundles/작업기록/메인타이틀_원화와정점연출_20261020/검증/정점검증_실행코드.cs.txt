@@ -1,0 +1,38 @@
+var panel = UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_DemoTitle>();
+var image = panel.transform.Find("bg_title").GetComponent<UnityEngine.UI.Image>();
+var effect = image.GetComponent<ProjectRun.Race.UIItem_TitleArtworkMotion>();
+var timeField = effect.GetType().GetField("elapsed", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+float previousTime = (float)timeField.GetValue(effect);
+Rect rect = image.GetPixelAdjustedRect();
+Vector4 uv = UnityEngine.Sprites.DataUtility.GetOuterUV(image.sprite);
+var helper = new UnityEngine.UI.VertexHelper();
+var mesh = new Mesh();
+System.Action reset = () => { helper.Clear(); helper.AddVert(new Vector3(rect.xMin,rect.yMin),Color.white,new Vector2(uv.x,uv.y)); helper.AddVert(new Vector3(rect.xMin,rect.yMax),Color.white,new Vector2(uv.x,uv.w)); helper.AddVert(new Vector3(rect.xMax,rect.yMax),Color.white,new Vector2(uv.z,uv.w)); helper.AddVert(new Vector3(rect.xMax,rect.yMin),Color.white,new Vector2(uv.z,uv.y)); helper.AddTriangle(0,1,2); helper.AddTriangle(2,3,0); };
+float maxPixels=0, edgePixels=0, minimumAreaRatio=float.MaxValue;
+int flipped=0, vertexCount=0, triangleCount=0, movingVertices=0, disabledCount=0;
+var watch = System.Diagnostics.Stopwatch.StartNew();
+try {
+ reset(); timeField.SetValue(effect,0f); effect.ModifyMesh(helper); helper.FillMesh(mesh);
+ var rest = mesh.vertices; var triangles = mesh.triangles; vertexCount=rest.Length; triangleCount=triangles.Length/3;
+ bool[] moved = new bool[vertexCount];
+ for(int sample=1;sample<=96;sample++) {
+  reset(); timeField.SetValue(effect,sample*.43f); effect.ModifyMesh(helper); helper.FillMesh(mesh); var points=mesh.vertices;
+  for(int i=0;i<points.Length;i++) {
+   var delta=points[i]-rest[i]; float pixels=new Vector2(delta.x*1672/rect.width,delta.y*941/rect.height).magnitude;
+   maxPixels=Mathf.Max(maxPixels,pixels); if(pixels>.01f)moved[i]=true;
+   if(i%105==0||i%105==104||i<105||i>=points.Length-105) edgePixels=Mathf.Max(edgePixels,pixels);
+  }
+  for(int t=0;t<triangles.Length;t+=3) {
+   var a=points[triangles[t]];var b=points[triangles[t+1]];var c=points[triangles[t+2]];
+   float area=(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
+   if(area>=0)flipped++;
+   float baseArea=rect.width/104*rect.height/60;minimumAreaRatio=Mathf.Min(minimumAreaRatio,-area/baseArea);
+  }
+ }
+ foreach(bool item in moved)if(item)movingVertices++;
+ effect.enabled=false;reset();effect.ModifyMesh(helper);disabledCount=helper.currentVertCount;effect.enabled=true;
+} finally { timeField.SetValue(effect,previousTime);helper.Dispose();UnityEngine.Object.Destroy(mesh);image.SetVerticesDirty(); }
+watch.Stop();
+var result=new { Vertices=vertexCount, Triangles=triangleCount, Samples=96, SimulatedSeconds=41.28, MaxMotionSourcePixels=maxPixels, BoundaryMotionPixels=edgePixels, FlippedTriangles=flipped, MinimumTriangleAreaRatio=minimumAreaRatio, MovingVertices=movingVertices, DisabledVertices=disabledCount, ValidationTotalMilliseconds=watch.Elapsed.TotalMilliseconds };
+System.IO.File.WriteAllText("DataBundles/작업기록/메인타이틀_원화와정점연출_20261020/검증/정점검증.txt",result.ToString());
+return result;

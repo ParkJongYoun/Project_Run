@@ -10,6 +10,8 @@ namespace ProjectRun.Race
         {
             DemoUI.Clear(transform);
             var background = DemoUI.Image(transform,"bg_title","title",0,0,1280,720);
+            background.gameObject.AddComponent<Canvas>();
+            background.gameObject.AddComponent<UIItem_TitleArtworkMotion>();
             var fitter = background.gameObject.AddComponent<UnityEngine.UI.AspectRatioFitter>(); fitter.aspectMode = UnityEngine.UI.AspectRatioFitter.AspectMode.EnvelopeParent; fitter.aspectRatio = 1672f/941;
             DemoUI.Shade(transform,"bg_tint",new Color(.04f,.12f,.14f,.10f));
             SafeArea = DemoUI.Fill(transform,"obj_safe_area");
