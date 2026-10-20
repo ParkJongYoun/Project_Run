@@ -40,6 +40,19 @@ namespace ProjectRun.Race
             Data_RaceSimulation.StartLaunchSpeed = StartLaunchSpeed;
             Data_RaceSimulation.StartAcceleration = StartAcceleration;
             if (Simulation != null) Simulation.Changed -= Publish;
+            if (gameObject.scene.name == Define_Scene.OvalToon)
+            {
+                // Shuffle only starting rails on every race, including retries; runner IDs stay stable.
+                for (int i = 0; i < Entrants.Length; i++)
+                    Entrants[i].Lane = (i - (Entrants.Length - 1) * .5f) * 2.8f;
+                for (int i = Entrants.Length - 1; i > 0; i--)
+                {
+                    int pick = Random.Range(0, i + 1);
+                    float lane = Entrants[i].Lane;
+                    Entrants[i].Lane = Entrants[pick].Lane;
+                    Entrants[pick].Lane = lane;
+                }
+            }
             Simulation = new Data_RaceSimulation(Entrants, Course, EnableLaneContests, LapCount);
             Simulation.Changed += Publish;
             Countdown = CountdownSeconds;

@@ -22,17 +22,38 @@ namespace ProjectRun.Ranch
         public event Action Changed;
         public event Action<string> Message;
         public Data_RanchSave Layout { get; private set; }
-        public Data_RanchPlacement Preview { get; private set; }
+        // A domain reload must not turn a null runtime preview into an empty serialized facility.
+        [field: NonSerialized] public Data_RanchPlacement Preview { get; private set; }
         public bool IsBuilding { get; private set; }
         public bool InputBlocked { get; set; }
+        public bool IsDraggingPreview => pointerHeld && !pointerRejected && Preview != null;
         public bool CanConfirm => Preview != null && RanchGrid.CanPlace(Catalog, Layout.Facilities, Preview, GridSize, out _);
         public string PreviewReason => Preview == null ? "시설을 선택하거나 배치한 시설을 눌러 이동하세요" :
             RanchGrid.CanPlace(Catalog, Layout.Facilities, Preview, GridSize, out var reason) ? "배치할 수 있어요" : reason;
         public bool IsMoving => Preview != null && Layout.Facilities.Exists(item => item.InstanceId == Preview.InstanceId);
         private GameObject previewObject;
+        private Renderer[] previewRenderers;
         private GameObject hiddenOriginal;
         private readonly Dictionary<string, GameObject> instances = new Dictionary<string, GameObject>();
         private bool ready;
+        private Vector3 previewCenter;
+        private Sys_RanchCamera ranchCamera;
+        private bool pointerHeld, pointerIsTouch, pointerRejected, suppressTouches;
+        private int pointerTouchId;
+        private Vector3 dragOffset;
+
+        private void OnEnable()
+        {
+            if (WorldCamera != null) ranchCamera = WorldCamera.GetComponent<Sys_RanchCamera>();
+            // Unity restores the layout and scene objects after reload, but not this dictionary.
+            if (!ready || Layout == null || FacilitiesRoot == null) return;
+            instances.Clear();
+            foreach (var entry in Layout.Facilities)
+            {
+                var instance = FacilitiesRoot.Find("obj_" + entry.FacilityId + "_" + entry.InstanceId);
+                if (instance != null) instances[entry.InstanceId] = instance.gameObject;
+            }
+        }
 
         public RanchFacilitySpot FindActivitySpot(string instanceId)
         {
@@ -70,19 +91,18 @@ namespace ProjectRun.Ranch
 
         public void SetBuildMode(bool enabled)
         {
-            Cancel(); IsBuilding = enabled; Grid.SetActive(enabled); Changed?.Invoke();
+            Cancel(); IsBuilding = enabled; Grid.SetActive(enabled);
+            if (ranchCamera != null) ranchCamera.SetBuildView(enabled);
+            Changed?.Invoke();
         }
 
         public void BeginNew(string id)
         {
             if (!ready || Catalog.Find(id) == null) return;
             if (Layout.Facilities.Count >= 256) { Message?.Invoke("시설은 최대 256개까지 배치할 수 있어요"); return; }
-            Cancel(); IsBuilding = true; Grid.SetActive(true);
-            Preview = new Data_RanchPlacement { InstanceId = Guid.NewGuid().ToString("N"), FacilityId = id, X = 10, Y = 6 };
-            bool found = false;
-            for (int y = 0; y < GridSize.y && !found; y++)
-                for (int x = 0; x < GridSize.x && !found; x++)
-                { Preview.X = x; Preview.Y = y; found = RanchGrid.CanPlace(Catalog, Layout.Facilities, Preview, GridSize, out _); }
+            SetBuildMode(true);
+            Preview = new Data_RanchPlacement { InstanceId = Guid.NewGuid().ToString("N"), FacilityId = id };
+            SetPreviewCenter(GridOrigin + new Vector3(GridSize.x, 0, GridSize.y) * (CellSize * .5f));
             CreatePreview();
         }
 
@@ -91,7 +111,8 @@ namespace ProjectRun.Ranch
             if (!ready) return;
             var entry = Layout.Facilities.Find(item => item.InstanceId == instanceId);
             if (entry == null) return;
-            Cancel(); IsBuilding = true; Grid.SetActive(true); Preview = entry.Copy();
+            SetBuildMode(true); Preview = entry.Copy();
+            previewCenter = Position(Preview);
             if (instances.TryGetValue(instanceId, out hiddenOriginal)) hiddenOriginal.SetActive(false);
             CreatePreview();
         }
@@ -99,22 +120,91 @@ namespace ProjectRun.Ranch
         private void CreatePreview()
         {
             previewObject = Create(Preview); previewObject.name = "obj_placement_preview";
+            previewRenderers = previewObject.GetComponentsInChildren<Renderer>();
             if (Catalog.Find(Preview.FacilityId).IsRoad)
                 foreach (var renderer in previewObject.GetComponentsInChildren<Renderer>()) renderer.enabled = true;
             foreach (var collider in previewObject.GetComponentsInChildren<Collider>()) collider.enabled = false;
             UpdatePreview();
         }
 
+        public bool TryGetPreviewBounds(out Bounds bounds)
+        {
+            bounds = new Bounds();
+            if (previewObject == null) return false;
+            if (previewRenderers == null) previewRenderers = previewObject.GetComponentsInChildren<Renderer>();
+            bool found = false;
+            foreach (var renderer in previewRenderers)
+            {
+                if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy) continue;
+                // Flat ground dressing should not push the action buttons away from the model.
+                if (renderer.name == "obj_ground_detail_apron" || renderer.name == "obj_village_apron" ||
+                    renderer.name == "obj_entrance_path") continue;
+                if (found) bounds.Encapsulate(renderer.bounds);
+                else { bounds = renderer.bounds; found = true; }
+            }
+            return found;
+        }
+
         public void MovePreview(int x, int y)
         {
             if (Preview == null) return;
-            Preview.X = x; Preview.Y = y; UpdatePreview();
+            if (Preview.X == x && Preview.Y == y) return;
+            Preview.X = x; Preview.Y = y;
+            previewCenter = Position(Preview);
+            UpdatePreview();
         }
 
         public void Rotate()
         {
             if (Preview == null) return;
-            Preview.Rotation = (Preview.Rotation + 1) % 4; UpdatePreview();
+            Preview.Rotation = (Preview.Rotation + 1) % 4;
+            SetPreviewCenter(previewCenter);
+            KeepPreviewOnFarm();
+            UpdatePreview();
+        }
+
+        public void DragPreviewToScreen(Vector2 point)
+        {
+            if (!ready || !IsBuilding || InputBlocked || Preview == null || IsOverUI(point)) return;
+            if (GroundPoint(point, out var position)) MovePreviewCenter(position);
+        }
+
+        private void MovePreviewCenter(Vector3 center)
+        {
+            int x = Preview.X, y = Preview.Y;
+            SetPreviewCenter(center);
+            KeepPreviewOnFarm();
+            if (Preview.X != x || Preview.Y != y) UpdatePreview();
+        }
+
+        private void KeepPreviewOnFarm()
+        {
+            // The entire farm is visible in build mode; edge drags stay reachable above the dock.
+            var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
+            int x = Mathf.Clamp(Preview.X, 0, Mathf.Max(0, GridSize.x - size.x));
+            int y = Mathf.Clamp(Preview.Y, 0, Mathf.Max(0, GridSize.y - size.y));
+            if (x == Preview.X && y == Preview.Y) return;
+            Preview.X = x; Preview.Y = y;
+            previewCenter = Position(Preview);
+        }
+
+        private bool GroundPoint(Vector2 point, out Vector3 position)
+        {
+            position = Vector3.zero;
+            if (WorldCamera == null) return false;
+            var ray = WorldCamera.ScreenPointToRay(point);
+            if (!new Plane(Vector3.up, GridOrigin).Raycast(ray, out float distance)) return false;
+            position = ray.GetPoint(distance);
+            return true;
+        }
+
+        private void SetPreviewCenter(Vector3 center)
+        {
+            previewCenter = center;
+            var local = (center - GridOrigin) / CellSize;
+            var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
+            Preview.X = Mathf.FloorToInt(local.x - size.x * .5f + .5f);
+            Preview.Y = Mathf.FloorToInt(local.z - size.y * .5f + .5f);
         }
 
         private void UpdatePreview()
@@ -141,7 +231,8 @@ namespace ProjectRun.Ranch
         {
             if (previewObject != null) { previewObject.SetActive(false); Destroy(previewObject); }
             if (hiddenOriginal != null) hiddenOriginal.SetActive(true);
-            hiddenOriginal = null; previewObject = null; Preview = null;
+            hiddenOriginal = null; previewObject = null; previewRenderers = null; Preview = null;
+            ClearPointer();
             if (FootprintMarker != null) FootprintMarker.gameObject.SetActive(false);
             Changed?.Invoke();
         }
@@ -169,46 +260,103 @@ namespace ProjectRun.Ranch
 
         private void Update()
         {
-            if (!ready || !IsBuilding || InputBlocked) return;
+            if (!ready || !IsBuilding || InputBlocked) { ClearPointer(); return; }
             if (Keyboard.current != null)
             {
                 if (Keyboard.current.escapeKey.wasPressedThisFrame) { Cancel(); return; }
                 if (Keyboard.current.rKey.wasPressedThisFrame) Rotate();
                 if (Keyboard.current.enterKey.wasPressedThisFrame) Confirm();
             }
+            UpdateConstructionPointer();
         }
 
-        // The camera owns pointer gestures, so a swipe never also selects or moves a facility.
-        public void HandleWorldTap(Vector2 point)
+        private void UpdateConstructionPointer()
         {
-            if (!ready || !IsBuilding || InputBlocked || IsOverUI(point)) return;
-            if (Preview == null)
+            UnityEngine.InputSystem.Controls.TouchControl first = null;
+            int touchCount = 0;
+            if (Touchscreen.current != null)
+                foreach (var touch in Touchscreen.current.touches)
+                    if (touch.press.isPressed) { if (first == null) first = touch; touchCount++; }
+            if (touchCount > 1) { ClearPointer(); suppressTouches = true; return; }
+            if (suppressTouches)
             {
-                var ray = WorldCamera.ScreenPointToRay(point);
-                if (Physics.Raycast(ray, out var hit, 200))
-                    foreach (var pair in instances)
-                        if (hit.transform == pair.Value.transform || hit.transform.IsChildOf(pair.Value.transform))
-                        { BeginMove(pair.Key); break; }
+                if (touchCount == 0) suppressTouches = false;
                 return;
             }
-            if (GridPoint(point, out var local))
+            if (first != null)
             {
-                var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
-                MovePreview(Mathf.FloorToInt(local.x - size.x * .5f + .5f), Mathf.FloorToInt(local.y - size.y * .5f + .5f));
+                var point = first.position.ReadValue();
+                if (first.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
+                    BeginConstructionPointer(point, true, first.touchId.ReadValue());
+                if (pointerHeld && pointerIsTouch && pointerTouchId == first.touchId.ReadValue()) MoveConstructionPointer(point);
+                return;
             }
+            if (pointerHeld && pointerIsTouch)
+            {
+                if (Touchscreen.current != null)
+                    foreach (var touch in Touchscreen.current.touches)
+                        if (touch.touchId.ReadValue() == pointerTouchId && touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Ended)
+                            MoveConstructionPointer(touch.position.ReadValue());
+                ClearPointer(); return;
+            }
+            var mouse = Mouse.current;
+            if (mouse == null) return;
+            var mousePoint = mouse.position.ReadValue();
+            if (mouse.leftButton.wasPressedThisFrame) BeginConstructionPointer(mousePoint, false, 0);
+            if (!pointerHeld || pointerIsTouch) return;
+            MoveConstructionPointer(mousePoint);
+            if (!mouse.leftButton.isPressed) ClearPointer();
         }
 
-        private bool GridPoint(Vector2 point, out Vector2 local)
+        private void BeginConstructionPointer(Vector2 point, bool isTouch, int touchId)
+        {
+            bool rejected = IsOverUI(point);
+            if (!rejected && Preview == null)
+            {
+                var entry = FindWorldFacility(point);
+                if (entry != null) BeginMove(entry.InstanceId);
+            }
+            pointerHeld = true; pointerIsTouch = isTouch; pointerTouchId = touchId;
+            pointerRejected = rejected || Preview == null; dragOffset = Vector3.zero;
+            if (pointerRejected || !GroundPoint(point, out var position)) return;
+            var center = Position(Preview);
+            var size = Catalog.Find(Preview.FacilityId).Size(Preview.Rotation);
+            if (Mathf.Abs(position.x - center.x) <= size.x * CellSize * .5f &&
+                Mathf.Abs(position.z - center.z) <= size.y * CellSize * .5f)
+                dragOffset = center - position;
+            MoveConstructionPointer(point);
+        }
+
+        private void MoveConstructionPointer(Vector2 point)
+        {
+            if (!pointerHeld || pointerRejected || Preview == null || InputBlocked || IsOverUI(point)) return;
+            if (GroundPoint(point, out var position)) MovePreviewCenter(position + dragOffset);
+        }
+
+        private void ClearPointer()
+        {
+            pointerHeld = pointerIsTouch = pointerRejected = suppressTouches = false;
+            dragOffset = Vector3.zero;
+        }
+
+        private Data_RanchPlacement FindWorldFacility(Vector2 point)
         {
             var ray = WorldCamera.ScreenPointToRay(point);
-            if (new Plane(Vector3.up, GridOrigin).Raycast(ray, out float distance))
-            {
-                var position = (ray.GetPoint(distance) - GridOrigin) / CellSize;
-                local = new Vector2(position.x, position.z); return true;
-            }
-            local = Vector2.zero; return false;
+            if (!Physics.Raycast(ray, out var hit, 200)) return null;
+            foreach (var pair in instances)
+                if (pair.Value != null && (hit.transform == pair.Value.transform || hit.transform.IsChildOf(pair.Value.transform)))
+                    return Layout.Facilities.Find(item => item.InstanceId == pair.Key);
+            return null;
         }
 
+        public void HandleWorldTap(Vector2 point)
+        {
+            if (!ready || IsBuilding || InputBlocked || IsOverUI(point)) return;
+            var entry = FindWorldFacility(point);
+            if (entry != null && ranchCamera != null) ranchCamera.FocusOn(Position(entry));
+        }
+
+        private void OnApplicationFocus(bool focused) { if (!focused) ClearPointer(); }
         private void OnDisable() { Cancel(); }
     }
 }

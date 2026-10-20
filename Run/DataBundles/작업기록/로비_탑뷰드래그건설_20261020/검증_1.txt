@@ -1,0 +1,59 @@
+Unity MCP execute_code 검증 본문 1
+Scene_LobbyTest Play 상태에서 실행. 테스트 대상 파일은 프로젝트의 C# 코드이며 이 문서는 재현용 본문입니다.
+
+var p=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchPlacement>();
+var c=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Ranch.Sys_RanchCamera>();
+var ui=UnityEngine.Object.FindFirstObjectByType<ProjectRun.Race.UIPanel_Ranch>();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var checks=new System.Collections.Generic.List<string>();Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);checks.Add(name);};
+p.SetBuildMode(false);c.ResetView();c.ZoomOut();c.GetType().GetMethod("ApplyYaw",flags).Invoke(c,new object[]{17f});
+var beforePosition=c.transform.position;var beforeRotation=c.transform.rotation;float beforeSize=c.WorldCamera.orthographicSize;
+p.SetBuildMode(true);
+check(Vector3.Dot(c.transform.forward,Vector3.down)>.99999f,"Construction camera is exactly top down");
+check(c.WorldCamera.orthographicSize>c.HomeSize+2*c.WheelZoomStep,"Construction zoom exceeds normal wheel limit");
+var viewportPoints=new System.Collections.Generic.List<string>();
+for(int x=0;x<2;x++)for(int z=0;z<2;z++){
+var corner=p.GridOrigin+new Vector3(x*p.GridSize.x*p.CellSize,0,z*p.GridSize.y*p.CellSize);
+var v=c.WorldCamera.WorldToViewportPoint(corner);viewportPoints.Add(v.ToString());
+check(v.x>c.BuildViewport.xMin&&v.x<c.BuildViewport.xMax&&v.y>c.BuildViewport.yMin&&v.y<c.BuildViewport.yMax,"Farm corner "+x+","+z+" fits above construction UI");
+}
+var fixedPosition=c.transform.position;var fixedRotation=c.transform.rotation;float fixedSize=c.WorldCamera.orthographicSize;
+c.ZoomIn();c.ZoomOut();c.FocusOn(Vector3.one*3);c.GetType().GetMethod("Pan",flags).Invoke(c,new object[]{new Vector2(900,600),new Vector2(1100,500),.016f});c.GetType().GetMethod("ApplyYaw",flags).Invoke(c,new object[]{-20f});
+check(c.transform.position==fixedPosition&&c.transform.rotation==fixedRotation&&c.WorldCamera.orthographicSize==fixedSize,"Pan rotation focus and zoom do not move construction camera");
+check(!ui.SafeArea.Find("btn_zoom_in").GetComponent<UnityEngine.UI.Button>().interactable,"Zoom UI is disabled during construction");
+p.BeginNew("feed_store");p.BeginNew("shelter");p.Cancel();p.SetBuildMode(false);
+check(c.transform.position==beforePosition&&Quaternion.Angle(c.transform.rotation,beforeRotation)<.001f&&c.WorldCamera.orthographicSize==beforeSize,"Exit restores original non-default camera position angle and zoom after multiple selections");
+check(ui.SafeArea.Find("btn_zoom_in").GetComponent<UnityEngine.UI.Button>().interactable,"Exit enables normal zoom UI");
+c.ResetView();p.SetBuildMode(true);p.BeginNew("feed_store");
+return new {checks,buildSize=fixedSize,viewportPoints};
+
+검증 결과
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "checks": [
+        "Construction camera is exactly top down",
+        "Construction zoom exceeds normal wheel limit",
+        "Farm corner 0,0 fits above construction UI",
+        "Farm corner 0,1 fits above construction UI",
+        "Farm corner 1,0 fits above construction UI",
+        "Farm corner 1,1 fits above construction UI",
+        "Pan rotation focus and zoom do not move construction camera",
+        "Zoom UI is disabled during construction",
+        "Exit restores original non-default camera position angle and zoom after multiple selections",
+        "Exit enables normal zoom UI"
+      ],
+      "buildSize": 25.1020412,
+      "viewportPoints": [
+        "(0.35, 0.43, 40.00)",
+        "(0.35, 0.86, 40.00)",
+        "(0.65, 0.43, 40.00)",
+        "(0.65, 0.86, 40.00)"
+      ]
+    },
+    "compiler": "codedom"
+  }
+}
+

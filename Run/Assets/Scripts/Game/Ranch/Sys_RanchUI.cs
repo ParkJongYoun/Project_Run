@@ -10,6 +10,7 @@ namespace ProjectRun.Ranch
         public UIPanel_RanchCollection MonsterPanel;
         public UIPanel_RanchCollection TrainingPanel;
         public UIPanel_RanchArena ArenaPanel;
+        public UIPanel_RanchGuide GuidePanel;
         public bool HasPreparationFailed { get; private set; }
         public bool IsPresentationReady => !HasPreparationFailed && Panel != null && Panel.gameObject.activeInHierarchy
             && Panel.Placement != null && Panel.Placement.Layout != null && Panel.CollectionManager == Manager;
@@ -23,6 +24,12 @@ namespace ProjectRun.Ranch
                 return;
             }
             Manager.Register(E_PanelType.Ranch, Panel);
+            if (GuidePanel != null)
+            {
+                Panel.Guide = GuidePanel;
+                Manager.Register(E_PanelType.RanchGuide, GuidePanel);
+                Manager.Open(E_PanelType.RanchGuide);
+            }
             if (ArenaPanel != null)
             {
                 Panel.CollectionManager = Manager;
