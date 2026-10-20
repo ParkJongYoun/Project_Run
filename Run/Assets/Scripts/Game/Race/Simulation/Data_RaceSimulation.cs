@@ -4,14 +4,16 @@ using UnityEngine;
 namespace ProjectRun.Race
 {
     public enum E_RacePhase { Preparing, Running, Finishing, Result }
-    public enum E_RaceEvent { Start, Skill, Overtake, Finish, Result }
+    public enum E_RaceEvent { Start, Skill, Overtake, Finish, Result, CosmeticSkill }
 
     public readonly struct Data_RaceEvent
     {
         public readonly E_RaceEvent Kind;
         public readonly int RunnerId;
         public readonly float Time;
-        public Data_RaceEvent(E_RaceEvent kind, int runnerId, float time) { Kind = kind; RunnerId = runnerId; Time = time; }
+        public readonly E_RaceSkillRarity Rarity;
+        public Data_RaceEvent(E_RaceEvent kind, int runnerId, float time, E_RaceSkillRarity rarity = E_RaceSkillRarity.Unique)
+        { Kind = kind; RunnerId = runnerId; Time = time; Rarity = rarity; }
     }
 
     [Serializable]
@@ -38,6 +40,8 @@ namespace ProjectRun.Race
         public float RepeatSkillProgress = .72f;
         public float StaminaDrainMultiplier = 1;
         public bool UseStamina;
+        [NonSerialized] public Data_RaceSkillSet RaceSkills;
+        [NonSerialized] public bool DemoComeback;
         public Data_RunnerSetup Copy() => (Data_RunnerSetup)MemberwiseClone();
     }
 
@@ -59,6 +63,8 @@ namespace ProjectRun.Race
         public bool SkillUsed;
         public int SkillActivationCount;
         public float SkillStarted = -1;
+        public int NormalSkillCount;
+        public int RareSkillCount;
         public bool Finished;
         public double FinishTime;
     }
@@ -101,7 +107,8 @@ namespace ProjectRun.Race
         private readonly Data_RaceLaneContest laneContest;
         public bool UsesLaneContests => laneContest != null;
         public bool IsAirborne(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType==1 && Runners[id].SkillAge>=.7f && Runners[id].SkillAge<2.2f;
-        public bool IsBursting(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType>0 && Runners[id].SkillAge>=0 && Runners[id].SkillAge<setups[id].SurgeDuration;
+        public bool IsBursting(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType>0 && Runners[id].SkillAge>=0 &&
+            (Runners[id].SkillAge<setups[id].SurgeDuration || setups[id].DemoComeback&&Runners[id].Distance/CourseLength>.70f);
         private double firstFinish = -1;
         private double lastOvertakeNotice = -10;
 
@@ -172,6 +179,7 @@ namespace ProjectRun.Race
                 var setup = setups[i];
                 runner.PreviousDistance = runner.Distance;
                 runner.PreviousLane = runner.Lane;
+                if (!runner.Finished) PublishCosmeticSkills(i);
                 if (!runner.Finished && ShouldActivate(i))
                 {
                     runner.SkillUsed = true;
@@ -242,7 +250,46 @@ namespace ProjectRun.Race
             float late = setup.LatePower * Mathf.SmoothStep(0,1,(t-36)/17);
             float cadence = .23f * Mathf.Sin(t*.39f+id*1.8f);
             float fatigue = setup.UseStamina ? Mathf.Lerp(.86f,1,Mathf.Clamp01(Runners[id].Stamina/.5f)) : 1;
+            // Demo assistance belongs to the unique skill and is fixed in the race inputs.
+            // It changes speed, never positions, ranks or finish times directly.
+            if (setup.DemoComeback && Runners[id].SkillUsed && !Runners[id].Finished)
+            {
+                float progress = (float)(Runners[id].Distance / CourseLength);
+                double leadingDistance = double.NegativeInfinity;
+                float leadingSpeed = setup.BaseSpeed;
+                int leaderId=id;
+                for (int i = 0; i < Runners.Length; i++)
+                    if (i != id && Runners[i].Distance > leadingDistance)
+                    { leadingDistance = Runners[i].Distance; leadingSpeed = Runners[i].Speed;leaderId=i; }
+                if(double.IsNegativeInfinity(leadingDistance))leadingDistance=Runners[id].Distance;
+                float gap = Mathf.Max(-4,(float)(leadingDistance - Runners[id].Distance));
+                float secondsLeft = Mathf.Max(2, (CourseLength - (float)leadingDistance) / Mathf.Max(1, leadingSpeed));
+                float metric=Metric((float)Runners[id].Distance,Runners[id].Lane);
+                float leadMetric=Metric((float)leadingDistance,Runners[leaderId].Lane);
+                float catchupTarget=(leadingSpeed/leadMetric+(gap+6)/Mathf.Max(1.5f,secondsLeft*.60f))*metric/fatigue;
+                float baseTarget=setup.BaseSpeed+early+late+cadence;
+                float catchup=Mathf.Clamp(catchupTarget-baseTarget,setup.BaseSpeed*.045f,setup.BaseSpeed);
+                boost=Mathf.Max(boost,catchup*Mathf.SmoothStep(0,1,(progress-.70f)/.07f));
+            }
             return (setup.BaseSpeed + early + late + cadence + boost) * fatigue;
+        }
+
+        private void PublishCosmeticSkills(int id)
+        {
+            var skills = setups[id].RaceSkills;
+            if (skills == null) return;
+            var runner = Runners[id];
+            float progress = (float)(runner.Distance / CourseLength);
+            if (runner.NormalSkillCount < 3 && progress >= skills.NormalProgress + runner.NormalSkillCount * .28f)
+            {
+                runner.NormalSkillCount++;
+                Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.CosmeticSkill, id, (float)Time, E_RaceSkillRarity.Normal));
+            }
+            if (runner.RareSkillCount < 2 && progress >= skills.RareProgress + runner.RareSkillCount * .36f)
+            {
+                runner.RareSkillCount++;
+                Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.CosmeticSkill, id, (float)Time, E_RaceSkillRarity.Rare));
+            }
         }
 
         private bool ShouldActivate(int id)

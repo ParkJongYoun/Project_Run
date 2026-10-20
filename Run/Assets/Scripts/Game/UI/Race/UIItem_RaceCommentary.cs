@@ -99,7 +99,7 @@ namespace ProjectRun.Race
         }
         // 강조 색과 크기 (모크업의 "출발!" 하늘색 강조)
         private const string HighlightRgb = "4FE6FF";
-        private const int HighlightSize = 22;
+        private const int HighlightSize = 16;
 
         /// <summary>문구의 첫 키워드를 하늘색+크게 꾸민다.
         /// 규칙 ① "출발! …"처럼 첫 단어가 !로 끝나면 그 단어 ② "이름 · …" 형식이면 이름 부분.</summary>

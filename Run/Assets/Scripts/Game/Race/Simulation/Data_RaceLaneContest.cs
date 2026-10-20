@@ -67,6 +67,7 @@ namespace ProjectRun.Race
                 float lateral = Mathf.Abs(lane - lanes[other]);
                 float closing = Mathf.Max(0,desired-speeds[other]);
                 float lookAhead = FollowingGap + desired * .45f + closing * .8f;
+                if(setups[id].DemoComeback&&simulation.IsBursting(id))lookAhead+=desired*.75f;
                 if (gap > 0 && gap < lookAhead && lateral < Clearance + .6f)
                     score += (lookAhead - gap) * (.05f + closing * .65f)
                         * (1 - Mathf.Clamp01((lateral - Clearance) / .6f));

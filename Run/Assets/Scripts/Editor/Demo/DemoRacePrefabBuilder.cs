@@ -141,7 +141,7 @@ namespace ProjectRun.Race.Editor
             Button(view, "PauseButton", footer.transform, "btn_pause", "정지", 478, 11, 80, 52, labelField: "PauseLabel");
             Button(view, "ResultButton", footer.transform, "btn_skip", "결과", 559, 11, 76, 52);
             Anchor(Button(view, "LobbyButton", safe, "btn_lobby", "로비", 535, 230, 136, 45, false), 1, 1, -105, -130);
-            Anchor(Button(view, "CutsceneButton", safe, "btn_cutscene", "연출 ON", 379, 230, 148, 45, false, "CutsceneLabel"), 1, 1, -261, -130);
+            safe.Find("btn_lobby").gameObject.SetActive(false);
             var countdown = Bind(view, "CountdownLabel", DemoUI.Text(safe, "txt_countdown", "", 0, 20, 800, 150, 88, DemoUI.Paper, TextAnchor.MiddleCenter, true));
             countdown.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(3, -4);
 

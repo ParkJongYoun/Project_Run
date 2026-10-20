@@ -1,0 +1,117 @@
+경기 UI 이미지 적용 및 코드 그리기 점검
+작성일: 2026-10-20
+
+사용자 최종 기준
+- 기존 경기 UI와 어울리는 형태를 사용한다.
+- 장식을 많이 넣지 않고 필요한 포인트만 둔다.
+- UI 외형은 실제 이미지 에셋을 uGUI Image/Sprite에 연결한다.
+- 직접 만든 메시나 픽셀 생성 코드로 UI 테두리·아이콘을 대신 그리지 않는다.
+- 화면 확인은 사용자가 직접 한다.
+
+이번에 적용한 내용
+- 기존 경기 UI의 사선 프레임과 짙은 남색 배경을 참고해 단순한 PNG를 제작했다.
+- 배경과 테두리는 별도 이미지이며, uGUI Image의 Sliced 방식으로 연결했다.
+- 노말은 청록색, 레어는 보라색, 유니크는 금색 테두리 틴트로 구분한다.
+- 스킬 띠 너비는 노말 204, 레어 232, 유니크 260이며 높이는 36이다.
+- 등급 글자는 표시하지 않는다. 유니크에만 작은 점 이미지 하나를 추가한다.
+- 목록 버튼은 PNG 배경·테두리·목록 아이콘으로 구성한다.
+- 플레이어 표식은 기존 경기 UI의 분홍색 역삼각형 PNG를 재사용한다.
+- 이번 경기 UI에 사용하던 UIItem_RaceGlyph 커스텀 그리기 코드와 메타 파일을 제거했다.
+- 로비 버튼 숨김, 위쪽 스킬 알림 배치, 한 줄 진행 번호 배치는 유지했다.
+
+실제 연결한 에셋
+- Assets/ArtBundles/UI/RaceBroadcast/SkillFrame.png
+- Assets/ArtBundles/UI/RaceBroadcast/SkillBackground.png
+- Assets/ArtBundles/UI/RaceBroadcast/StandingsIcon.png
+- 기존 재사용: Assets/ArtBundles/UI/Demo/RaceHUD/race_dot.png
+- 기존 재사용: Assets/ArtBundles/UI/Demo/RaceHUD/race_rank_marker_pink.png
+- 적용 프리팹: Assets/Resources/Prefabs/UI/Panel/UIPanel_DemoRace.prefab
+
+이미지 제작 방식과 원본
+- 내장 image_gen으로 투명 배경 PNG를 제작했다.
+- 기존 race_rankrow_bg_normal.png를 스타일 참고로 사용했다.
+- 코드로 외형을 그리거나 픽셀을 생성하지 않았다.
+- Unity 임포터는 이미 생성된 이미지의 스프라이트 영역·테두리·크기만 설정한다.
+- 최종 원본은 이 폴더의 원본/스킬띠_테두리.png, 스킬띠_배경.png, 목록_아이콘.png이다.
+- 정확한 생성 프롬프트는 이미지생성_프롬프트.json에 기록했다.
+- 과도한 장식으로 거절된 시안은 미채택 폴더에 보존했으며 게임에 연결하지 않았다.
+
+정적 검사 완료 범위
+- 변경 코드 컴파일을 확인했다.
+- 경기 HUD 프리팹의 누락 스크립트 0개, 프로젝트 커스텀 Graphic 0개를 확인했다.
+- 스킬 띠 4개의 이미지 참조와 플레이어 표식 PNG 연결을 확인했다.
+- 로비 버튼 비활성 상태를 확인했다.
+- 검사 시 Scene_OvalToon은 Play 중이 아니며 씬 변경 미저장 상태도 아니었다.
+- 콘솔에 기존 Unity AI NoSubscription 오류가 있었으며 이번 코드 컴파일 오류는 없었다.
+- 사용자 요청에 따라 이번 이미지 교체 후 Play 실행·화면 캡처·외형 검수는 하지 않았다.
+- 화면상의 최종 외형 확인은 사용자 확인 대기 상태이다.
+- 상세 연결 검사: 연결검사.json
+
+전체 코드 그리기 점검 범위
+- 프로젝트 소유 C# 스크립트 195개에서 커스텀 Graphic, OnPopulateMesh,
+  Texture2D 생성, SetPixel/SetPixels, GUI.DrawTexture 등을 검색했다.
+- 씬·UI 프리팹·UI 데이터 에셋 30개에서 관련 참조를 조사했다.
+- Run/Tools의 Python/JavaScript 35개와 프로젝트 셰이더도 관련 패턴을 점검했다.
+- 최신 검색 결과: UI코드그리기_검색결과.json
+- 코드검색_전체목록.txt는 교체 전 최초 검색 결과이며 삭제한 RaceGlyph도 포함한다.
+- 직접 GUID 참조가 발견되지 않은 항목을 곧바로 미사용으로 판단하지 않았다.
+- 연결검사.json의 relatedFolderDependencies는 관련 폴더의 의존성 전체이며,
+  그 목록에 있는 모든 이미지를 코드 생성 이미지로 분류한 것은 아니다.
+
+추가 발견 항목: 이번에는 발견·기록만 했으며 아직 교체하지 않음
+
+1. 경기 속도선·바람선 2종
+   Assets/Scripts/Game/UI/Race/UIItem_SpeedLines.cs
+   Assets/Scripts/Game/UI/Race/UIItem_WindLines.cs
+   - MaskableGraphic.OnPopulateMesh에서 선 메시를 직접 구성한다.
+   - Scene_OvalToon에 연결되어 있고 전용 트리거가 강도를 제어한다.
+   - 상시 표시된다는 뜻은 아니다. 검사 시 직렬화된 강도는 0이었다.
+
+2. 목장 UI 부품 22종
+   Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs
+   - Shape/ShadowSprite에서 Texture2D와 SetPixels로 PNG를 생성한다.
+   - 대상: Paper, PaperFrame, PreviewFrame, SelectedFrame, NameStrip,
+     GaugeTrack, Gauge_speed, Gauge_stamina, Gauge_strength,
+     Gauge_intelligence, Gauge_spirit, ScrollRail, ScrollThumb,
+     TitleRed, BlueHeading, RedHeading, BrownHeading, GroundShadow,
+     CornerRing, Rivet, TrainSurface, BackSurface.
+   - 출력 폴더: Assets/ArtBundles/UI/RanchCollection/ReferenceMatch
+   - 목장 몬스터·훈련·경기장 프리팹과 목장 아트 데이터에 연결되어 있다.
+   - 다른 작업에서 수정 중인 코드·프리팹·아트이므로 이번 작업에서는 변경하지 않았다.
+
+3. 구형 2D 경기 UI
+   Assets/Scripts/Editor/Race2D/SpriteRaceSceneBuilder.UI.cs
+   - UIShape에서 12×12 UI_Frame/UI_Fill 이미지를 생성한다.
+   - 출력 폴더: Assets/ArtBundles/Race2D/UI
+   - S_Frame/S_Fill 스프라이트 에셋을 통한 간접 참조도 고려해야 한다.
+   - 정식 흐름에서 제외된 Scene_2D 관련 자료로 보존했다.
+
+4. 기존 경기 전시·결과 UI 일부
+   Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Visuals.cs
+   - MakeTexture에서 SoftDisc, RoundPanel, Dot을 생성한다.
+   - RoundPanel은 기존 게이지 제작에 사용한다.
+   - Dot은 Assets/Resources/Prefabs/UI/Slot/UIItem_RaceResult.prefab에 연결된다.
+   - SoftDisc는 월드의 먼지·그림자 용도도 있어 UI와 구분해야 한다.
+   - 기존 자료와 참조를 보존했으며 이번에는 교체하지 않았다.
+
+별도로 구분한 항목
+- 실제 몬스터 모델의 얼굴 캡처와 이미지 영역 자르기·아틀라스 임포트는
+  임의의 도형으로 UI 외형을 대신 그리는 작업과 다르므로 유지했다.
+- 기본 Image의 딤드, Filled 진행률, 마스크, 틴트와 배치·애니메이션은 유지한다.
+- 도구에서 만드는 연락 시트·미리보기·마스크는 런타임 UI 아트와 구분했다.
+- DemoSkill.shader는 색상을 전달하며 별도 UI 테두리나 도형을 생성하지 않는다.
+- 외부 패키지와 TMP 코드는 일괄 변경하지 않았다.
+
+앞으로의 제작 규칙
+- 개발 규칙 7번과 루트 AGENTS.md에 이미지 기반 UI 제작 원칙을 함께 반영했다.
+- 기존 스타일과 단순한 포인트를 우선한다.
+- 코드로 PNG를 저장하는 것만으로 이미지 제작 원칙을 충족했다고 보지 않는다.
+- 코드의 역할은 배치·크기·데이터·입력·표시 상태·애니메이션·이미지 틴트와
+  기본 UI 컴포넌트의 진행률·마스크 제어로 구분한다.
+
+완료 상태
+- 이번 경기 HUD 이미지 교체 및 정적 참조 검사: 완료.
+- 전체 코드 그리기 검색 및 추가 항목 분류: 완료.
+- 추가 발견 항목의 이미지 교체: 미실시.
+- 실제 경기 화면 외형 확인: 사용자 확인 예정.
+- 빌드·커밋·푸시: 수행하지 않음.

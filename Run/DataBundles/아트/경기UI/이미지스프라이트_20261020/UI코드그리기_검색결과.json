@@ -1,0 +1,477 @@
+{
+  "scanned_project_csharp": 195,
+  "scanned_serialized_ui_and_scenes": 30,
+  "ranch_generated_parts": 22,
+  "matches": [
+    {
+      "path": "Assets/Scripts/Editor/Demo/RaceBroadcastBuilder.cs",
+      "line": 182,
+      "text": "var image=new Texture2D(512,512,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceCapture.cs",
+      "line": 116,
+      "text": "atlas = new Texture2D(Cell * Frames, Cell * Directions, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceCapture.cs",
+      "line": 124,
+      "text": "atlas.SetPixels(f * Cell, (Directions - 1 - d) * Cell, Cell, Cell, image.GetPixels());"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceSceneBuilder.FlatCourse.cs",
+      "line": 267,
+      "text": "var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceSceneBuilder.FlatCourse.cs",
+      "line": 270,
+      "text": "texture.SetPixels32(pixels); texture.Apply(); File.WriteAllBytes(path, texture.EncodeToPNG()); Object.DestroyImmediate(texture);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceSceneBuilder.UI.cs",
+      "line": 83,
+      "text": "var texture=new Texture2D(12,12,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Race2D/SpriteRaceSceneBuilder.UI.cs",
+      "line": 86,
+      "text": "texture.SetPixels(pixels);texture.Apply();System.IO.File.WriteAllBytes(path,texture.EncodeToPNG());Object.DestroyImmediate(texture);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/All3DRacecourseBuilder.cs",
+      "line": 113,
+      "text": "var texture = new Texture2D(size, size, TextureFormat.RGB24, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/All3DRacecourseBuilder.cs",
+      "line": 127,
+      "text": "texture.SetPixels(pixels);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/All3DRacecourseBuilder.Refinement.cs",
+      "line": 493,
+      "text": "var atlas=new Texture2D(source.width,source.height,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/CartoonRaceRosterBuilder.cs",
+      "line": 158,
+      "text": "var image = new Texture2D(size, size, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 300,
+      "text": "colorAtlas=new Texture2D(data.AzimuthCount*data.TileSize,data.ElevationCount*data.TileSize,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 301,
+      "text": "depthAtlas=new Texture2D(colorAtlas.width,colorAtlas.height,TextureFormat.RGBA32,false,true);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 334,
+      "text": "var single=new Texture2D(data.TileSize,data.TileSize,TextureFormat.RGBA32,false);single.SetPixels32(reduced);single.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 336,
+      "text": "colorAtlas.SetPixels32(column*data.TileSize,row*data.TileSize,data.TileSize,data.TileSize,reduced);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 345,
+      "text": "depthAtlas.SetPixels32(column*data.TileSize,row*data.TileSize,data.TileSize,data.TileSize,depth.GetPixels32());Object.DestroyImmediate(depth);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorBuilder.cs",
+      "line": 356,
+      "text": "var texture=new Texture2D(size,size,TextureFormat.RGBA32,false,linear);texture.ReadPixels(new Rect(0,0,size,size),0,0);texture.Apply();return texture;"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorValidation.cs",
+      "line": 45,
+      "text": "pair=new Texture2D(1024,512,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxDirectionalImpostorValidation.cs",
+      "line": 46,
+      "text": "pair.SetPixels32(0,0,512,512,a);pair.SetPixels32(512,0,512,512,b);pair.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxImpostorPresetBuilder.cs",
+      "line": 114,
+      "text": "var image=new Texture2D(2,2,TextureFormat.RGBA32,false,depth);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxImpostorPresetBuilder.cs",
+      "line": 124,
+      "text": "cropped=new Texture2D(width,height,TextureFormat.RGBA32,false,depth);cropped.SetPixels32(pixels);cropped.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxImpostorPresetBuilder.cs",
+      "line": 133,
+      "text": "var texture=new Texture2D(2,2,TextureFormat.RGBA32,false,depth);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxImpostorPresetBuilder.cs",
+      "line": 154,
+      "text": "var atlas=new Texture2D(width,height,TextureFormat.RGBA32,false,depth);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxImpostorPresetBuilder.cs",
+      "line": 157,
+      "text": "atlas.SetPixels32(pixels);atlas.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteCapture.cs",
+      "line": 117,
+      "text": "var sheet = new Texture2D(2048, 1024, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteCapture.cs",
+      "line": 126,
+      "text": "sheet.SetPixels(frame * 1024, 0, 1024, 1024, image.GetPixels());"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteCapture.cs",
+      "line": 148,
+      "text": "var image = new Texture2D(width, height, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteInstaller.cs",
+      "line": 18,
+      "text": "var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteInstaller.cs",
+      "line": 73,
+      "text": "var image = new Texture2D(width, sheet.height, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteInstaller.cs",
+      "line": 74,
+      "text": "image.SetPixels(sheet.GetPixels(frame * width, 0, width, sheet.height)); image.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteValidation.cs",
+      "line": 62,
+      "text": "var pair = new Texture2D(1440, 1280, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/FoxSpriteValidation.cs",
+      "line": 63,
+      "text": "pair.SetPixels(0, 0, 720, 1280, original.GetPixels()); pair.SetPixels(720, 0, 720, 1280, result.GetPixels()); pair.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/MonsterRaceLookDevBuilder.cs",
+      "line": 185,
+      "text": "texture = new Texture2D(256, 256, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceMonsterLookBuilder.cs",
+      "line": 244,
+      "text": "var copy = new Texture2D(size,size,TextureFormat.RGB24,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceMonsterLookBuilder.cs",
+      "line": 254,
+      "text": "copy.SetPixels(pixels); copy.Apply(); File.WriteAllBytes(texturePath,copy.EncodeToPNG()); Object.DestroyImmediate(copy);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceMonsterLookValidation.cs",
+      "line": 126,
+      "text": "RenderTexture.active = rt; image = new Texture2D(720,1280,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Polish.cs",
+      "line": 193,
+      "text": "var pixels = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Polish.cs",
+      "line": 213,
+      "text": "pixels.SetPixels(data); pixels.Apply(); File.WriteAllBytes(path, pixels.EncodeToPNG()); Object.DestroyImmediate(pixels);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Visuals.cs",
+      "line": 30,
+      "text": "var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Visuals.cs",
+      "line": 41,
+      "text": "texture.SetPixel(x, y, new Color(1, 1, 1, alpha));"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Racecourse/RaceShowcaseBuilder.Visuals.cs",
+      "line": 169,
+      "text": "var texture = new Texture2D(256, 256, TextureFormat.RGBA32, false); texture.ReadPixels(new Rect(0, 0, 256, 256), 0, 0); texture.Apply();"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs",
+      "line": 95,
+      "text": "var texture=new Texture2D(2,2,TextureFormat.RGBA32,false);texture.LoadImage(File.ReadAllBytes(path));"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs",
+      "line": 143,
+      "text": "var texture=new Texture2D(width,height,TextureFormat.RGBA32,false);"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs",
+      "line": 154,
+      "text": "texture.SetPixels(pixels);texture.Apply();File.WriteAllBytes(referenceRoot+name+\".png\",texture.EncodeToPNG());"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs",
+      "line": 160,
+      "text": "var texture=new Texture2D(128,64,TextureFormat.RGBA32,false);var pixels=new Color[128*64];"
+    },
+    {
+      "path": "Assets/Scripts/Editor/Ranch/RanchCollectionBuilder.Skin.cs",
+      "line": 163,
+      "text": "texture.SetPixels(pixels);texture.Apply();File.WriteAllBytes(referenceRoot+\"GroundShadow.png\",texture.EncodeToPNG());UnityEngine.Object.DestroyImmediate(texture);"
+    },
+    {
+      "path": "Assets/Scripts/Game/Ranch/Sys_RanchRoads.cs",
+      "line": 50,
+      "text": "mask=new Texture2D(width,height,TextureFormat.RGBA32,false,true)"
+    },
+    {
+      "path": "Assets/Scripts/Game/Ranch/Sys_RanchRoads.cs",
+      "line": 62,
+      "text": "mask.SetPixels32(pixels);mask.Apply(false,false);"
+    },
+    {
+      "path": "Assets/Scripts/Game/UI/Race/UIItem_SpeedLines.cs",
+      "line": 14,
+      "text": "public sealed class UIItem_SpeedLines : MaskableGraphic"
+    },
+    {
+      "path": "Assets/Scripts/Game/UI/Race/UIItem_SpeedLines.cs",
+      "line": 105,
+      "text": "protected override void OnPopulateMesh(VertexHelper vh)"
+    },
+    {
+      "path": "Assets/Scripts/Game/UI/Race/UIItem_WindLines.cs",
+      "line": 12,
+      "text": "public sealed class UIItem_WindLines : MaskableGraphic"
+    },
+    {
+      "path": "Assets/Scripts/Game/UI/Race/UIItem_WindLines.cs",
+      "line": 90,
+      "text": "protected override void OnPopulateMesh(VertexHelper vh)"
+    }
+  ],
+  "references": [
+    {
+      "target": "Assets/Scripts/Game/UI/Race/UIItem_SpeedLines.cs",
+      "references": [
+        "Assets/Scenes/Scene_OvalToon.unity"
+      ]
+    },
+    {
+      "target": "Assets/Scripts/Game/UI/Race/UIItem_WindLines.cs",
+      "references": [
+        "Assets/Scenes/Scene_OvalToon.unity"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/RaceShowcase/UI/RoundPanel.png",
+      "references": []
+    },
+    {
+      "target": "Assets/ArtBundles/RaceShowcase/UI/Dot.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Slot/UIItem_RaceResult.prefab"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/RaceShowcase/UI/SoftDisc.png",
+      "references": []
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Paper.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PaperFrame.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/PreviewFrame.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/SelectedFrame.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/NameStrip.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/GaugeTrack.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/ScrollRail.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/ScrollThumb.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/TitleRed.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/BlueHeading.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/RedHeading.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/BrownHeading.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/CornerRing.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Rivet.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/TrainSurface.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/BackSurface.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchArena.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Gauge_speed.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Gauge_stamina.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Gauge_strength.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Gauge_intelligence.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/Gauge_spirit.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/UI/RanchCollection/ReferenceMatch/GroundShadow.png",
+      "references": [
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchMonsters.prefab",
+        "Assets/Resources/Prefabs/UI/Panel/UIPanel_RanchTraining.prefab",
+        "Assets/Resources/UI/RanchCollection/Data_RanchCollectionArt.asset"
+      ]
+    },
+    {
+      "target": "Assets/ArtBundles/Race2D/UI/UI_Frame.png",
+      "references": []
+    },
+    {
+      "target": "Assets/ArtBundles/Race2D/UI/UI_Fill.png",
+      "references": []
+    }
+  ],
+  "excluded": "External packages and preserved OldAsset sources; model/animation art and preview captures are classified separately."
+}

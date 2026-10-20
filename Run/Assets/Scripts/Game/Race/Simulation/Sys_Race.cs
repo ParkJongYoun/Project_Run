@@ -26,6 +26,7 @@ namespace ProjectRun.Race
         public Data_RaceSimulation Simulation { get; private set; }
         public float Countdown { get; private set; }
         public int Generation { get; private set; }
+        public int RaceSeed { get; private set; }
         public bool IsSkipping { get; private set; }
         public bool PresentationHeld => presentationOwner != null;
         public float Interpolation => (float)(accumulator / Data_RaceSimulation.StepSeconds);
@@ -53,6 +54,8 @@ namespace ProjectRun.Race
                     Entrants[pick].Lane = lane;
                 }
             }
+            RaceSeed = Random.Range(1, int.MaxValue);
+            Sys_DemoRace.ConfigureRaceVariation(this, RaceSeed);
             Simulation = new Data_RaceSimulation(Entrants, Course, EnableLaneContests, LapCount);
             Simulation.Changed += Publish;
             Countdown = CountdownSeconds;

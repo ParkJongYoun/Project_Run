@@ -33,6 +33,7 @@ namespace ProjectRun.Race
             var entries=new Data_RunnerSetup[target.Entrants.Length];
             float courseLength=target.Course!=null?target.Course.Length:Data_RaceSimulation.Length;
             float speed=courseLength/RaceSeconds;
+            var skillTable=Table_RaceSkills.Load();
             float[] early={.7f,.2f,1.4f,1.7f,-.2f,-.7f};
             for(int i=0;i<entries.Length;i++)
             {
@@ -40,22 +41,42 @@ namespace ProjectRun.Race
                 entry.BaseSpeed=speed*(.965f+(i%3)*.009f);
                 entry.EarlyPower=early[i%early.Length]*speed/20;
                 entry.LatePower=speed*.045f;
-                entry.SurgeTime=999;entry.ConditionalSkill=false;entry.UseStamina=true;
+                var skills=skillTable.Runners[i];
+                entry.RaceSkills=skills;
+                entry.SurgeTime=999;entry.ConditionalSkill=true;entry.UseStamina=true;
+                entry.SkillProgress=skills.UniqueProgress;
+                entry.SurgePower=speed*skills.UniquePower;
+                entry.SurgeDuration=skills.UniqueDuration;
+                entry.DemoSkillType=i<3?i+1:4;
                 entry.SkillActivationLimit=1;
                 entry.StaminaDrainMultiplier=1;entry.Lane=(i-2.5f)*2.8f;
-                entry.SkillName="스퍼트";
+                entry.SkillName=skills.Unique;
             }
             foreach(var entry in Mgr_Table.Demo.Monsters)
                 if(entry.RunnerIndex<entries.Length){entries[entry.RunnerIndex].Name=entry.Name;entries[entry.RunnerIndex].SkillName=entry.Skill;}
             var hero=entries[monster.RunnerIndex];
             float trainedSpeed=monster.Stats[0]+Mgr_User.Data.Monsters[selected].SpeedBonus;
-            hero.BaseSpeed=speed*(.91f+(trainedSpeed-240)*.0018f);
+            hero.BaseSpeed=speed*(.949f+Mathf.Clamp(trainedSpeed-240,0,80)*.0002f);
             hero.EarlyPower=speed*(monster.TacticIndex==1?.035f:monster.TacticIndex==2?-.01f:-.035f);
-            hero.LatePower=speed*.08f;hero.SurgePower=speed*(selected==2?.64f:.49f);hero.SurgeDuration=11;
+            hero.LatePower=speed*.055f;hero.SurgePower=speed*.11f;hero.SurgeDuration=9;
             hero.ConditionalSkill=true;hero.SkillProgress=.60f;hero.DemoSkillType=selected+1;
             hero.SkillActivationLimit=1;
             hero.StaminaDrainMultiplier=Mgr_User.Data.Monsters[selected].EndurancePassive?.8f:1;
             target.Entrants=entries;target.LapCount=1;target.CountdownSeconds=3;target.EnableLaneContests=true;
+        }
+        public static void ConfigureRaceVariation(Sys_Race target, int seed)
+        {
+            if (target.gameObject.scene.name != Define_Scene.OvalToon || Mgr_Game.Instance == null ||
+                !Mgr_Game.Instance.IsDemoRace) return;
+            var random = new System.Random(seed);
+            bool comeback = random.NextDouble() < Table_RaceSkills.Load().ComebackChance;
+            int hero = Mgr_Game.Instance.HeroRunner;
+            for (int i=0;i<target.Entrants.Length;i++)
+            {
+                var entry=target.Entrants[i];
+                entry.DemoComeback=i==hero&&comeback;
+                entry.SkillProgress=i==hero?.60f:entry.RaceSkills.UniqueProgress+(float)random.NextDouble()*.025f;
+            }
         }
         private void Start()
         {
@@ -78,6 +99,8 @@ namespace ProjectRun.Race
                 if(renderer!=null){spriteBounds=renderer.bounds;hasSpriteBounds=true;}
             }
             camera3D=FindFirstObjectByType<Sys_RaceCamera>();if(camera3D!=null){camera3D.LandscapeComposition=true;camera3D.CameraDistanceScale=.95f;}
+            var presentation=FindFirstObjectByType<Sys_RacePresentation>();
+            if(presentation!=null)presentation.Cutscenes=false;
             var skillVideo=FindFirstObjectByType<Sys_RaceSkillVideo>();if(skillVideo!=null)skillVideo.enabled=false;
             var demoVideo=gameObject.AddComponent<Sys_DemoSkillVideo>();
             demoVideo.Configure(race,panel,Mgr_Table.Demo.Monsters[Mgr_User.Data.SelectedMonster].Id);

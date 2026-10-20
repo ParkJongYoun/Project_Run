@@ -24,8 +24,6 @@ namespace ProjectRun.Race
         [SerializeField] private Text PauseLabel;
         [SerializeField] private Button ResultButton;
         [SerializeField] private Button LobbyButton;
-        [SerializeField] private Button CutsceneButton;
-        [SerializeField] private Text CutsceneLabel;
 
         [Header("결과 화면")]
         [SerializeField] private RectTransform ResultRoot;
@@ -48,7 +46,6 @@ namespace ProjectRun.Race
             set
             {
                 cutscenes = value;
-                if (CutsceneLabel != null) CutsceneLabel.text = value ? "연출 ON" : "연출 OFF";
                 if (!value) CancelSkillPresentation();
             }
         }
@@ -72,7 +69,8 @@ namespace ProjectRun.Race
             }
             opened = true;
             generation = -1;
-            HeroImage.sprite = DemoUI.Art.Get(Monster.Id + "_face");
+            HeroImage.sprite = race.Entrants[Hero].FacePortrait;
+            HeroImage.preserveAspect = true;
             HeroNameLabel.text = Monster.Name;
             VideoTitle.text = Monster.Skill;
             CommentaryFeed.Race = race;
@@ -85,6 +83,7 @@ namespace ProjectRun.Race
             CutscenesEnabled = cutscenes;
             InitStandings(); // 왼쪽 순위 리스트(row_1~6) 연결
             InitProgress(); // 상단 START-GOAL 진행바 연결
+            InitBroadcast();
             InitResultSkin(); // 결과창을 네온 스타일 프리팹으로 교체 (버튼 연결 전에!)
             BindButtons();
             Mgr_Event.RaceChanged += Handle;
@@ -98,6 +97,7 @@ namespace ProjectRun.Race
             Mgr_Event.RaceChanged -= Handle;
             Mgr_Event.Reset -= CancelSkillPresentation;
             UnbindButtons();
+            CloseBroadcast();
             CancelSkillPresentation();
         }
 
@@ -107,7 +107,6 @@ namespace ProjectRun.Race
             PauseButton.onClick.AddListener(TogglePause);
             ResultButton.onClick.AddListener(SkipToResult);
             LobbyButton.onClick.AddListener(ReturnToLobby);
-            CutsceneButton.onClick.AddListener(ToggleCutscenes);
             ReplayButton.onClick.AddListener(Replay);
             EndDemoButton.onClick.AddListener(EndDemo);
             VideoSkipButton.onClick.AddListener(SkipVideo);
@@ -120,7 +119,6 @@ namespace ProjectRun.Race
             PauseButton.onClick.RemoveListener(TogglePause);
             ResultButton.onClick.RemoveListener(SkipToResult);
             LobbyButton.onClick.RemoveListener(ReturnToLobby);
-            CutsceneButton.onClick.RemoveListener(ToggleCutscenes);
             ReplayButton.onClick.RemoveListener(Replay);
             EndDemoButton.onClick.RemoveListener(EndDemo);
             VideoSkipButton.onClick.RemoveListener(SkipVideo);
@@ -129,7 +127,6 @@ namespace ProjectRun.Race
 
         private void ToggleSpeed() => race.PlaybackSpeed = race.PlaybackSpeed > 1 ? 1 : 2;
         private void TogglePause() => race.Paused = !race.Paused;
-        private void ToggleCutscenes() => CutscenesEnabled = !CutscenesEnabled;
         private void SkipToResult() { CancelSkillPresentation(); race.SkipToResult(); }
         private void ReturnToLobby()
         {
@@ -144,6 +141,7 @@ namespace ProjectRun.Race
         private void Handle(Data_RaceEvent value)
         {
             if (race == null || race.IsSkipping) return;
+            HandleBroadcast(value);
             if (value.Kind == E_RaceEvent.Skill && value.RunnerId == Hero)
             {
                 latest = Monster.Skill + "! 고유 능력 자동 발동";
@@ -177,6 +175,7 @@ namespace ProjectRun.Race
             StaminaImage.fillAmount = hero.Stamina;
             CountdownLabel.text = CameraRig.RaceStartIntro.Playing ? "" : race.Countdown > 0 ? Mathf.CeilToInt(race.Countdown).ToString() : sim.Time < 1 ? "START!" : "";
             UpdateProgress(sim); // 진행바 마커 이동
+            UpdateBroadcast();
             if (standingsReady) UpdateStandings(sim); // 새 순위 리스트(줄 6개) 갱신
             else
             {

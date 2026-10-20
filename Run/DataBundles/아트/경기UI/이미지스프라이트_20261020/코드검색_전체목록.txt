@@ -1,0 +1,54 @@
+Run/Assets/Scripts\Editor\Demo\RaceBroadcastBuilder.cs:182:                var image=new Texture2D(512,512,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceCapture.cs:116:                atlas = new Texture2D(Cell * Frames, Cell * Directions, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceCapture.cs:124:                        atlas.SetPixels(f * Cell, (Directions - 1 - d) * Cell, Cell, Cell, image.GetPixels());
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceSceneBuilder.FlatCourse.cs:267:            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceSceneBuilder.FlatCourse.cs:270:            texture.SetPixels32(pixels); texture.Apply(); File.WriteAllBytes(path, texture.EncodeToPNG()); Object.DestroyImmediate(texture);
+Run/Assets/Scripts\Editor\Racecourse\CartoonRaceRosterBuilder.cs:158:            var image = new Texture2D(size, size, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceSceneBuilder.UI.cs:83:            var texture=new Texture2D(12,12,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Race2D\SpriteRaceSceneBuilder.UI.cs:86:            texture.SetPixels(pixels);texture.Apply();System.IO.File.WriteAllBytes(path,texture.EncodeToPNG());Object.DestroyImmediate(texture);
+Run/Assets/Scripts\Game\Ranch\Sys_RanchRoads.cs:50:                mask=new Texture2D(width,height,TextureFormat.RGBA32,false,true)
+Run/Assets/Scripts\Game\Ranch\Sys_RanchRoads.cs:62:            mask.SetPixels32(pixels);mask.Apply(false,false);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:300:            colorAtlas=new Texture2D(data.AzimuthCount*data.TileSize,data.ElevationCount*data.TileSize,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:301:            depthAtlas=new Texture2D(colorAtlas.width,colorAtlas.height,TextureFormat.RGBA32,false,true);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:334:            var single=new Texture2D(data.TileSize,data.TileSize,TextureFormat.RGBA32,false);single.SetPixels32(reduced);single.Apply();
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:336:            colorAtlas.SetPixels32(column*data.TileSize,row*data.TileSize,data.TileSize,data.TileSize,reduced);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:345:            depthAtlas.SetPixels32(column*data.TileSize,row*data.TileSize,data.TileSize,data.TileSize,depth.GetPixels32());Object.DestroyImmediate(depth);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorBuilder.cs:356:                var texture=new Texture2D(size,size,TextureFormat.RGBA32,false,linear);texture.ReadPixels(new Rect(0,0,size,size),0,0);texture.Apply();return texture;
+Run/Assets/Scripts\Editor\Racecourse\All3DRacecourseBuilder.Refinement.cs:493:            var atlas=new Texture2D(source.width,source.height,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorValidation.cs:45:                pair=new Texture2D(1024,512,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Racecourse\FoxDirectionalImpostorValidation.cs:46:                pair.SetPixels32(0,0,512,512,a);pair.SetPixels32(512,0,512,512,b);pair.Apply();
+Run/Assets/Scripts\Editor\Racecourse\All3DRacecourseBuilder.cs:113:            var texture = new Texture2D(size, size, TextureFormat.RGB24, false);
+Run/Assets/Scripts\Editor\Racecourse\All3DRacecourseBuilder.cs:127:            texture.SetPixels(pixels);
+Run/Assets/Scripts\Editor\Ranch\RanchCollectionBuilder.Skin.cs:95:            var texture=new Texture2D(2,2,TextureFormat.RGBA32,false);texture.LoadImage(File.ReadAllBytes(path));
+Run/Assets/Scripts\Editor\Ranch\RanchCollectionBuilder.Skin.cs:143:            var texture=new Texture2D(width,height,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Ranch\RanchCollectionBuilder.Skin.cs:154:            texture.SetPixels(pixels);texture.Apply();File.WriteAllBytes(referenceRoot+name+".png",texture.EncodeToPNG());
+Run/Assets/Scripts\Editor\Ranch\RanchCollectionBuilder.Skin.cs:160:            var texture=new Texture2D(128,64,TextureFormat.RGBA32,false);var pixels=new Color[128*64];
+Run/Assets/Scripts\Editor\Ranch\RanchCollectionBuilder.Skin.cs:163:            texture.SetPixels(pixels);texture.Apply();File.WriteAllBytes(referenceRoot+"GroundShadow.png",texture.EncodeToPNG());UnityEngine.Object.DestroyImmediate(texture);
+Run/Assets/Scripts\Editor\Racecourse\FoxImpostorPresetBuilder.cs:114:            var image=new Texture2D(2,2,TextureFormat.RGBA32,false,depth);
+Run/Assets/Scripts\Editor\Racecourse\FoxImpostorPresetBuilder.cs:124:                cropped=new Texture2D(width,height,TextureFormat.RGBA32,false,depth);cropped.SetPixels32(pixels);cropped.Apply();
+Run/Assets/Scripts\Editor\Racecourse\FoxImpostorPresetBuilder.cs:133:            var texture=new Texture2D(2,2,TextureFormat.RGBA32,false,depth);
+Run/Assets/Scripts\Editor\Racecourse\FoxImpostorPresetBuilder.cs:154:                var atlas=new Texture2D(width,height,TextureFormat.RGBA32,false,depth);
+Run/Assets/Scripts\Editor\Racecourse\FoxImpostorPresetBuilder.cs:157:                    atlas.SetPixels32(pixels);atlas.Apply();
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteCapture.cs:117:            var sheet = new Texture2D(2048, 1024, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteCapture.cs:126:                    sheet.SetPixels(frame * 1024, 0, 1024, 1024, image.GetPixels());
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteCapture.cs:148:                var image = new Texture2D(width, height, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteInstaller.cs:18:            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteInstaller.cs:73:                    var image = new Texture2D(width, sheet.height, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteInstaller.cs:74:                    image.SetPixels(sheet.GetPixels(frame * width, 0, width, sheet.height)); image.Apply();
+Run/Assets/Scripts\Game\UI\Race\UIItem_SpeedLines.cs:14:    public sealed class UIItem_SpeedLines : MaskableGraphic
+Run/Assets/Scripts\Game\UI\Race\UIItem_SpeedLines.cs:105:        protected override void OnPopulateMesh(VertexHelper vh)
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteValidation.cs:62:                        var pair = new Texture2D(1440, 1280, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\FoxSpriteValidation.cs:63:                        pair.SetPixels(0, 0, 720, 1280, original.GetPixels()); pair.SetPixels(720, 0, 720, 1280, result.GetPixels()); pair.Apply();
+Run/Assets/Scripts\Game\UI\Race\UIItem_WindLines.cs:12:    public sealed class UIItem_WindLines : MaskableGraphic
+Run/Assets/Scripts\Game\UI\Race\UIItem_WindLines.cs:90:        protected override void OnPopulateMesh(VertexHelper vh)
+Run/Assets/Scripts\Editor\Racecourse\MonsterRaceLookDevBuilder.cs:185:                texture = new Texture2D(256, 256, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Game\UI\Race\UIItem_RaceGlyph.cs:8:    public sealed class UIItem_RaceGlyph : MaskableGraphic
+Run/Assets/Scripts\Game\UI\Race\UIItem_RaceGlyph.cs:14:        protected override void OnPopulateMesh(VertexHelper mesh)
+Run/Assets/Scripts\Editor\Racecourse\RaceMonsterLookBuilder.cs:244:                var copy = new Texture2D(size,size,TextureFormat.RGB24,false);
+Run/Assets/Scripts\Editor\Racecourse\RaceMonsterLookBuilder.cs:254:                copy.SetPixels(pixels); copy.Apply(); File.WriteAllBytes(texturePath,copy.EncodeToPNG()); Object.DestroyImmediate(copy);
+Run/Assets/Scripts\Editor\Racecourse\RaceMonsterLookValidation.cs:126:                RenderTexture.active = rt; image = new Texture2D(720,1280,TextureFormat.RGBA32,false);
+Run/Assets/Scripts\Editor\Racecourse\RaceShowcaseBuilder.Polish.cs:193:                var pixels = new Texture2D(2, 2, TextureFormat.RGBA32, false, true);
+Run/Assets/Scripts\Editor\Racecourse\RaceShowcaseBuilder.Polish.cs:213:                pixels.SetPixels(data); pixels.Apply(); File.WriteAllBytes(path, pixels.EncodeToPNG()); Object.DestroyImmediate(pixels);
+Run/Assets/Scripts\Editor\Racecourse\RaceShowcaseBuilder.Visuals.cs:30:            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+Run/Assets/Scripts\Editor\Racecourse\RaceShowcaseBuilder.Visuals.cs:41:                texture.SetPixel(x, y, new Color(1, 1, 1, alpha));
+Run/Assets/Scripts\Editor\Racecourse\RaceShowcaseBuilder.Visuals.cs:169:            var texture = new Texture2D(256, 256, TextureFormat.RGBA32, false); texture.ReadPixels(new Rect(0, 0, 256, 256), 0, 0); texture.Apply();
