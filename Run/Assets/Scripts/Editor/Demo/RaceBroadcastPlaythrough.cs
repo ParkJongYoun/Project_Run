@@ -109,7 +109,7 @@ namespace ProjectRun.Race.Editor
                 Capture(label+"_후반스킬띠");
                 while(race.Simulation.Phase!=E_RacePhase.Result)yield return .1f;
                 Check(Equal(race.Simulation,expected),label+" actual playback/skip gives identical result");
-                Check(race.Simulation.Runners.All(x=>x.SkillActivationCount==1&&x.NormalSkillCount==3&&x.RareSkillCount==2),label+" every runner uses normal 3 rare 2 unique 1");
+                Check(race.Simulation.Runners.All(x=>x.SkillActivationCount==1&&x.NormalSkillCount==2&&x.RareSkillCount>=1&&x.RareSkillCount<=2),label+" every runner uses normal 2 rare 1-2 unique 1");
                 Check(panel.GetComponentsInChildren<UIItem_RaceSkillRibbon>(true).All(x=>!x.Active),label+" finish clears ribbons");
                 race.RestartRace();yield return .1f;
                 Check(standings.activeSelf,label+" replay restores expanded list");

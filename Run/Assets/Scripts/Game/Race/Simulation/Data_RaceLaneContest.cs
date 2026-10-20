@@ -9,13 +9,14 @@ namespace ProjectRun.Race
         public const float FollowingGap = 3.65f;
         private readonly float[] lanes, speeds, targets, decisions, reservations;
         private readonly double[] distances;
-        private readonly float limit;
+        private readonly float minimumLane, maximumLane;
 
-        public Data_RaceLaneContest(int count, float roadWidth)
+        public Data_RaceLaneContest(int count, float roadWidth, float innerPadding = 0)
         {
             lanes = new float[count]; speeds = new float[count]; targets = new float[count];
             decisions = new float[count]; reservations = new float[count]; distances = new double[count];
-            limit = Mathf.Max(1, roadWidth * .5f - 2.25f);
+            maximumLane = Mathf.Max(1, roadWidth * .5f - 2.25f);
+            minimumLane = Mathf.Min(0, -maximumLane + Mathf.Max(0,innerPadding));
         }
 
         public void Plan(Data_RaceSimulation simulation, Data_RunnerSetup[] setups)
@@ -39,14 +40,14 @@ namespace ProjectRun.Race
                     float choice = lanes[id];
                     for (int slot = 0; slot <= 8; slot++)
                     {
-                        float candidate = slot<=6 ? Mathf.Lerp(-limit, limit, slot / 6f)
-                            : Mathf.Clamp(lanes[id] + (slot==7 ? -1 : 1)*(Clearance+.5f),-limit,limit);
+                        float candidate = slot<=6 ? Mathf.Lerp(minimumLane, maximumLane, slot / 6f)
+                            : Mathf.Clamp(lanes[id] + (slot==7 ? -1 : 1)*(Clearance+.5f),minimumLane,maximumLane);
                         if (Mathf.Abs(candidate - lanes[id]) > (simulation.IsBursting(id)?6.8f:4.4f) || !CanSweep(id, lanes[id], candidate, simulation)) continue;
                         float score = Score(id, candidate, simulation, setups);
                         if (score < best - .08f) { best = score; choice = candidate; }
                     }
                     targets[id] = choice;
-                    decisions[id] = time + (simulation.IsBursting(id)?.16f:.45f) + id * .027f;
+                    decisions[id] = time + (simulation.IsBursting(id)||simulation.IsOuterSprinting(id)?.16f:.45f) + id * .027f;
                 }
                 reservations[id] = targets[id];
                 runner.TargetLane = targets[id];
@@ -58,8 +59,14 @@ namespace ProjectRun.Race
             float desired = simulation.DesiredSpeed(id);
             float metric = simulation.Metric((float)distances[id] + desired, lane);
             // Pay for the actual longer path around a bend, not a permanent preference for the rail.
-            float score = (metric-1) * desired * 2.2f + (lane + limit) * .018f
+            float score = (metric-1) * desired * 2.2f + (lane - minimumLane) * .018f
                 + Mathf.Abs(lane - lanes[id]) * .18f;
+            bool outerSprint=simulation.IsOuterSprinting(id);
+            var intent=simulation.LaneIntent(id);
+            // Prepare the outside route before Peco's late burst and hold it through the pass.
+            if(outerSprint)score+=Mathf.Abs(lane-(maximumLane-1))*.95f;
+            else if(intent!=E_RaceLaneIntent.None)
+                score+=Mathf.Abs(lane-(intent==E_RaceLaneIntent.Outside?maximumLane-2:.75f))*.55f;
             for (int other = 0; other < lanes.Length; other++)
             {
                 if (other == id || simulation.IsAirborne(other)) continue;
@@ -67,12 +74,20 @@ namespace ProjectRun.Race
                 float lateral = Mathf.Abs(lane - lanes[other]);
                 float closing = Mathf.Max(0,desired-speeds[other]);
                 float lookAhead = FollowingGap + desired * .45f + closing * .8f;
-                if(setups[id].DemoComeback&&simulation.IsBursting(id))lookAhead+=desired*.75f;
+                if(outerSprint || setups[id].DemoComeback&&simulation.IsBursting(id))lookAhead+=desired*.75f;
                 if (gap > 0 && gap < lookAhead && lateral < Clearance + .6f)
                     score += (lookAhead - gap) * (.05f + closing * .65f)
                         * (1 - Mathf.Clamp01((lateral - Clearance) / .6f));
                 if (Mathf.Abs(gap) < 5 && Mathf.Abs(lane - reservations[other]) < Clearance)
                     score += 18;
+                // A nearby rare-skill runner asks for room. Neighbours yield only into a safe lane.
+                var otherIntent=simulation.LaneIntent(other);
+                if(otherIntent!=E_RaceLaneIntent.None && gap<0 && gap>-14 && !outerSprint)
+                {
+                    float corridor=otherIntent==E_RaceLaneIntent.Outside?maximumLane-2:.75f;
+                    float overlap=1-Mathf.Clamp01(Mathf.Abs(lane-corridor)/(Clearance+.4f));
+                    score+=overlap*7;
+                }
             }
             return score;
         }
@@ -101,10 +116,10 @@ namespace ProjectRun.Race
         {
             var runner = simulation.Runners[id];
             float dt = (float)Data_RaceSimulation.StepSeconds;
-            float lateralSpeed=simulation.IsBursting(id)?3.4f:1.65f;
+            float lateralSpeed=simulation.IsOuterSprinting(id)?3.8f:simulation.IsBursting(id)?3.4f:1.65f;
             float velocity = Mathf.Clamp((targets[id] - runner.Lane) * 1.8f,-lateralSpeed,lateralSpeed);
             runner.LaneVelocity = Mathf.MoveTowards(runner.LaneVelocity,velocity,(simulation.IsBursting(id)?7.6f:3.8f) * dt);
-            float next = Mathf.Clamp(runner.Lane + runner.LaneVelocity * dt,-limit,limit);
+            float next = Mathf.Clamp(runner.Lane + runner.LaneVelocity * dt,minimumLane,maximumLane);
             if (!CanSweep(id,runner.Lane,next,simulation)) { next = runner.Lane; runner.LaneVelocity = 0; }
             runner.Lane = next;
             if(simulation.IsAirborne(id))return desiredSpeed;

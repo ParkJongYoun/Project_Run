@@ -57,7 +57,7 @@ namespace ProjectRun.Race
         {
             if(value.Kind==E_RaceEvent.Start)SetStandings(false);
             if(value.Kind==E_RaceEvent.Result){ResetBroadcast();return;}
-            if(value.Kind!=E_RaceEvent.Skill&&value.Kind!=E_RaceEvent.CosmeticSkill)return;
+            if(value.Kind!=E_RaceEvent.Skill&&value.Kind!=E_RaceEvent.MinorSkill)return;
             if(race.Entrants[value.RunnerId].RaceSkills==null)return;
             pendingRibbons.Enqueue(value);
         }

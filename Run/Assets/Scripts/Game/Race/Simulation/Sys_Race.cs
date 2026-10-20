@@ -45,7 +45,7 @@ namespace ProjectRun.Race
             {
                 // Shuffle only starting rails on every race, including retries; runner IDs stay stable.
                 for (int i = 0; i < Entrants.Length; i++)
-                    Entrants[i].Lane = (i - (Entrants.Length - 1) * .5f) * 2.8f;
+                    Entrants[i].Lane = (i - (Entrants.Length - 1) * .5f) * 2.7f + .75f;
                 for (int i = Entrants.Length - 1; i > 0; i--)
                 {
                     int pick = Random.Range(0, i + 1);

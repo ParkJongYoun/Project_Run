@@ -4,6 +4,7 @@ using UnityEngine;
 namespace ProjectRun.Race
 {
     public enum E_RaceSkillRarity { Normal, Rare, Unique }
+    public enum E_RaceLaneIntent { None, Middle, Outside }
 
     [Serializable]
     public sealed class Data_RaceSkillSet
@@ -14,8 +15,14 @@ namespace ProjectRun.Race
         public string Normal;
         public string Rare;
         public string Unique;
-        public float NormalProgress;
-        public float RareProgress;
+        public int NormalCount = 2;
+        public int RareCountMin = 1;
+        public int RareCountMax = 2;
+        public float NormalPower = .012f;
+        public float NormalDuration = 2;
+        public float RarePower = .025f;
+        public float RareDuration = 3.2f;
+        public E_RaceLaneIntent RareLaneIntent;
         public float UniqueProgress;
         public float UniquePower;
         public float UniqueDuration;

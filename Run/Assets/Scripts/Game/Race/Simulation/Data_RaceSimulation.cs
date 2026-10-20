@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ProjectRun.Race
 {
     public enum E_RacePhase { Preparing, Running, Finishing, Result }
-    public enum E_RaceEvent { Start, Skill, Overtake, Finish, Result, CosmeticSkill }
+    public enum E_RaceEvent { Start, Skill, Overtake, Finish, Result, MinorSkill }
 
     public readonly struct Data_RaceEvent
     {
@@ -42,6 +42,13 @@ namespace ProjectRun.Race
         public bool UseStamina;
         [NonSerialized] public Data_RaceSkillSet RaceSkills;
         [NonSerialized] public bool DemoComeback;
+        [NonSerialized] public int SkillScheduleSeed;
+        [NonSerialized] public float SkillProgressGrace;
+        [NonSerialized] public float SkillEventSpacing;
+        [NonSerialized] public float UniqueEventSpacing;
+        [NonSerialized] public float InnerRailPadding;
+        [NonSerialized] public bool OuterSprint;
+        [NonSerialized] public float SkillAcceleration = 2.4f;
         public Data_RunnerSetup Copy() => (Data_RunnerSetup)MemberwiseClone();
     }
 
@@ -65,6 +72,8 @@ namespace ProjectRun.Race
         public float SkillStarted = -1;
         public int NormalSkillCount;
         public int RareSkillCount;
+        public float NormalSkillStarted = -1;
+        public float RareSkillStarted = -1;
         public bool Finished;
         public double FinishTime;
     }
@@ -105,12 +114,24 @@ namespace ProjectRun.Race
         private readonly Data_RunnerSetup[] setups;
         private readonly int[] previousRanks;
         private readonly Data_RaceLaneContest laneContest;
+        private readonly Data_RaceSkillSchedule skillSchedule;
         public bool UsesLaneContests => laneContest != null;
         public bool IsAirborne(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType==1 && Runners[id].SkillAge>=.7f && Runners[id].SkillAge<2.2f;
         public bool IsBursting(int id) => setups[id].ConditionalSkill && setups[id].DemoSkillType>0 && Runners[id].SkillAge>=0 &&
             (Runners[id].SkillAge<setups[id].SurgeDuration || setups[id].DemoComeback&&Runners[id].Distance/CourseLength>.70f);
+        public bool IsOuterSprinting(int id) => setups[id].OuterSprint && !Runners[id].Finished &&
+            Runners[id].Distance/CourseLength >= setups[id].SkillProgress-.045f &&
+            (Runners[id].SkillAge<0 || Runners[id].SkillAge<setups[id].SurgeDuration);
+        public E_RaceLaneIntent LaneIntent(int id)
+        {
+            var skills=setups[id].RaceSkills;
+            return skills!=null && Runners[id].RareSkillStarted>=0 && Time-Runners[id].RareSkillStarted<skills.RareDuration
+                ? skills.RareLaneIntent : E_RaceLaneIntent.None;
+        }
         private double firstFinish = -1;
         private double lastOvertakeNotice = -10;
+        private double lastSkillEvent = -100;
+        private double lastUniqueEvent = -100;
 
         public Data_RaceSimulation(Data_RunnerSetup[] setups, Data_RaceCourse course = null, bool enableLaneContests = false, int lapCount = 1)
         {
@@ -121,7 +142,10 @@ namespace ProjectRun.Race
             Runners = new Data_RunnerState[setups.Length];
             Order = new int[setups.Length];
             previousRanks = new int[setups.Length];
-            if (enableLaneContests) laneContest = new Data_RaceLaneContest(setups.Length, course != null ? course.RoadWidth : 20);
+            float innerPadding=0;
+            foreach(var setup in setups)innerPadding=Mathf.Max(innerPadding,setup.InnerRailPadding);
+            if (enableLaneContests) laneContest = new Data_RaceLaneContest(setups.Length, course != null ? course.RoadWidth : 20, innerPadding);
+            skillSchedule = new Data_RaceSkillSchedule(setups, CourseLength);
             for (int i = 0; i < setups.Length; i++)
             {
                 Runners[i] = new Data_RunnerState { Id = i, Rank = i + 1, Lane = setups[i].Lane,
@@ -179,20 +203,21 @@ namespace ProjectRun.Race
                 var setup = setups[i];
                 runner.PreviousDistance = runner.Distance;
                 runner.PreviousLane = runner.Lane;
-                if (!runner.Finished) PublishCosmeticSkills(i);
                 if (!runner.Finished && ShouldActivate(i))
                 {
                     runner.SkillUsed = true;
                     runner.SkillActivationCount++;
                     runner.SkillStarted = t;
                     runner.SkillAge = 0;
+                    lastSkillEvent=lastUniqueEvent=Time;
                     Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Skill, i, t));
                 }
                 runner.SkillAge = runner.SkillUsed ? t - runner.SkillStarted : -1;
                 float target = DesiredSpeed(i);
                 if (runner.Finished) target = Mathf.Max(1.8f, runner.Speed - 4.5f * (float)StepSeconds);
                 if (laneContest != null) target = laneContest.AdvanceLaneAndLimitSpeed(i,this,target);
-                runner.Speed = Mathf.MoveTowards(runner.Speed, target, (float)StepSeconds * (t < StartBoostSeconds ? Mathf.Max(0.1f, StartAcceleration) : 2.4f));
+                float acceleration=IsOuterSprinting(i)&&runner.SkillAge>=0?setup.SkillAcceleration:2.4f;
+                runner.Speed = Mathf.MoveTowards(runner.Speed, target, (float)StepSeconds * (t < StartBoostSeconds ? Mathf.Max(0.1f, StartAcceleration) : acceleration));
                 runner.Stamina = Mathf.Clamp01(1 - t * (0.0069f + i * 0.0003f) * Mathf.Max(.1f, setup.StaminaDrainMultiplier));
                 if (laneContest == null) runner.Lane = setup.Lane + Mathf.Sin(t * 0.3f + i) * 0.07f;
                 float metric = Metric((float)runner.Distance, runner.Lane);
@@ -212,6 +237,7 @@ namespace ProjectRun.Race
                     Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.Finish, i, t));
                 }
             }
+            PublishMinorSkill();
             // Small race fields: allocation-free insertion sort and stable ties.
             for (int i = 1; i < Order.Length; i++)
             {
@@ -271,31 +297,51 @@ namespace ProjectRun.Race
                 float catchup=Mathf.Clamp(catchupTarget-baseTarget,setup.BaseSpeed*.045f,setup.BaseSpeed);
                 boost=Mathf.Max(boost,catchup*Mathf.SmoothStep(0,1,(progress-.70f)/.07f));
             }
-            return (setup.BaseSpeed + early + late + cadence + boost) * fatigue;
+            return (setup.BaseSpeed + early + late + cadence + boost + MinorSkillBoost(id)) * fatigue;
         }
 
-        private void PublishCosmeticSkills(int id)
+        public float MinorSkillBoost(int id)
         {
             var skills = setups[id].RaceSkills;
-            if (skills == null) return;
+            if (skills == null) return 0;
             var runner = Runners[id];
-            float progress = (float)(runner.Distance / CourseLength);
-            if (runner.NormalSkillCount < 3 && progress >= skills.NormalProgress + runner.NormalSkillCount * .28f)
+            float normal=MinorEnvelope(runner.NormalSkillStarted,skills.NormalDuration)*skills.NormalPower;
+            float rare=MinorEnvelope(runner.RareSkillStarted,skills.RareDuration)*skills.RarePower;
+            return setups[id].BaseSpeed*Mathf.Min(.035f,normal+rare);
+        }
+
+        private float MinorEnvelope(float started,float duration)
+        {
+            float age=(float)Time-started;
+            if(started<0||age<0||age>=duration)return 0;
+            return Mathf.SmoothStep(0,1,age/.25f)*(1-Mathf.SmoothStep(0,1,(age-duration+.4f)/.4f));
+        }
+
+        private void PublishMinorSkill()
+        {
+            float spacing=skillSchedule.Spacing;
+            if(Time-lastSkillEvent<spacing)return;
+            // Reserve the moments around a pending unique, instead of stacking several announcements.
+            for(int i=0;i<Runners.Length;i++)
             {
-                runner.NormalSkillCount++;
-                Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.CosmeticSkill, id, (float)Time, E_RaceSkillRarity.Normal));
+                var runner=Runners[i];var setup=setups[i];
+                if(runner.Finished||runner.SkillUsed||!setup.ConditionalSkill)continue;
+                double remaining=setup.SkillProgress*CourseLength-runner.Distance;
+                if(remaining/Mathf.Max(1,runner.Speed/Metric((float)runner.Distance,runner.Lane))<spacing)return;
             }
-            if (runner.RareSkillCount < 2 && progress >= skills.RareProgress + runner.RareSkillCount * .36f)
-            {
-                runner.RareSkillCount++;
-                Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.CosmeticSkill, id, (float)Time, E_RaceSkillRarity.Rare));
-            }
+            if(!skillSchedule.TryTake(Time,Runners,out int id,out E_RaceSkillRarity rarity))return;
+            var target=Runners[id];
+            if(rarity==E_RaceSkillRarity.Normal){target.NormalSkillCount++;target.NormalSkillStarted=(float)Time;}
+            else{target.RareSkillCount++;target.RareSkillStarted=(float)Time;}
+            lastSkillEvent=Time;
+            Changed?.Invoke(new Data_RaceEvent(E_RaceEvent.MinorSkill,id,(float)Time,rarity));
         }
 
         private bool ShouldActivate(int id)
         {
             var setup=setups[id];var runner=Runners[id];
             if(runner.SkillActivationCount>=Mathf.Max(1,setup.SkillActivationLimit))return false;
+            if(Time-lastSkillEvent<setup.SkillEventSpacing || Time-lastUniqueEvent<setup.UniqueEventSpacing)return false;
             if(runner.SkillActivationCount>0)
                 return setup.ConditionalSkill && runner.Distance/CourseLength>=setup.RepeatSkillProgress
                     && Time-runner.SkillStarted>=setup.SurgeDuration;
@@ -306,7 +352,8 @@ namespace ProjectRun.Race
             // permits a clear leader to use the skill, without depending on camera visibility.
             bool nearby=false;
             for(int i=0;i<Runners.Length;i++) if(i!=id && Runners[i].Distance>runner.Distance && Runners[i].Distance-runner.Distance<55)nearby=true;
-            float guaranteedProgress=setup.SkillActivationLimit>1?Mathf.Min(.74f,setup.SkillProgress+.06f):.74f;
+            float guaranteedProgress=setup.SkillProgressGrace>0?Mathf.Min(.98f,setup.SkillProgress+setup.SkillProgressGrace)
+                :setup.SkillActivationLimit>1?Mathf.Min(.74f,setup.SkillProgress+.06f):.74f;
             return nearby || progress>=guaranteedProgress;
         }
 
