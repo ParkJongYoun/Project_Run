@@ -26,7 +26,7 @@ Shader "ProjectRun/MonsterToon"
         CBUFFER_START(UnityPerMaterial)
         float4 _BaseMap_ST;
         half4 _BaseColor, _ShadeColor, _RimColor;
-        half _Threshold, _Softness, _Specular, _Gloss, _RimStrength, _Cutoff, _AlphaClip, _Cull;
+        half _Threshold, _Softness, _Specular, _Gloss, _RimStrength, _Cutoff, _AlphaClip, _Cull, _ShadowFloor;
         CBUFFER_END
         struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float2 uv : TEXCOORD0; };
         struct Varyings { float4 positionCS : SV_POSITION; float3 positionWS : TEXCOORD0; half3 normalWS : TEXCOORD1; float2 uv : TEXCOORD2; half fog : TEXCOORD3; };
@@ -73,7 +73,7 @@ Shader "ProjectRun/MonsterToon"
                 half ndl = dot(n, light.direction);
                 half band = smoothstep(_Threshold - _Softness, _Threshold + _Softness, ndl);
                 // A colored minimum keeps eyes and painted facial details readable in shade.
-                half lit = band * lerp(.42h, 1.h, light.shadowAttenuation);
+                half lit = band * lerp(_ShadowFloor, 1.h, light.shadowAttenuation);
                 half3 illumination = lerp(_ShadeColor.rgb, half3(1,1,1), lit);
                 half3 key = lerp(half3(1,1,1), min(light.color, half3(1.35,1.35,1.35)), .35h);
                 half3 color = base.rgb * illumination * key;

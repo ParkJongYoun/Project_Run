@@ -100,6 +100,8 @@ namespace ProjectRun.Race.CameraRig
         private bool hasHeroBase;
         private float pushInAge = -1f;
         public bool IsSkillVideoFraming => videoRunner >= 0 && skillTarget == videoRunner;
+        /// <summary>True while the skill camera holds on the protagonist after the movie ended (VideoReturnSeconds).</summary>
+        public bool IsSkillVideoReturning => videoRunner >= 0 && !videoPlaying && skillTarget == videoRunner;
 
         public void BeginSkillVideo(int runnerId)
         {
