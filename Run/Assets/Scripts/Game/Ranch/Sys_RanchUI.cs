@@ -3,6 +3,7 @@ using ProjectRun.Race;
 
 namespace ProjectRun.Ranch
 {
+    [DefaultExecutionOrder(-100)]
     public sealed class Sys_RanchUI : MonoBehaviour
     {
         public Mgr_UI Manager;
@@ -23,26 +24,29 @@ namespace ProjectRun.Ranch
                 Debug.LogError("Ranch lobby UI is missing its manager or required panels.", this);
                 return;
             }
+            if (Mgr_Game.Instance != null) Mgr_Game.Instance.EnsureDemoSession();
             Manager.Register(E_PanelType.Ranch, Panel);
+            Manager.Register(E_PanelType.RanchMonsters, MonsterPanel);
+            Manager.Register(E_PanelType.RanchTraining, TrainingPanel);
+            Manager.Register(E_PanelType.RanchArena, ArenaPanel);
+            MonsterPanel.SetOwner(Panel);
+            TrainingPanel.SetOwner(Panel);
+            ArenaPanel.SetOwner(Panel);
+            Panel.CollectionManager = Manager;
+
+            // Editor previews must never become the initial screen of a new lobby visit.
+            Manager.Close(E_PanelType.RanchMonsters);
+            Manager.Close(E_PanelType.RanchTraining);
+            Manager.Close(E_PanelType.RanchArena);
             if (GuidePanel != null)
             {
                 Panel.Guide = GuidePanel;
+                var guideCanvas = GuidePanel.GetComponentInParent<Canvas>(true);
+                if (guideCanvas != null) guideCanvas.gameObject.SetActive(true);
                 Manager.Register(E_PanelType.RanchGuide, GuidePanel);
                 Manager.Open(E_PanelType.RanchGuide);
             }
-            if (ArenaPanel != null)
-            {
-                Panel.CollectionManager = Manager;
-                Manager.Register(E_PanelType.RanchArena, ArenaPanel);
-                ArenaPanel.SetOwner(Panel);
-            }
-            if (MonsterPanel == null || TrainingPanel == null) return;
-            if (Mgr_Game.Instance != null) Mgr_Game.Instance.EnsureDemoSession();
-            Manager.Register(E_PanelType.RanchMonsters, MonsterPanel);
-            Manager.Register(E_PanelType.RanchTraining, TrainingPanel);
-            MonsterPanel.SetOwner(Panel);
-            TrainingPanel.SetOwner(Panel);
-            Panel.CollectionManager = Manager;
+            Manager.Open(E_PanelType.Ranch);
         }
     }
 }

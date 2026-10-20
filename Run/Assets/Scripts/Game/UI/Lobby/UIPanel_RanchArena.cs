@@ -41,8 +41,17 @@ namespace ProjectRun.Race
         public override void OnOpen()
         {
             if (!Application.isPlaying || BackButton == null) return;
+            var cover = transform.Find("bg_fullscreen") as RectTransform;
+            if (cover != null)
+            {
+                cover.anchorMin = Vector2.zero;
+                cover.anchorMax = Vector2.one;
+                cover.offsetMin = cover.offsetMax = Vector2.zero;
+                cover.localScale = Vector3.one;
+            }
             SkinNotebook();   // 경기장 수첩 팝업을 새 이미지로 꾸민다 (최초 1회)
             SkinEntrants();   // 출전할 친구 팝업을 새 이미지로 꾸민다 (최초 1회)
+            PrepareHitArea(ConfirmEntry);
             Bind(BackButton, ReturnToRanch);
             Bind(EntryButton, ShowEntrants);
             Bind(NotebookButton, () => { ClosePopups(); NotebookPopup.SetActive(true); });
@@ -56,6 +65,7 @@ namespace ProjectRun.Race
             for (int i = 0; i < EntrantButtons.Length; i++)
             {
                 int id = i;
+                PrepareHitArea(EntrantButtons[i]);
                 Bind(EntrantButtons[i], () => SelectEntrant(id));
             }
             Requirements.text = "훈련 없이도 출전 가능";
@@ -72,6 +82,14 @@ namespace ProjectRun.Race
             if (button == null) return;
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(callback);
+        }
+
+        private static void PrepareHitArea(UnityEngine.UI.Button button)
+        {
+            if (button == null || button.targetGraphic == null) return;
+            button.targetGraphic.raycastTarget = true;
+            // Transparent card/button hit areas still need to participate in GraphicRaycaster.
+            button.targetGraphic.canvasRenderer.cullTransparentMesh = false;
         }
 
         private void Update()
@@ -241,7 +259,6 @@ namespace ProjectRun.Race
         public bool ApplyEntrantsSkin(Data_DemoArt art, Data_DemoArt collectionArt)
         {
             if (entrantsSkinned || EntryPopup == null) return false;
-            if (art == null || art.Get("arena_entry_frame") == null) return false;   // 이미지가 아직 임포트되지 않았으면 기존 모양 유지
             var body = EntryPopup.transform.Find("group_content") as RectTransform;
             if (body == null || ConfirmEntry == null || ConfirmLabel == null) return false;
             if (body.Find("img_entry_frame") != null)   // 이미 프리팹에 구워져 있음: 확정 버튼 모양 연결만 다시 찾는다
@@ -253,6 +270,7 @@ namespace ProjectRun.Race
                 confirmDisabledLook = savedDisabled != null ? savedDisabled.gameObject : null;
                 return false;
             }
+            if (art == null || art.Get("arena_entry_frame") == null) return false;
             entrantsSkinned = true;
 
             // 기존 팝업에서 재사용할 것(글꼴, 확정 버튼 이미지, 선택 테두리, 제목 책 아이콘)을 먼저 챙긴다
