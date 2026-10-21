@@ -73,7 +73,9 @@ namespace ProjectRun.Race
         {
             if (!Application.isPlaying || BackButton == null) return;
             BindRosterArt();
-            FitRosterCards();
+            // 카드 배치(위치·크기·글자 크기)는 프리팹 값을 그대로 쓴다. 예전에는 FitRosterCards()가 매번 고정값으로 덮어썼다
+            // (FitRosterCards는 에디터 빌더가 프리팹을 새로 만들 때만 사용). 열 때 목록 스크롤만 맨 위로 되돌린다
+            if (!TrainingMode && Roster != null) { Roster.StopMovement(); Roster.verticalNormalizedPosition = 1; }
             if (TrainingActor != null) trainingActorHome = TrainingActor.rectTransform.anchoredPosition;
             Bind(BackButton, ReturnToRanch);
             Bind(PreviousButton, () => Scroll(-1));
@@ -206,8 +208,7 @@ namespace ProjectRun.Race
             {
                 string id = monsters[i].Id;
                 CharacterSprites[i] = FindArt(id + "_body");
-                if (RosterPortraits != null && i < RosterPortraits.Length && RosterPortraits[i] != null)
-                    RosterPortraits[i].sprite = FindArt(id + "_face");
+                // 목록 카드의 얼굴(RosterPortraits)은 프리팹에 넣은 그림을 그대로 쓴다. 카드 이름·레벨은 Refresh()가 채운다
                 TrainingPosters[i] = FindArt(id + "_training");
                 TrainingStartFrames[i] = FindArt(id + "_training_start");
                 // The original lobby frame player is retained for future reviewed Comfy clips.
