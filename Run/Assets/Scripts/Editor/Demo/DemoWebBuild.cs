@@ -20,6 +20,8 @@ namespace ProjectRun.Race.Editor
         [MenuItem("Tools/Project Run/Demo/Build Review Demo WebGL")]
         public static void Queue() => Enqueue();
 
+        public static void QueueFast() => Enqueue(true);
+
         // Synchronous entry point for unity run -executeMethod.
         public static void BuildBatch()
         {
@@ -28,7 +30,7 @@ namespace ProjectRun.Race.Editor
             Build();
         }
 
-        private static void Enqueue()
+        private static void Enqueue(bool fast = false)
         {
             RequireIdleScenes();
             if (queued) throw new InvalidOperationException("A web build is already queued.");
@@ -43,7 +45,7 @@ namespace ProjectRun.Race.Editor
             run = () =>
             {
                 EditorApplication.update -= run;
-                try { Build(); }
+                try { Build(fast); }
                 catch (Exception exception) { UnityEngine.Debug.LogException(exception); }
                 finally { queued = false; }
             };
@@ -61,7 +63,7 @@ namespace ProjectRun.Race.Editor
                     throw new InvalidOperationException("Save open scene edits first.");
         }
 
-        private static void Build()
+        private static void Build(bool fast = false)
         {
             string runId = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             string output = Records + "/새빌드/" + runId + "/심사데모_WebGL";
@@ -71,9 +73,10 @@ namespace ProjectRun.Race.Editor
                 foreach (string scene in scenes)
                     if (AssetDatabase.LoadAssetAtPath<SceneAsset>(scene) == null) throw new InvalidOperationException("Missing build scene: " + scene);
                 File.WriteAllText(StatusPath,"Building " + DateTime.Now.ToString("O") + "\n" + string.Join("\n",scenes));
-                PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
+                PlayerSettings.WebGL.compressionFormat = fast ? WebGLCompressionFormat.Disabled : WebGLCompressionFormat.Gzip;
                 PlayerSettings.WebGL.decompressionFallback = false;
-                UnityEditor.WebGL.UserBuildSettings.codeOptimization = UnityEditor.WebGL.WasmCodeOptimization.DiskSizeLTO;
+                UnityEditor.WebGL.UserBuildSettings.codeOptimization = fast
+                    ? UnityEditor.WebGL.WasmCodeOptimization.BuildTimes : UnityEditor.WebGL.WasmCodeOptimization.DiskSizeLTO;
                 PlayerSettings.WebGL.template = "PROJECT:ProjectRunLandscape";
                 PlayerSettings.defaultWebScreenWidth = 1280;
                 PlayerSettings.defaultWebScreenHeight = 720;
@@ -122,7 +125,7 @@ namespace ProjectRun.Race.Editor
             File.WriteAllText(output + "/demo-id.txt","project-run-review-demo");
             string manifest = "심사 데모 웹 빌드\n" + DateTime.Now.ToString("O")
                 + "\n진입 씬: " + scenes[0] + "\n포함 씬:\n" + string.Join("\n",scenes)
-                + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n웹 압축: Gzip / 코드 크기 최적화: DiskSizeLTO"
+                + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n웹 압축: " + PlayerSettings.WebGL.compressionFormat + " / 코드 최적화: " + UnityEditor.WebGL.UserBuildSettings.codeOptimization
                 + "\n미사용 리소스: 빌드 중 제외 후 원래 경로로 복원\n실행: Play.exe\n";
             File.WriteAllText(output + "/빌드구성.txt",manifest);
             Publish(output, runId);
