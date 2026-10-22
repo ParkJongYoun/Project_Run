@@ -234,6 +234,8 @@
 
 ## 15 개발 도구와 공통 유틸
 
+- 2026-10-22 Git 업로드 전 정리: 사용자의 불필요 파일 삭제 요청에 따라 현재 CMD 배포에서 참조하지 않는 EXE 생성·자동 종료 도구(`BuildLauncher.ps1`, `PlayLauncher.cs`, `TestLauncher.ps1`, `LauncherLifetime.js`), 이전 EXE와 테스트용 임시 산출물은 제거한다. 최신 `Play.cmd`·`Game`·`Launcher` 배포본과 실제 게임 리소스, 작업 결과 기록은 유지한다. 이전 EXE 소스·실행 파일 보존 기준보다 이 요청을 우선하며 실행 검증 생략 요청은 유지한다.
+
 - 2026-10-21 배포 폴더 간소화: 사용자가 정리한 배포 폴더를 기준으로 이후 빌드는 설명 문서를 다시 생성하지 않는다. 루트는 `Play.cmd`, 웹 콘텐츠용 `Game`, 실행 보조용 `Launcher`로 구성한다. `index.html`·`Build`·`StreamingAssets`·필요한 `TemplateData`를 `Game` 안에 함께 배치하여 Unity의 상대 URL을 유지하며 CMD 서버의 문서 루트도 `Game`으로 설정한다. 서버 중복 실행 식별용 `demo-id.txt`는 `Game` 안에만 둔다. `실행방법.txt`는 생성하지 않고, `빌드옵션.txt`·`빌드구성.txt`는 배포 폴더 밖 `DataBundles/빌드/작업기록/심사데모_웹빌드/빌드기록/<빌드ID>`에만 저장한다. 현재 배포에도 재빌드 없이 같은 폴더 구조를 적용한다. 웹 호스팅의 문서 루트는 `Game`을 사용한다. 이 기준은 아래의 HTML·설명 문서 루트 배치와 상위 폴더 서버 루트 기준보다 우선한다.
 
 - 2026-10-21 실행 보조 파일 정리: `StartDemo.ps1`·`Serve.ps1`에 Windows 숨김 속성을 적용하지 않고 빌드 폴더의 `Launcher` 하위 폴더에 배치한다. 루트 `Play.cmd`가 `Launcher/StartDemo.ps1`을 호출하고 서버는 상위 빌드 폴더를 게임 루트로 사용한다. 현재 배포 폴더와 이후 빌드 패키징에 동일하게 적용하며 게임 콘텐츠 재빌드와 실행 테스트는 요구하지 않는다.
