@@ -1,5 +1,3 @@
-using System;
-using System.Diagnostics;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
@@ -7,7 +5,7 @@ using UnityEditor.Build.Reporting;
 
 namespace ProjectRun.Race.Editor
 {
-    // Covers both Project Run build menus and Unity's regular WebGL Build button.
+    // Restore the original PowerShell local server through Play.cmd for WebGL builds.
     public sealed class WebLauncherPostprocessor : IPostprocessBuildWithReport
     {
         public int callbackOrder => 100;
@@ -15,43 +13,43 @@ namespace ProjectRun.Race.Editor
         public void OnPostprocessBuild(BuildReport report)
         {
             if (report.summary.platform != BuildTarget.WebGL) return;
-            if (UnityEngine.Application.platform != UnityEngine.RuntimePlatform.WindowsEditor)
-                throw new BuildFailedException("Play.exe packaging currently requires the Windows Editor.");
-
             string project = Path.GetDirectoryName(UnityEngine.Application.dataPath);
             string output = Path.GetFullPath(report.summary.outputPath);
-            string script = Path.Combine(project, "Tools/Demo/BuildLauncher.ps1");
-            string powershell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
-                "WindowsPowerShell/v1.0/powershell.exe");
-            var start = new ProcessStartInfo {
-                FileName = powershell,
-                Arguments = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"" + script
-                    + "\" -OutputDirectory \"" + output.TrimEnd('\\', '/') + "\"",
-                WorkingDirectory = project,
-                UseShellExecute = false, CreateNoWindow = true,
-                RedirectStandardOutput = true, RedirectStandardError = true
-            };
-            using (var process = Process.Start(start))
+            string content = Path.Combine(output, "Game");
+            Directory.CreateDirectory(content);
+            // Keep Unity's relative URLs intact by moving the web content together.
+            foreach (string name in new[] { "index.html", "Build", "StreamingAssets", "TemplateData" })
             {
-                var stdout = process.StandardOutput.ReadToEndAsync();
-                var stderr = process.StandardError.ReadToEndAsync();
-                if (!process.WaitForExit(60000))
+                string source = Path.Combine(output, name);
+                string destination = Path.Combine(content, name);
+                string prefix = output.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                if (!Path.GetFullPath(source).StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase)
+                    || !Path.GetFullPath(destination).StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase))
+                    throw new IOException("Web content must stay inside the build output.");
+                if (Directory.Exists(source))
                 {
-                    process.Kill();
-                    throw new BuildFailedException("Play.exe compilation timed out.");
+                    if (Directory.Exists(destination)) Directory.Delete(destination, true);
+                    Directory.Move(source, destination);
                 }
-                if (process.ExitCode != 0 || !File.Exists(Path.Combine(output, "Play.exe")))
-                    throw new BuildFailedException("Play.exe packaging failed:\n" + stdout.Result + "\n" + stderr.Result);
-                UnityEngine.Debug.Log(stdout.Result);
+                else if (File.Exists(source))
+                {
+                    File.Copy(source, destination, true);
+                    File.Delete(source);
+                }
             }
-            File.WriteAllText(Path.Combine(output, "실행방법.txt"),
-                "Monster Race 실행 방법\n\n"
-                + "1. 이 폴더 안의 Play.exe를 더블클릭합니다.\n"
-                + "2. 기본 브라우저에서 게임이 열립니다.\n"
-                + "3. 종료할 때는 작업 표시줄 알림 영역의 포링 아이콘을 우클릭하고 '종료'를 선택합니다.\n\n"
-                + "브라우저를 닫아도 실행기는 유지됩니다. Play.exe를 다시 누르면 게임을 다시 엽니다.\n"
-                + "전달하거나 이동할 때는 Play.exe뿐 아니라 빌드 폴더 전체를 함께 옮겨 주세요.\n"
-                + "Windows용 실행기입니다. 별도 Python 또는 Unity 설치는 필요하지 않습니다.\n");
+            string support = Path.Combine(output, "Launcher");
+            Directory.CreateDirectory(support);
+            File.Copy(Path.Combine(project, "Tools/Demo/Play.cmd"), Path.Combine(output, "Play.cmd"), true);
+            File.Copy(Path.Combine(project, "Tools/Demo/StartDemo.ps1"), Path.Combine(support, "StartDemo.ps1"), true);
+            File.Copy(Path.GetFullPath(Path.Combine(project, "../Tools/LocalWeb/Serve.ps1")), Path.Combine(support, "Serve.ps1"), true);
+            File.WriteAllText(Path.Combine(content, "demo-id.txt"), "project-run-review-demo");
+            foreach (string legacy in new[] { "Play.exe", "Play.ico", "StartDemo.ps1", "Serve.ps1",
+                "demo-id.txt", "실행방법.txt", "빌드옵션.txt", "빌드구성.txt" })
+            {
+                string path = Path.Combine(output, legacy);
+                if (File.Exists(path)) File.Delete(path);
+            }
+            UnityEngine.Debug.Log("PLAY_CMD_PACKAGED " + output);
         }
     }
 }

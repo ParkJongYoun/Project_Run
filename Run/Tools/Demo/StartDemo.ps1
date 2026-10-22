@@ -1,5 +1,6 @@
 param([switch]$NoBrowser)
 $ErrorActionPreference = 'Stop'
+$gameRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../Game'))
 $demoPort = 0
 foreach ($candidate in 18767..18776) {
     $demoUrl = "http://localhost:$candidate/"
@@ -17,4 +18,4 @@ foreach ($candidate in 18767..18776) {
     if ($demoPort -ne 0) { break }
 }
 if ($demoPort -eq 0) { throw 'No free local demo port was found (18767-18776).' }
-& (Join-Path $PSScriptRoot 'Serve.ps1') -Root $PSScriptRoot -Port $demoPort -NoBrowser:$NoBrowser
+& (Join-Path $PSScriptRoot 'Serve.ps1') -Root $gameRoot -Port $demoPort -NoBrowser:$NoBrowser

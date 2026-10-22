@@ -67,6 +67,7 @@ namespace ProjectRun.Race.Editor
         {
             string runId = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             string output = Records + "/새빌드/" + runId + "/심사데모_WebGL";
+            string recordDirectory = Records + "/빌드기록/" + runId;
             string[] scenes = DemoScenes;
             try
             {
@@ -84,6 +85,9 @@ namespace ProjectRun.Race.Editor
                 BuildReport report;
                 // Keep the previous playable build intact until its replacement succeeds.
                 Directory.CreateDirectory(Path.GetDirectoryName(output));
+                Directory.CreateDirectory(recordDirectory);
+                File.WriteAllText(recordDirectory + "/빌드옵션.txt", "웹 압축: " + PlayerSettings.WebGL.compressionFormat
+                    + " / 코드 최적화: " + UnityEditor.WebGL.UserBuildSettings.codeOptimization);
                 using (DemoWebBuildResources.Begin(scenes))
                 {
                     report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
@@ -115,19 +119,22 @@ namespace ProjectRun.Race.Editor
         {
             string[] scenes = DemoScenes;
             if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Build result: " + report.summary.result);
-            if (!File.Exists(output + "/Play.exe")) throw new InvalidOperationException("Play.exe was not packaged.");
+            foreach (string launcherFile in new[] { "Play.cmd", "Launcher/StartDemo.ps1", "Launcher/Serve.ps1", "Game/index.html" })
+                if (!File.Exists(Path.Combine(output, launcherFile))) throw new InvalidOperationException(launcherFile + " was not packaged.");
             var packed = report.packedAssets.SelectMany(a => a.contents).ToArray();
             if (packed.Any(a => a.sourceAssetPath != null && a.sourceAssetPath.StartsWith("Assets/WebBuildExcluded/", StringComparison.Ordinal)))
                 throw new InvalidOperationException("An excluded resource was unexpectedly included in the build.");
             File.WriteAllLines(Records + "/포함에셋_크기.tsv",
                 new[] { "Bytes\tAsset" }.Concat(packed.OrderByDescending(a => a.packedSize)
                     .Select(a => a.packedSize + "\t" + a.sourceAssetPath)));
-            File.WriteAllText(output + "/demo-id.txt","project-run-review-demo");
+            string recordDirectory = Records + "/빌드기록/" + runId;
+            Directory.CreateDirectory(recordDirectory);
             string manifest = "심사 데모 웹 빌드\n" + DateTime.Now.ToString("O")
                 + "\n진입 씬: " + scenes[0] + "\n포함 씬:\n" + string.Join("\n",scenes)
-                + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n웹 압축: " + PlayerSettings.WebGL.compressionFormat + " / 코드 최적화: " + UnityEditor.WebGL.UserBuildSettings.codeOptimization
-                + "\n미사용 리소스: 빌드 중 제외 후 원래 경로로 복원\n실행: Play.exe\n";
-            File.WriteAllText(output + "/빌드구성.txt",manifest);
+                + "\nUI 기준: 1280×720 / 기존 PC 품질 유지\n"
+                + (File.Exists(recordDirectory + "/빌드옵션.txt") ? File.ReadAllText(recordDirectory + "/빌드옵션.txt") : "빌드 옵션 기록 없음")
+                + "\n미사용 리소스: 빌드 중 제외 후 원래 경로로 복원\n실행: Play.cmd\n";
+            File.WriteAllText(recordDirectory + "/빌드구성.txt",manifest);
             Publish(output, runId);
             long folderBytes = Directory.GetFiles(DemoOutput, "*", SearchOption.AllDirectories)
                 .Sum(path => new FileInfo(path).Length);

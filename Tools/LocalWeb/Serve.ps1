@@ -41,7 +41,15 @@ try {
                     else { $status='206 Partial Content'; $extra="Content-Range: bytes $start-$end/$length`r`n"; $length=$end-$start+1 }
                 }
             }
-            $type = $mime[[IO.Path]::GetExtension($path)]
+            $contentPath = $path
+            if ($path.EndsWith('.gz', [StringComparison]::OrdinalIgnoreCase)) {
+                $extra += "Content-Encoding: gzip`r`n"
+                $contentPath = $path.Substring(0, $path.Length - 3)
+            } elseif ($path.EndsWith('.br', [StringComparison]::OrdinalIgnoreCase)) {
+                $extra += "Content-Encoding: br`r`n"
+                $contentPath = $path.Substring(0, $path.Length - 3)
+            }
+            $type = $mime[[IO.Path]::GetExtension($contentPath)]
             if (-not $type) { $type='application/octet-stream' }
             if ($null -ne $payload) { $length=$payload.Length; $type='text/plain' }
             $header="HTTP/1.1 $status`r`nContent-Type: $type`r`nContent-Length: $length`r`nAccept-Ranges: bytes`r`nCache-Control: no-cache`r`nCross-Origin-Opener-Policy: same-origin`r`nCross-Origin-Embedder-Policy: require-corp`r`n${extra}Connection: close`r`n`r`n"
