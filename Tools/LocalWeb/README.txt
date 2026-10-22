@@ -1,35 +1,27 @@
-Project Run - Web 빌드 / 로컬 실행
+Project MR - 데모 웹 빌드 / 로컬 실행
 
-1. Unity Hub > Installs > 6000.3.23f1 > Add modules > Web Build Support 설치.
-   해당 Unity 버전에 Web Build Support가 설치되어 있어야 한다.
-2. Unity File > Build Profiles > Web > Switch Platform.
-3. Tools > Project Run > Build Web - Game 실행.
-   Scene_Title, Scene_All3D, Scene_MonsterRenderCompare를 포함한다.
-   타이틀에서 몬스터 레이스와 렌더링 비교 화면으로 진입한다.
-4. Run/Builds/WebGL_PlayModes/Play.cmd를 더블클릭.
-   이 폴더 전체를 복사하면 Windows PowerShell이 있는 다른 Windows PC에서도 실행 가능하다.
-   index.html만 복사하거나 더블클릭하는 방식은 지원하지 않는다.
-5. 기본 브라우저에서 http://localhost:18765/가 열린다.
-   검은 콘솔 창을 유지하고, 종료할 때 창을 닫는다.
+1. Unity 6000.3.23f1에 Web Build Support를 설치하고 C:/Project_MR/Run을 연다.
+2. Unity File > Build Profiles에서 Web 플랫폼으로 전환한다.
+3. Tools > Project Run > Build Web - Game을 실행한다.
+   빠른 무압축 빌드는 Build Web - Game (Fast)를 사용한다.
+   정식 씬: Scene_Title → Scene_LobbyTest → Scene_OvalToon.
+4. 생성된 Run/DataBundles/빌드/심사데모_WebGL/Play.cmd를 실행한다.
+   배포 시 Play.cmd, Game, Launcher가 들어 있는 폴더 전체를 전달한다.
+   Game/index.html만 복사하거나 직접 더블클릭하지 않는다.
+5. 기본 브라우저에서 게임이 열린다. 게임 중 검은 명령창을 유지하며,
+   종료할 때 게임 탭과 명령창을 닫는다.
 
-외부 서버, 계정 서버, Python, Node 설치는 필요 없다.
-대신 내 PC에서만 접속되는 작은 HTTP 서버가 실행된다.
-서버는 127.0.0.1에만 바인딩하며 다른 기기에서 접속할 수 없다.
-빌드 메뉴는 압축을 Disabled로 설정한다. 이 실행기는 압축 없는 Web 빌드용이다.
-포트가 사용 중이면 PowerShell에서 다음과 같이 다른 포트로 실행한다:
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Serve.ps1 -Port 18767
-브라우저 저장소는 주소/포트별로 구분되므로 이어하기 검사에는 같은 포트를 유지한다.
+실행기 원본:
+- Run/Tools/Demo/Play.cmd
+- Run/Tools/Demo/StartDemo.ps1
+- Tools/LocalWeb/Serve.ps1
 
-초기 메뉴 작업 당시 검증 기록 (현재 씬 구성과 구분):
-- Unity Editor Play 모드에서 세 타이틀 버튼의 onClick을 각각 호출해 실제 씬 로드 확인.
-- 세 씬 모두 Sys_Race가 Running 상태가 되고 주자 거리가 증가함을 확인.
-- 각 씬의 타이틀 버튼으로 복귀 확인. 빠른 연속 클릭으로 중복 로드하지 않음.
-- 타이틀 및 경기 복귀 버튼 표시 확인. 씬 진입 후 EventSystem 1개 확인.
-- 로컬 서버의 HTTP 200, WASM MIME, HTTP 206 바이트 범위 응답 확인.
+WebLauncherPostprocessor가 빌드 결과를 Game으로 정리하고,
+PowerShell 스크립트 두 개를 Launcher에 배치한다.
+StartDemo.ps1은 Game을 서버 루트로 사용하고 18767~18776 중 사용 가능한 포트를 선택한다.
+서버는 127.0.0.1에서만 접속되며 Python이나 Node 설치가 필요 없다.
+정식 메뉴는 Gzip 압축, Fast 메뉴는 무압축이며 Serve.ps1은 두 형식을 지원한다.
 
-미완료:
-- 초기 메뉴 검증 당시에는 Web 모듈 부재로 Web 빌드를 수행하지 못했다. 이후 2026-10-16 17:25 KST WebGL 빌드 성공은 Run/DataBundles/검증/몬스터렌더링_20261016/three_monster_validation.txt에 기록되어 있다. 브라우저 동작·모바일 성능 검증과는 구분한다.
-- Editor 버튼 이벤트 검증은 브라우저의 실제 마우스/터치 입력 검증과 구분함.
-
-공식 참고:
-https://docs.unity.com/ko-kr/engine/6000.3/manual/platform-specific/webgl/intro/gettingstarted
+2026-10-22 업로드 전 정리에서 생성된 빌드 결과물을 모두 삭제했다.
+빌드 결과물은 .gitignore로 제외되므로 필요한 PC에서 다시 빌드한다.
+이번 정리에서는 컴파일과 씬 참조만 확인했으며 게임 Play와 재빌드는 수행하지 않았다.
