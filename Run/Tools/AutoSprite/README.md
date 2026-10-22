@@ -1,5 +1,7 @@
 # Project Run 2D 몬스터 생성
 
+2026-10-22 정리: `Scene_2D`는 삭제했고, 현재 데모의 경기장 미리보기에 필요한 6종 스프라이트와 생성·변환 도구는 유지했다. 일회성 검사·미리보기 도구 `audit_directions.py`, `inspect_motion.py`, `preview_direction_calibration.py`, `render_preview.py`는 삭제했으며 아래 해당 절차는 과거 작업 참고 기록이다.
+
 SGL의 AutoSprite 사용 절차만 참고해 Run 전용으로 작성한 도구다. SGL의 이미지·스크립트·API 키를 복사하지 않는다. 키는 호출 시 `--credential-file`로 지정한 외부 파일에서 메모리로만 읽으며, 인증은 AutoSprite 공식 API에만 보낸다. 다운로드에는 인증 헤더를 붙이지 않는다.
 
 ## 원화와 모션

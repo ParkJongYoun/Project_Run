@@ -5,6 +5,7 @@
 /Run/[Oo]bj/
 /Run/[Bb]uild/
 /Run/[Bb]uilds/
+/Run/DataBundles/빌드/
 /Run/[Ll]ogs/
 /Run/[Uu]ser[Ss]ettings/
 /Run/[Mm]emoryCaptures/
@@ -37,9 +38,17 @@
 /Run/*.mdb
 *.csproj.user
 
-# Local tool state and Python cache; retain migration scripts and reports.
+# Local tool state, temporary work folders, and Python cache.
 /.codex/
 /.agents/
+/.tripo/
+/_backup_notebook/
+/Run/Backups/
+/Run/GeneratedAssets/
+/Run/Assets/_Recovery/
+/Run/Assets/_Recovery.meta
+/Run/Assets/_IntroPreview/
+/Run/Assets/_IntroPreview.meta
 __pycache__/
 *.py[cod]
 .venv/
@@ -57,6 +66,9 @@ Desktop.ini
 *.swo
 *.blend1
 *.blend2
+*.orig
+*.bak
+*.bak_*
 
 # Local secrets and signing keys. Example configuration remains shareable.
 .env
