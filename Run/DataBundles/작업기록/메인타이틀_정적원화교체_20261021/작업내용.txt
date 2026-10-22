@@ -1,0 +1,32 @@
+메인 타이틀 정적 원화 교체
+작업일: 2026-10-21
+
+요청
+- 첨부한 타이틀_대표이미지_UI제거.png로 메인 타이틀 교체.
+- 움직이는 느낌을 추가하지 않고 테스트 없이 완료.
+- 기존 타이틀 원화와 불필요한 전용 리소스 삭제.
+
+반영
+- 사용자 파일을 그대로 Assets/ArtBundles/UI/Demo/Title/title_race_background.png에 덮어썼다.
+- 기존 이미지의 .meta와 GUID를 유지하여 UIPanel_DemoTitle.prefab 및 Data_DemoArt의 연결을 유지했다.
+- 새 원본은 DataBundles/아트/메인타이틀_몬스터레이스/타이틀_대표이미지_UI제거.png에 저장했다.
+- 프리팹 bg_title의 UIItem_TitleArtworkMotion과 해당 효과용 중첩 Canvas를 제거했다.
+- UIPanel_DemoTitle.Build의 같은 효과 생성 코드와 시작 문구의 주기적 투명도 변경을 제거했다.
+- 로고·부제·시작 버튼 등 기존 이미지 UI의 배치를 유지했다.
+- 개발 규칙 7번 및 AGENTS.md 요약에 새 기준을 반영했다.
+
+삭제
+- Assets/ArtBundles/UI/Demo/title.png 및 .meta: 사용하지 않는 이전 배경.
+- Assets/Scripts/Game/UI/Lobby/UIItem_TitleArtworkMotion.cs 및 .meta: 제거한 전용 움직임 효과.
+- DataBundles/아트/메인타이틀_몬스터레이스/UI제거_원화.png.
+- DataBundles/아트/메인타이틀_몬스터레이스/웃는포링/웃는포링_UI제거_원화.png.
+- DataBundles/아트/메인타이틀_몬스터레이스/웃는포링/작업기록/사용자제공_웃는포링_UI포함_원본.png.
+- DataBundles/아트/메인타이틀_몬스터레이스/작업기록/사용자제공_UI포함_원본.png.
+- title_race_background.png의 이전 내용은 새 이미지로 덮어썼으며 별도 백업하지 않았다.
+- 기존 작업의 텍스트 기록과 검증 화면, 계속 사용하는 UI 이미지 원본은 유지했다.
+
+수행 범위
+- 실제 수정 위치: C:/Project_Run/Run. 지침에 적힌 D:/Project_Run/Run 경로는 현재 환경에 존재하지 않았다.
+- 삭제 전 프로젝트 에셋의 GUID 및 코드 참조를 확인하고, 파일 수정 내용을 검토했다.
+- 사용자 요청에 따라 Unity Play, 자동 테스트, 별도 컴파일 검증, 화면 검증, WebGL 빌드를 실행하지 않았다.
+- Git 커밋·푸시는 실행하지 않았다.
